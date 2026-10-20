@@ -7,8 +7,11 @@ import 'etiqueta.dart';
 /// TARJETA DE PUBLICACIÓN PROPIA
 /// =========================================================================
 /// Muestra los detalles de la publicación del usuario, el estado actual,
-/// quién la reservó (si aplica), un selector para cambiar de modo/estado,
-/// y un botón directo para descartar la reserva si está apartada.
+/// quién la reservó (si aplica) y las acciones que sí se pueden hacer.
+///
+/// Ley de Hick (Clase 16): si la publicación está reservada, el servidor
+/// rechaza editar, cambiar el estado y eliminar. Por eso en ese caso esos
+/// controles no se muestran y solo quedan "Completar" y WhatsApp.
 class TarjetaMiPublicacion extends StatelessWidget {
   const TarjetaMiPublicacion({
     super.key,
@@ -83,68 +86,68 @@ class TarjetaMiPublicacion extends StatelessWidget {
                     ),
                   ),
                 ),
-                // Botón lápiz para editar nombre y descripción (deshabilitado visualmente si está reservada)
-                IconButton(
-                  icon: Icon(
-                    Icons.edit_outlined,
-                    size: 20,
-                    color: estaReservada
-                        ? colores.outline.withValues(alpha: 0.35)
-                        : colores.primary,
+                // Con la publicación reservada estos tres controles no se
+                // muestran: el servidor los rechazaría (Ley de Hick).
+                if (!estaReservada) ...[
+                  // Botón lápiz para editar nombre y descripción
+                  IconButton(
+                    icon: Icon(
+                      Icons.edit_outlined,
+                      size: 20,
+                      color: colores.primary,
+                    ),
+                    tooltip: 'Editar información',
+                    onPressed: enProgreso ? null : alEditar,
                   ),
-                  tooltip: estaReservada
-                      ? 'No se puede editar: la publicación está reservada'
-                      : 'Editar información',
-                  onPressed: enProgreso ? null : alEditar,
-                ),
-                const SizedBox(width: 8),
-                // Selector de modo / estado_publicacion
-                PopupMenuButton<String>(
-                  icon: const Icon(Icons.more_vert, size: 20),
-                  tooltip: 'Cambiar estado de la publicación',
-                  enabled: !enProgreso,
-                  onSelected: alCambiarEstado,
-                  itemBuilder: (ctx) => [
-                    const PopupMenuItem(
-                      value: 'disponible',
-                      child: Row(
-                        children: [
-                          Icon(Icons.check_circle_outline, size: 18, color: Colors.green),
-                          SizedBox(width: 8),
-                          Text('Marcar como Disponible'),
-                        ],
+                  const SizedBox(width: 8),
+                  // Selector de modo / estado_publicacion
+                  PopupMenuButton<String>(
+                    icon: const Icon(Icons.more_vert, size: 20),
+                    tooltip: 'Cambiar estado de la publicación',
+                    enabled: !enProgreso,
+                    onSelected: alCambiarEstado,
+                    itemBuilder: (ctx) => [
+                      const PopupMenuItem(
+                        value: 'disponible',
+                        child: Row(
+                          children: [
+                            Icon(Icons.check_circle_outline, size: 18, color: Colors.green),
+                            SizedBox(width: 8),
+                            Text('Marcar como Disponible'),
+                          ],
+                        ),
                       ),
-                    ),
-                    const PopupMenuItem(
-                      value: 'oculto',
-                      child: Row(
-                        children: [
-                          Icon(Icons.visibility_off_outlined, size: 18, color: Colors.grey),
-                          SizedBox(width: 8),
-                          Text('Ocultar publicación'),
-                        ],
+                      const PopupMenuItem(
+                        value: 'oculto',
+                        child: Row(
+                          children: [
+                            Icon(Icons.visibility_off_outlined, size: 18, color: Colors.grey),
+                            SizedBox(width: 8),
+                            Text('Ocultar publicación'),
+                          ],
+                        ),
                       ),
-                    ),
-                    const PopupMenuItem(
-                      value: 'no disponible',
-                      child: Row(
-                        children: [
-                          Icon(Icons.block_outlined, size: 18, color: Colors.red),
-                          SizedBox(width: 8),
-                          Text('Marcar como No disponible'),
-                        ],
+                      const PopupMenuItem(
+                        value: 'no disponible',
+                        child: Row(
+                          children: [
+                            Icon(Icons.block_outlined, size: 18, color: Colors.red),
+                            SizedBox(width: 8),
+                            Text('Marcar como No disponible'),
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-                // Acción destructiva separada de las demás, con área táctil estándar (Ley de Fitts)
-                const SizedBox(width: 8),
-                IconButton(
-                  icon: const Icon(Icons.delete_outline, size: 20),
-                  color: colores.error,
-                  tooltip: 'Eliminar definitivamente',
-                  onPressed: enProgreso ? null : alEliminar,
-                ),
+                    ],
+                  ),
+                  // Acción destructiva separada de las demás, con área táctil estándar (Ley de Fitts)
+                  const SizedBox(width: 8),
+                  IconButton(
+                    icon: const Icon(Icons.delete_outline, size: 20),
+                    color: colores.error,
+                    tooltip: 'Eliminar definitivamente',
+                    onPressed: enProgreso ? null : alEliminar,
+                  ),
+                ],
               ],
             ),
             if (descripcion != null && descripcion!.trim().isNotEmpty) ...[
@@ -223,6 +226,16 @@ class TarjetaMiPublicacion extends StatelessWidget {
                   ),
               ],
             ),
+
+            // Como ya no se ven editar ni eliminar, se explica el porqué
+            if (estaReservada) ...[
+              const SizedBox(height: 8),
+              Text(
+                'Está reservada: solo puedes completar el intercambio '
+                'o escribir a quien la reservó.',
+                style: TextStyle(fontSize: 12, color: colores.onSurfaceVariant),
+              ),
+            ],
 
             const SizedBox(height: 12),
             Wrap(
