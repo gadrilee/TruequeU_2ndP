@@ -205,6 +205,21 @@ class ControladorAutenticacion extends ChangeNotifier {
     return [];
   }
 
+  /// Historial de la persona con sesión: qué ocurrió con sus intercambios.
+  /// [tipo] es opcional: 'reservas' o 'completados' (sin tipo trae todo).
+  /// Llama a GET /api/historial
+  Future<List<Map<String, dynamic>>> obtenerHistorial({String? tipo}) async {
+    debugPrint('[historial] Pidiendo mi historial (${tipo ?? 'todo'})');
+    final respuesta = await _api.get(
+      tipo == null ? '/historial' : '/historial?tipo=$tipo',
+    );
+    if (respuesta is List) {
+      debugPrint('[historial] Llegaron ${respuesta.length} movimientos');
+      return respuesta.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+    }
+    return [];
+  }
+
   /// Descarta o cancela una reserva activa, regresando el objeto a 'disponible'.
   /// Llama a PUT /api/publicaciones/:id/disponible
   Future<void> descartarReservaPublicacion(int id) async {

@@ -79,8 +79,8 @@ class PantallaPerfil extends StatelessWidget {
         const SizedBox(height: 12),
         OutlinedButton(
           style: estiloContorno,
-          onPressed: () => context.go('/intercambios'),
-          child: const Text('Intercambios completados'),
+          onPressed: () => context.go('/historial'),
+          child: const Text('Historial'),
         ),
         const SizedBox(height: 24),
 
