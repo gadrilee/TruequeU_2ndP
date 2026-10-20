@@ -1,6 +1,7 @@
 var DataTypes = require("sequelize").DataTypes;
 var _account = require("./account");
 var _invitation = require("./invitation");
+var _historial = require("./historial");
 var _jwks = require("./jwks");
 var _member = require("./member");
 var _organization = require("./organization");
@@ -15,6 +16,7 @@ var _verification = require("./verification");
 function initModels(sequelize) {
   var account = _account(sequelize, DataTypes);
   var invitation = _invitation(sequelize, DataTypes);
+  var historial = _historial(sequelize, DataTypes);
   var jwks = _jwks(sequelize, DataTypes);
   var member = _member(sequelize, DataTypes);
   var organization = _organization(sequelize, DataTypes);
@@ -42,11 +44,18 @@ function initModels(sequelize) {
   usuarios.hasMany(publicaciones, { as: "publicaciones", foreignKey: "id_usuario"});
   publicaciones.belongsTo(usuarios, { as: "id_usuario_reserva_usuario", foreignKey: "id_usuario_reserva"});
   usuarios.hasMany(publicaciones, { as: "id_usuario_reserva_publicaciones", foreignKey: "id_usuario_reserva"});
+  historial.belongsTo(publicaciones, { as: "id_publicacion_publicacione", foreignKey: "id_publicacion"});
+  publicaciones.hasMany(historial, { as: "historials", foreignKey: "id_publicacion"});
+  historial.belongsTo(usuarios, { as: "id_usuario_usuario", foreignKey: "id_usuario"});
+  usuarios.hasMany(historial, { as: "historials", foreignKey: "id_usuario"});
+  historial.belongsTo(usuarios, { as: "id_otro_usuario_usuario", foreignKey: "id_otro_usuario"});
+  usuarios.hasMany(historial, { as: "id_otro_usuario_historials", foreignKey: "id_otro_usuario"});
   sesiones.belongsTo(usuarios, { as: "usuario", foreignKey: "usuario_id"});
   usuarios.hasMany(sesiones, { as: "sesiones", foreignKey: "usuario_id"});
 
   return {
     account,
+    historial,
     invitation,
     jwks,
     member,

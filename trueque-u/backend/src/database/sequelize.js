@@ -42,6 +42,16 @@ models.publicaciones.belongsTo(models.usuarios, {
   foreignKey: "id_usuario_reserva",
 });
 
+// Historial: quién hizo la acción y quién es la otra parte del intercambio
+models.historial.belongsTo(models.usuarios, {
+  as: "quien_hizo",
+  foreignKey: "id_usuario",
+});
+models.historial.belongsTo(models.usuarios, {
+  as: "la_otra_parte",
+  foreignKey: "id_otro_usuario",
+});
+
 // Se usa así: const { models } = require("../database/sequelize");
 //             models.publicaciones.findAll(), models.usuarios.findByPk(1), etc.
 module.exports = { sequelize, models };

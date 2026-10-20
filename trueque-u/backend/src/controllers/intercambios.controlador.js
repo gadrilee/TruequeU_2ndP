@@ -1,5 +1,5 @@
 const { Op } = require("sequelize");
-const { models } = require("../database/sequelize");
+const { sequelize, models } = require("../database/sequelize");
 const { puedeCompletarIntercambio } = require("../utils/reglasObjeto");
 
 // Datos que se agregan a cada publicación: quién la creó y quién la reservó
@@ -40,8 +40,35 @@ const putIntercambio = async (req, res) => {
       return res.status(regla.codigo).json({ error: regla.motivo });
     }
 
-    // Se guarda "intercambiado" y se mantiene quién reservó
-    await publicacion.update({ estado_publicacion: "intercambiado" });
+    // La otra persona del intercambio: si completa el dueño, es quien reservó;
+    // si completa quien reservó, es el dueño
+    const idOtraPersona =
+      idUsuario === publicacion.id_usuario
+        ? publicacion.id_usuario_reserva
+        : publicacion.id_usuario;
+
+    // Se guarda "intercambiado" (se mantiene quién reservó) y el evento juntos:
+    // si algo falla, no se guarda nada
+    await sequelize.transaction(async (t) => {
+      await publicacion.update(
+        { estado_publicacion: "intercambiado" },
+        { transaction: t },
+      );
+      await models.historial.create(
+        {
+          tipo: "completo",
+          id_publicacion: publicacion.id,
+          titulo: publicacion.titulo,
+          categoria: publicacion.categoria,
+          id_usuario: idUsuario, // quien completó
+          id_otro_usuario: idOtraPersona,
+        },
+        { transaction: t },
+      );
+    });
+    console.log(
+      `[historial] Evento guardado: completo (publicación ${publicacion.id}, usuario ${idUsuario})`,
+    );
     await publicacion.reload({ include: INCLUIR_USUARIOS });
 
     console.log(

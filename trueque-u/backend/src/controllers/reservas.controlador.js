@@ -1,4 +1,4 @@
-const { models } = require("../database/sequelize");
+const { sequelize, models } = require("../database/sequelize");
 const { estaIntercambiado } = require("../utils/reglasObjeto");
 
 // Datos que se agregan a cada publicación: quién la creó y quién la reservó
@@ -58,10 +58,27 @@ const putReserva = async (req, res) => {
         .json({ error: "Solo se puede reservar una publicación disponible" });
     }
 
-    await publicacion.update({
-      estado_publicacion: "reservado",
-      id_usuario_reserva: idUsuario,
+    // Se reserva y se guarda el evento juntos: si algo falla, no se guarda nada
+    await sequelize.transaction(async (t) => {
+      await publicacion.update(
+        { estado_publicacion: "reservado", id_usuario_reserva: idUsuario },
+        { transaction: t },
+      );
+      await models.historial.create(
+        {
+          tipo: "reservo",
+          id_publicacion: publicacion.id,
+          titulo: publicacion.titulo,
+          categoria: publicacion.categoria,
+          id_usuario: idUsuario, // quien reservó
+          id_otro_usuario: publicacion.id_usuario, // el dueño
+        },
+        { transaction: t },
+      );
     });
+    console.log(
+      `[historial] Evento guardado: reservo (publicación ${publicacion.id}, usuario ${idUsuario})`,
+    );
     await publicacion.reload({ include: INCLUIR_USUARIOS });
 
     console.log(
@@ -123,10 +140,38 @@ const putReservaDescartada = async (req, res) => {
       });
     }
 
-    await publicacion.update({
-      estado_publicacion: "disponible",
-      id_usuario_reserva: null, // ya no hay nadie con reserva
+    // Solo es una cancelación si había una reserva (si estaba oculta o no
+    // disponible y el dueño la reactiva, no se guarda nada en el historial)
+    const habiaReserva = publicacion.estado_publicacion === "reservado";
+
+    // Se actualiza y se guarda el evento juntos: si algo falla, no se guarda nada
+    await sequelize.transaction(async (t) => {
+      await publicacion.update(
+        {
+          estado_publicacion: "disponible",
+          id_usuario_reserva: null, // ya no hay nadie con reserva
+        },
+        { transaction: t },
+      );
+      if (habiaReserva) {
+        await models.historial.create(
+          {
+            tipo: "cancelo_reserva",
+            id_publicacion: publicacion.id,
+            titulo: publicacion.titulo,
+            categoria: publicacion.categoria,
+            id_usuario: idUsuario, // quien canceló (el que había reservado)
+            id_otro_usuario: publicacion.id_usuario, // el dueño
+          },
+          { transaction: t },
+        );
+      }
     });
+    if (habiaReserva) {
+      console.log(
+        `[historial] Evento guardado: cancelo_reserva (publicación ${publicacion.id}, usuario ${idUsuario})`,
+      );
+    }
     await publicacion.reload({ include: INCLUIR_USUARIOS });
 
     console.log(
