@@ -1,0 +1,25 @@
+services:
+  base_de_datos:
+    image: postgres:16-alpine
+    container_name: trueque_u_bd
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: trueque_u
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      # Host port 5433 avoids clashing with another local PostgreSQL on 5432.
+      - "5433:5432"
+    volumes:
+      - datos_postgres:/var/lib/postgresql/data
+      # Scripts run once, in alphabetical order, only when the volume is empty.
+      - ./base_de_datos/estructura.sql:/docker-entrypoint-initdb.d/01-estructura.sql:ro
+      - ./base_de_datos/datos.sql:/docker-entrypoint-initdb.d/02-datos.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d trueque_u"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  datos_postgres:
