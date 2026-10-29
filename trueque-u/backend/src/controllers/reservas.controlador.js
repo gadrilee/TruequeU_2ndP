@@ -1,5 +1,6 @@
 const { sequelize, models } = require("../database/sequelize");
 const { estaIntercambiado } = require("../utils/reglasObjeto");
+const { estaEnOfertaPendiente } = require("../utils/ofertasPendientes");
 
 // Datos que se agregan a cada publicación: quién la creó y quién la reservó
 const INCLUIR_USUARIOS = [
@@ -56,6 +57,13 @@ const putReserva = async (req, res) => {
       return res
         .status(409)
         .json({ error: "Solo se puede reservar una publicación disponible" });
+    }
+
+    if (await estaEnOfertaPendiente(publicacion.id)) {
+      return res.status(409).json({
+        error:
+          "Esta publicación tiene una oferta de trueque pendiente. El dueño debe aceptarla o rechazarla antes de reservarla",
+      });
     }
 
     // Se reserva y se guarda el evento juntos: si algo falla, no se guarda nada

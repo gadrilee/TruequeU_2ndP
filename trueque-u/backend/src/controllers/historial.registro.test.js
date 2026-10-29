@@ -10,6 +10,7 @@ jest.mock("../database/sequelize", () => ({
   models: {
     publicaciones: { findByPk: jest.fn() },
     historial: { create: jest.fn() },
+    ofertas: { count: jest.fn() },
     usuarios: {},
   },
 }));
@@ -52,6 +53,8 @@ async function pedir(controlador, idUsuario, publicacion) {
 beforeEach(() => {
   models.publicaciones.findByPk.mockReset();
   models.historial.create.mockReset();
+  models.ofertas.count.mockReset();
+  models.ofertas.count.mockResolvedValue(0);
 });
 
 describe("Reservar guarda el evento", () => {
