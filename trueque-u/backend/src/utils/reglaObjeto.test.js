@@ -1,6 +1,7 @@
 const {
   estaReservado,
   puedeCompletarIntercambio,
+  puedeCrearOferta,
 } = require("./reglasObjeto");
 
 describe("Restricción: publicación reservada", () => {
@@ -58,5 +59,53 @@ describe("Regla: completar un intercambio", () => {
     const resultado = puedeCompletarIntercambio(reservada, 3);
     expect(resultado.permitido).toBe(false);
     expect(resultado.codigo).toBe(403);
+  });
+});
+
+describe("Regla: crear una oferta de trueque", () => {
+  const pedida = { id: 1, id_usuario: 1, estado_publicacion: "disponible" };
+  const ofrecida = { id: 8, id_usuario: 3, estado_publicacion: "disponible" };
+
+  test("puedo ofrecer un objeto mío por uno ajeno disponible", () => {
+    const resultado = puedeCrearOferta({
+      pedida,
+      ofrecida,
+      idUsuario: 3,
+      ofrecidaYaPrometida: false,
+    });
+    expect(resultado.permitido).toBe(true);
+  });
+
+  test("no puedo ofertar por mi propia publicación", () => {
+    const resultado = puedeCrearOferta({
+      pedida,
+      ofrecida: { id: 3, id_usuario: 1, estado_publicacion: "disponible" },
+      idUsuario: 1,
+      ofrecidaYaPrometida: false,
+    });
+    expect(resultado.permitido).toBe(false);
+    expect(resultado.codigo).toBe(403);
+  });
+
+  test("no puedo ofrecer un objeto que no es mío", () => {
+    const resultado = puedeCrearOferta({
+      pedida,
+      ofrecida,
+      idUsuario: 2,
+      ofrecidaYaPrometida: false,
+    });
+    expect(resultado.permitido).toBe(false);
+    expect(resultado.codigo).toBe(403);
+  });
+
+  test("no puedo ofrecer un objeto que ya está en otra oferta pendiente", () => {
+    const resultado = puedeCrearOferta({
+      pedida,
+      ofrecida,
+      idUsuario: 3,
+      ofrecidaYaPrometida: true,
+    });
+    expect(resultado.permitido).toBe(false);
+    expect(resultado.codigo).toBe(409);
   });
 });
