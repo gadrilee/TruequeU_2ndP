@@ -79,6 +79,12 @@ class PantallaPerfil extends StatelessWidget {
         const SizedBox(height: 12),
         OutlinedButton(
           style: estiloContorno,
+          onPressed: () => context.go('/ofertas'),
+          child: const Text('Ofertas de trueque'),
+        ),
+        const SizedBox(height: 12),
+        OutlinedButton(
+          style: estiloContorno,
           onPressed: () => context.go('/historial'),
           child: const Text('Historial'),
         ),
