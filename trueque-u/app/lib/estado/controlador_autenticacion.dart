@@ -205,6 +205,51 @@ class ControladorAutenticacion extends ChangeNotifier {
     return [];
   }
 
+  Future<String> crearOferta({
+    required int idPublicacionPedida,
+    required int idPublicacionOfrecida,
+  }) async {
+    debugPrint(
+      '[ofertas] Ofrezco $idPublicacionOfrecida por $idPublicacionPedida',
+    );
+    final datos = await _api.post('/ofertas', {
+      'id_publicacion_pedida': idPublicacionPedida,
+      'id_publicacion_ofrecida': idPublicacionOfrecida,
+    });
+    return (datos is Map ? datos['mensaje'] as String? : null) ?? 'Oferta enviada';
+  }
+
+  Future<List<Map<String, dynamic>>> obtenerOfertasRecibidas() async {
+    return _listaOfertas('/ofertas/recibidas');
+  }
+
+  Future<List<Map<String, dynamic>>> obtenerOfertasEnviadas() async {
+    return _listaOfertas('/ofertas/enviadas');
+  }
+
+  Future<String> aceptarOferta(int id) async {
+    final datos = await _api.put('/ofertas/$id/aceptada', {});
+    return (datos is Map ? datos['mensaje'] as String? : null) ?? 'Oferta aceptada';
+  }
+
+  Future<String> rechazarOferta(int id) async {
+    final datos = await _api.put('/ofertas/$id/rechazada', {});
+    return (datos is Map ? datos['mensaje'] as String? : null) ?? 'Oferta rechazada';
+  }
+
+  Future<String> cancelarOferta(int id) async {
+    final datos = await _api.put('/ofertas/$id/cancelada', {});
+    return (datos is Map ? datos['mensaje'] as String? : null) ?? 'Oferta cancelada';
+  }
+
+  Future<List<Map<String, dynamic>>> _listaOfertas(String ruta) async {
+    final respuesta = await _api.get(ruta);
+    if (respuesta is List) {
+      return respuesta.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+    }
+    return [];
+  }
+
   /// Historial de la persona con sesión: qué ocurrió con sus intercambios.
   /// [tipo] es opcional: 'reservas' o 'completados' (sin tipo trae todo).
   /// Llama a GET /api/historial
