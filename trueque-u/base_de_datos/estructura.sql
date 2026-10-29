@@ -69,3 +69,22 @@ CREATE TABLE historial (
 CREATE INDEX historial_usuario_idx ON historial (id_usuario, creado_en DESC);
 CREATE INDEX historial_otro_idx    ON historial (id_otro_usuario, creado_en DESC);
 
+CREATE TABLE ofertas (
+    id                      INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id_publicacion_pedida   INTEGER     NOT NULL REFERENCES publicaciones (id) ON DELETE CASCADE,
+    id_publicacion_ofrecida INTEGER     NOT NULL REFERENCES publicaciones (id) ON DELETE CASCADE,
+    id_usuario              INTEGER     NOT NULL REFERENCES usuarios (id) ON DELETE CASCADE,
+    estado                  VARCHAR(15) NOT NULL DEFAULT 'pendiente'
+                            CHECK (estado IN ('pendiente', 'aceptada', 'rechazada', 'cancelada')),
+    creado_en               TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    CONSTRAINT ofertas_publicaciones_distintas
+        CHECK (id_publicacion_pedida <> id_publicacion_ofrecida)
+);
+
+CREATE INDEX ofertas_pedida_idx    ON ofertas (id_publicacion_pedida);
+CREATE INDEX ofertas_ofrecida_idx  ON ofertas (id_publicacion_ofrecida);
+CREATE INDEX ofertas_usuario_idx   ON ofertas (id_usuario);
+CREATE UNIQUE INDEX ofertas_pendiente_ofrecida_idx
+    ON ofertas (id_publicacion_ofrecida)
+    WHERE estado = 'pendiente';
+
