@@ -1,6 +1,7 @@
 const { Op } = require("sequelize");
 const { models } = require("../database/sequelize");
 const { estaReservado, estaIntercambiado } = require("../utils/reglasObjeto");
+const { estaEnOfertaPendiente } = require("../utils/ofertasPendientes");
 
 // Condición del objeto: solo puede ser "nuevo" o "usado"
 const ESTADOS = ["nuevo", "usado"];
@@ -373,6 +374,13 @@ const deletePublicacion = async (req, res) => {
       });
     }
 
+    if (await estaEnOfertaPendiente(publicacion.id)) {
+      return res.status(409).json({
+        error:
+          "No puedes eliminar una publicación con una oferta pendiente. Responde o cancela la oferta primero",
+      });
+    }
+
     await publicacion.destroy();
 
     console.log(
@@ -422,6 +430,13 @@ const putPublicacionOculto = async (req, res) => {
     if (estaIntercambiado(publicacion)) {
       return res.status(409).json({
         error: "No puedes ocultar una publicación que ya fue intercambiada",
+      });
+    }
+
+    if (await estaEnOfertaPendiente(publicacion.id)) {
+      return res.status(409).json({
+        error:
+          "No puedes ocultar una publicación con una oferta pendiente. Responde o cancela la oferta primero",
       });
     }
 
@@ -482,6 +497,13 @@ const putPublicacionNoDisponible = async (req, res) => {
     if (estaIntercambiado(publicacion)) {
       return res.status(409).json({
         error: "No puedes marcar como no disponible una publicación que ya fue intercambiada",
+      });
+    }
+
+    if (await estaEnOfertaPendiente(publicacion.id)) {
+      return res.status(409).json({
+        error:
+          "No puedes marcar como no disponible una publicación con una oferta pendiente. Responde o cancela la oferta primero",
       });
     }
 
