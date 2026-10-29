@@ -52,6 +52,19 @@ models.historial.belongsTo(models.usuarios, {
   foreignKey: "id_otro_usuario",
 });
 
+models.ofertas.belongsTo(models.publicaciones, {
+  as: "pedida",
+  foreignKey: "id_publicacion_pedida",
+});
+models.ofertas.belongsTo(models.publicaciones, {
+  as: "ofrecida",
+  foreignKey: "id_publicacion_ofrecida",
+});
+models.ofertas.belongsTo(models.usuarios, {
+  as: "oferente",
+  foreignKey: "id_usuario",
+});
+
 // Se usa así: const { models } = require("../database/sequelize");
 //             models.publicaciones.findAll(), models.usuarios.findByPk(1), etc.
 module.exports = { sequelize, models };

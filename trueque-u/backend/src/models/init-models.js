@@ -4,6 +4,7 @@ var _invitation = require("./invitation");
 var _historial = require("./historial");
 var _jwks = require("./jwks");
 var _member = require("./member");
+var _ofertas = require("./ofertas");
 var _organization = require("./organization");
 var _project_config = require("./project_config");
 var _publicaciones = require("./publicaciones");
@@ -19,6 +20,7 @@ function initModels(sequelize) {
   var historial = _historial(sequelize, DataTypes);
   var jwks = _jwks(sequelize, DataTypes);
   var member = _member(sequelize, DataTypes);
+  var ofertas = _ofertas(sequelize, DataTypes);
   var organization = _organization(sequelize, DataTypes);
   var project_config = _project_config(sequelize, DataTypes);
   var publicaciones = _publicaciones(sequelize, DataTypes);
@@ -59,6 +61,7 @@ function initModels(sequelize) {
     invitation,
     jwks,
     member,
+    ofertas,
     organization,
     project_config,
     publicaciones,
