@@ -7,6 +7,7 @@ import '../servicios/cliente_api.dart';
 import '../utilidades/whatsapp.dart';
 import '../widgets/dialogo_ayuda.dart';
 import '../widgets/dialogo_confirmacion.dart';
+import '../widgets/dialogo_oferta.dart';
 import '../widgets/error_con_reintento.dart';
 import '../widgets/filtros_feed.dart';
 import '../widgets/mensaje_vacio.dart';
@@ -188,6 +189,56 @@ class _PantallaFeedPublicacionesState extends State<PantallaFeedPublicaciones> {
     }
   }
 
+  Future<void> _ofrecer(int idPublicacion, String titulo) async {
+    final auth = context.read<ControladorAutenticacion>();
+    if (auth.usuario == null) return;
+
+    List<Map<String, dynamic>> mias;
+    try {
+      mias = await auth.obtenerMisPublicaciones();
+    } on ExcepcionApi catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.mensaje)));
+      return;
+    }
+    if (!mounted) return;
+
+    final disponibles = mias
+        .where((pub) => pub['estado_publicacion'] == 'disponible')
+        .toList();
+    final idOfrecida = await mostrarDialogoOferta(
+      context,
+      tituloDeseado: titulo,
+      misDisponibles: disponibles,
+    );
+    if (idOfrecida == null || !mounted) return;
+
+    setState(() => _accionesEnProgreso.add(idPublicacion));
+    try {
+      final mensaje = await auth.crearOferta(
+        idPublicacionPedida: idPublicacion,
+        idPublicacionOfrecida: idOfrecida,
+      );
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          duration: const Duration(seconds: 6),
+          content: Text('$mensaje Revísala en Ofertas de trueque.'),
+        ),
+      );
+    } on ExcepcionApi catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.mensaje)));
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error al enviar la oferta')),
+      );
+    } finally {
+      if (mounted) setState(() => _accionesEnProgreso.remove(idPublicacion));
+    }
+  }
+
   /// LÓGICA DE DESCARTAR RESERVA:
   /// Envía la petición PUT /api/publicaciones/:id/disponible para liberar la publicación
   Future<void> _descartarReserva(int idPublicacion, String titulo) async {
@@ -327,7 +378,7 @@ class _PantallaFeedPublicacionesState extends State<PantallaFeedPublicaciones> {
                   crossAxisSpacing: 16,
                   mainAxisSpacing: 16,
                   // Relación de aspecto adaptada para acomodar título, descripción y botones
-                  mainAxisExtent: 360,
+                  mainAxisExtent: 420,
                 ),
                 itemCount: _publicaciones.length,
                 itemBuilder: (context, index) {
@@ -375,6 +426,7 @@ class _PantallaFeedPublicacionesState extends State<PantallaFeedPublicaciones> {
                           'Hola $nombreAutor, reservé "$tituloPub" en Trueque U. ¿Coordinamos la entrega?',
                     ),
                     alReservar: () => _reservar(id, tituloPub),
+                    alOfertar: () => _ofrecer(id, tituloPub),
                     alDescartar: () => _descartarReserva(id, tituloPub),
                     alCompletar: () => _completar(id, tituloPub),
                   );

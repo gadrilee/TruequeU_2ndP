@@ -27,6 +27,7 @@ class TarjetaFeed extends StatelessWidget {
     required this.enProgreso,
     required this.alContactar,
     required this.alReservar,
+    required this.alOfertar,
     required this.alDescartar,
     required this.alCompletar,
   });
@@ -46,6 +47,7 @@ class TarjetaFeed extends StatelessWidget {
   final bool enProgreso;
   final VoidCallback alContactar;
   final VoidCallback alReservar;
+  final VoidCallback alOfertar;
   final VoidCallback alDescartar;
   final VoidCallback alCompletar;
 
@@ -306,10 +308,22 @@ class TarjetaFeed extends StatelessWidget {
     }
 
     // Caso 4: Publicación disponible de otro usuario -> Botón "Reservar"
-    return FilledButton.icon(
-      icon: const Icon(Icons.bookmark_add_outlined, size: 18),
-      label: const Text('Reservar'),
-      onPressed: alReservar,
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        FilledButton.icon(
+          icon: const Icon(Icons.swap_horiz, size: 18),
+          label: const Text('Ofrecer un objeto'),
+          onPressed: alOfertar,
+        ),
+        const SizedBox(height: 6),
+        OutlinedButton.icon(
+          icon: const Icon(Icons.bookmark_add_outlined, size: 18),
+          label: const Text('Reservar'),
+          onPressed: alReservar,
+        ),
+      ],
     );
   }
 }
