@@ -40,4 +40,62 @@ function puedeCompletarIntercambio(publicacion, idUsuario) {
   return { permitido: true };
 }
 
-module.exports = { estaReservado, estaIntercambiado, puedeCompletarIntercambio };
+function puedeCrearOferta({ pedida, ofrecida, idUsuario, ofrecidaYaPrometida }) {
+  if (!pedida) {
+    return { permitido: false, codigo: 404, motivo: "La publicación que quieres no existe" };
+  }
+  if (!ofrecida) {
+    return { permitido: false, codigo: 404, motivo: "El objeto que ofreces no existe" };
+  }
+  if (pedida.id === ofrecida.id) {
+    return {
+      permitido: false,
+      codigo: 400,
+      motivo: "Tienes que ofrecer un objeto distinto del que quieres",
+    };
+  }
+  if (pedida.id_usuario === idUsuario) {
+    return {
+      permitido: false,
+      codigo: 403,
+      motivo: "No puedes hacer una oferta por tu propia publicación",
+    };
+  }
+  if (ofrecida.id_usuario !== idUsuario) {
+    return {
+      permitido: false,
+      codigo: 403,
+      motivo: "Solo puedes ofrecer un objeto de tus publicaciones",
+    };
+  }
+  if (pedida.estado_publicacion !== "disponible") {
+    return {
+      permitido: false,
+      codigo: 409,
+      motivo: "Solo puedes ofertar por una publicación disponible",
+    };
+  }
+  if (ofrecida.estado_publicacion !== "disponible") {
+    return {
+      permitido: false,
+      codigo: 409,
+      motivo: "Solo puedes ofrecer un objeto tuyo que esté disponible",
+    };
+  }
+  if (ofrecidaYaPrometida) {
+    return {
+      permitido: false,
+      codigo: 409,
+      motivo:
+        "Ese objeto ya está en otra oferta pendiente. Cancélala si quieres usarlo en otra",
+    };
+  }
+  return { permitido: true };
+}
+
+module.exports = {
+  estaReservado,
+  estaIntercambiado,
+  puedeCompletarIntercambio,
+  puedeCrearOferta,
+};
