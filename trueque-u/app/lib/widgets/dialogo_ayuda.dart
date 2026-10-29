@@ -30,6 +30,11 @@ Future<void> mostrarAyudaTrueque(BuildContext context) {
             SizedBox(height: 8),
             Text('¿Te equivocaste? Usa "Cancelar reserva" y el objeto vuelve a estar disponible.'),
             SizedBox(height: 12),
+            Text(
+              'También puedes ofrecer uno de tus objetos: en una publicación disponible toca '
+              '"Ofrecer un objeto". El dueño la acepta o la rechaza en Ofertas de trueque.',
+            ),
+            SizedBox(height: 12),
             Text('Estados', style: TextStyle(fontWeight: FontWeight.bold)),
             SizedBox(height: 4),
             Text(
