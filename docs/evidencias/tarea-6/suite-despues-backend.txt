@@ -1,0 +1,10 @@
+
+> trueque-u-backend@1.0.0 test
+> jest
+
+
+Test Suites: 6 passed, 6 total
+Tests:       57 passed, 57 total
+Snapshots:   0 total
+Time:        2.065 s
+Ran all test suites.

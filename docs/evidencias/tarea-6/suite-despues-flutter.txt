@@ -1,0 +1,61 @@
+$ flutter drive por archivo (web-server + Edge headless)
+=== acceso_test.dart
+Launching integration_test/acceso_test.dart on Web Server in debug mode...
+Waiting for connection from debug service on Web Server...         28,5s
+integration_test/acceso_test.dart is being served at http://localhost:59617
+The web-server device requires the Dart Debug Chrome extension for debugging. Consider using the Chrome or Edge devices for an improved development workflow.
+Debug service listening on ws://127.0.0.1:56795/HdEf25SmAm4=/ws
+A Dart VM Service on Web Server is available at: http://127.0.0.1:56795/HdEf25SmAm4=
+The Flutter DevTools debugger and profiler on Web Server is available at: http://127.0.0.1:56795/HdEf25SmAm4=/devtools/?uri=ws://127.0.0.1:56795/HdEf25SmAm4=/ws
+All tests passed.
+Application finished.
+=== publicaciones_test.dart
+Launching integration_test/publicaciones_test.dart on Web Server in debug mode...
+Waiting for connection from debug service on Web Server...         28,4s
+integration_test/publicaciones_test.dart is being served at http://localhost:54856
+The web-server device requires the Dart Debug Chrome extension for debugging. Consider using the Chrome or Edge devices for an improved development workflow.
+Debug service listening on ws://127.0.0.1:59873/8Ao-_XorY5s=/ws
+A Dart VM Service on Web Server is available at: http://127.0.0.1:59873/8Ao-_XorY5s=
+The Flutter DevTools debugger and profiler on Web Server is available at: http://127.0.0.1:59873/8Ao-_XorY5s=/devtools/?uri=ws://127.0.0.1:59873/8Ao-_XorY5s=/ws
+All tests passed.
+Application finished.
+=== feed_test.dart
+Launching integration_test/feed_test.dart on Web Server in debug mode...
+Waiting for connection from debug service on Web Server...         29,0s
+integration_test/feed_test.dart is being served at http://localhost:50891
+The web-server device requires the Dart Debug Chrome extension for debugging. Consider using the Chrome or Edge devices for an improved development workflow.
+Debug service listening on ws://127.0.0.1:55102/sXkoroTolvk=/ws
+A Dart VM Service on Web Server is available at: http://127.0.0.1:55102/sXkoroTolvk=
+The Flutter DevTools debugger and profiler on Web Server is available at: http://127.0.0.1:55102/sXkoroTolvk=/devtools/?uri=ws://127.0.0.1:55102/sXkoroTolvk=/ws
+All tests passed.
+Application finished.
+=== ofertas_test.dart
+Launching integration_test/ofertas_test.dart on Web Server in debug mode...
+Waiting for connection from debug service on Web Server...         28,5s
+integration_test/ofertas_test.dart is being served at http://localhost:58903
+The web-server device requires the Dart Debug Chrome extension for debugging. Consider using the Chrome or Edge devices for an improved development workflow.
+Debug service listening on ws://127.0.0.1:52231/6LZoYkMKdGI=/ws
+A Dart VM Service on Web Server is available at: http://127.0.0.1:52231/6LZoYkMKdGI=
+The Flutter DevTools debugger and profiler on Web Server is available at: http://127.0.0.1:52231/6LZoYkMKdGI=/devtools/?uri=ws://127.0.0.1:52231/6LZoYkMKdGI=/ws
+All tests passed.
+Application finished.
+=== intercambios_historial_test.dart
+Launching integration_test/intercambios_historial_test.dart on Web Server in debug mode...
+Waiting for connection from debug service on Web Server...         29,0s
+integration_test/intercambios_historial_test.dart is being served at http://localhost:61720
+The web-server device requires the Dart Debug Chrome extension for debugging. Consider using the Chrome or Edge devices for an improved development workflow.
+Debug service listening on ws://127.0.0.1:51338/NgaE1GI2lzQ=/ws
+A Dart VM Service on Web Server is available at: http://127.0.0.1:51338/NgaE1GI2lzQ=
+The Flutter DevTools debugger and profiler on Web Server is available at: http://127.0.0.1:51338/NgaE1GI2lzQ=/devtools/?uri=ws://127.0.0.1:51338/NgaE1GI2lzQ=/ws
+All tests passed.
+Application finished.
+=== contraofertas_test.dart
+Launching integration_test/contraofertas_test.dart on Web Server in debug mode...
+Waiting for connection from debug service on Web Server...         28,2s
+integration_test/contraofertas_test.dart is being served at http://localhost:50862
+The web-server device requires the Dart Debug Chrome extension for debugging. Consider using the Chrome or Edge devices for an improved development workflow.
+Debug service listening on ws://127.0.0.1:55570/4VtFczgMIIE=/ws
+A Dart VM Service on Web Server is available at: http://127.0.0.1:55570/4VtFczgMIIE=
+The Flutter DevTools debugger and profiler on Web Server is available at: http://127.0.0.1:55570/4VtFczgMIIE=/devtools/?uri=ws://127.0.0.1:55570/4VtFczgMIIE=/ws
+All tests passed.
+Application finished.
