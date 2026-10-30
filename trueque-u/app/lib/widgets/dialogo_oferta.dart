@@ -11,8 +11,13 @@ Future<int?> mostrarDialogoOferta(
   return showDialog<int>(
     context: context,
     builder: (ctx) => _DialogoOferta(
-      tituloDeseado: tituloDeseado,
-      misDisponibles: misDisponibles,
+      titulo: 'Ofrecer un objeto',
+      pregunta: '¿Qué objeto tuyo ofreces por «$tituloDeseado»?',
+      textoEnviar: 'Enviar oferta',
+      mensajeVacio: 'No tienes publicaciones disponibles para ofrecer. '
+          'Crea una y déjala en estado disponible.',
+      conBotonCrear: true,
+      opciones: misDisponibles,
       alCrear: () {
         Navigator.of(ctx).pop();
         context.go('/publicacion');
@@ -21,15 +26,42 @@ Future<int?> mostrarDialogoOferta(
   );
 }
 
+Future<int?> mostrarDialogoContraoferta(
+  BuildContext context, {
+  required String tituloPedido,
+  required List<Map<String, dynamic>> opciones,
+}) {
+  return showDialog<int>(
+    context: context,
+    builder: (ctx) => _DialogoOferta(
+      titulo: 'Contraofertar',
+      pregunta: '¿Qué otro objeto propones por «$tituloPedido»?',
+      textoEnviar: 'Enviar contraoferta',
+      mensajeVacio: 'No hay otro objeto disponible para proponer en esta negociación.',
+      conBotonCrear: false,
+      opciones: opciones,
+      alCrear: () {},
+    ),
+  );
+}
+
 class _DialogoOferta extends StatefulWidget {
   const _DialogoOferta({
-    required this.tituloDeseado,
-    required this.misDisponibles,
+    required this.titulo,
+    required this.pregunta,
+    required this.textoEnviar,
+    required this.mensajeVacio,
+    required this.conBotonCrear,
+    required this.opciones,
     required this.alCrear,
   });
 
-  final String tituloDeseado;
-  final List<Map<String, dynamic>> misDisponibles;
+  final String titulo;
+  final String pregunta;
+  final String textoEnviar;
+  final String mensajeVacio;
+  final bool conBotonCrear;
+  final List<Map<String, dynamic>> opciones;
   final VoidCallback alCrear;
 
   @override
@@ -41,22 +73,19 @@ class _DialogoOfertaState extends State<_DialogoOferta> {
 
   @override
   Widget build(BuildContext context) {
-    final vacio = widget.misDisponibles.isEmpty;
+    final vacio = widget.opciones.isEmpty;
 
     return AlertDialog(
-      title: const Text('Ofrecer un objeto'),
+      title: Text(widget.titulo),
       content: SizedBox(
         width: 420,
         child: vacio
-            ? const Text(
-                'No tienes publicaciones disponibles para ofrecer. '
-                'Crea una y déjala en estado disponible.',
-              )
+            ? Text(widget.mensajeVacio)
             : Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('¿Qué objeto tuyo ofreces por «${widget.tituloDeseado}»?'),
+                  Text(widget.pregunta),
                   const SizedBox(height: 8),
                   ConstrainedBox(
                     constraints: const BoxConstraints(maxHeight: 280),
@@ -66,7 +95,7 @@ class _DialogoOfertaState extends State<_DialogoOferta> {
                         onChanged: (valor) => setState(() => _elegida = valor),
                         child: Column(
                           children: [
-                            for (final pub in widget.misDisponibles)
+                            for (final pub in widget.opciones)
                               RadioListTile<int>(
                                 value: (pub['id'] as num).toInt(),
                                 contentPadding: EdgeInsets.zero,
@@ -88,17 +117,17 @@ class _DialogoOfertaState extends State<_DialogoOferta> {
           onPressed: () => Navigator.of(context).pop(),
           child: const Text('Cancelar'),
         ),
-        if (vacio)
+        if (vacio && widget.conBotonCrear)
           FilledButton(
             onPressed: widget.alCrear,
             child: const Text('Crear publicación'),
           )
-        else
+        else if (!vacio)
           FilledButton(
             onPressed: _elegida == null
                 ? null
                 : () => Navigator.of(context).pop(_elegida),
-            child: const Text('Enviar oferta'),
+            child: Text(widget.textoEnviar),
           ),
       ],
     );
