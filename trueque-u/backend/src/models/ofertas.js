@@ -30,6 +30,15 @@ module.exports = function (sequelize, DataTypes) {
         allowNull: false,
         defaultValue: "pendiente",
       },
+      id_negociacion: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+      },
+      id_oferta_anterior: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        references: { model: "ofertas", key: "id" },
+      },
       creado_en: {
         type: DataTypes.DATE,
         allowNull: false,

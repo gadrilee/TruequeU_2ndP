@@ -75,8 +75,10 @@ CREATE TABLE ofertas (
     id_publicacion_ofrecida INTEGER     NOT NULL REFERENCES publicaciones (id) ON DELETE CASCADE,
     id_usuario              INTEGER     NOT NULL REFERENCES usuarios (id) ON DELETE CASCADE,
     estado                  VARCHAR(15) NOT NULL DEFAULT 'pendiente'
-                            CHECK (estado IN ('pendiente', 'aceptada', 'rechazada', 'cancelada')),
+                            CHECK (estado IN ('pendiente', 'aceptada', 'rechazada', 'cancelada', 'contraofertada')),
     creado_en               TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    id_negociacion          INTEGER,
+    id_oferta_anterior      INTEGER     REFERENCES ofertas (id) ON DELETE SET NULL,
     CONSTRAINT ofertas_publicaciones_distintas
         CHECK (id_publicacion_pedida <> id_publicacion_ofrecida)
 );
@@ -84,6 +86,7 @@ CREATE TABLE ofertas (
 CREATE INDEX ofertas_pedida_idx    ON ofertas (id_publicacion_pedida);
 CREATE INDEX ofertas_ofrecida_idx  ON ofertas (id_publicacion_ofrecida);
 CREATE INDEX ofertas_usuario_idx   ON ofertas (id_usuario);
+CREATE INDEX ofertas_negociacion_idx ON ofertas (id_negociacion);
 CREATE UNIQUE INDEX ofertas_pendiente_ofrecida_idx
     ON ofertas (id_publicacion_ofrecida)
     WHERE estado = 'pendiente';

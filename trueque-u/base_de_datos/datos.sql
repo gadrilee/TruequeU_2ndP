@@ -36,5 +36,5 @@ INSERT INTO historial (tipo, id_publicacion, titulo, categoria, id_usuario, id_o
     ('reservo',  5, 'Audifonos con cable',      'electronica', 3, 2, NOW() - INTERVAL '5 days'),
     ('completo', 5, 'Audifonos con cable',      'electronica', 2, 3, NOW() - INTERVAL '3 days');
 
-INSERT INTO ofertas (id_publicacion_pedida, id_publicacion_ofrecida, id_usuario, estado) VALUES
-    (1, 8, 3, 'pendiente');
+INSERT INTO ofertas (id_publicacion_pedida, id_publicacion_ofrecida, id_usuario, estado, id_negociacion) VALUES
+    (1, 8, 3, 'pendiente', 1);
