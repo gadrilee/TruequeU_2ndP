@@ -3,7 +3,7 @@ const { models } = require("../database/sequelize");
 const { verificarToken } = require("../services/token.servicio");
 
 // Deja pasar solo a quien tiene una sesión válida:
-// token correcto, sesión abierta y sin vencer.
+// token correcto, sesión abierta y sin venycer.
 const exigirSesion = async (req, res, next) => {
   try {
     // 1. Se lee el token de la cabecera "Authorization: Bearer <token>"
