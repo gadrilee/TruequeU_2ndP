@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../estado/controlador_autenticacion.dart';
 import '../servicios/cliente_api.dart';
 import '../widgets/dialogo_confirmacion.dart';
+import '../widgets/dialogo_oferta.dart';
 import '../widgets/error_con_reintento.dart';
 import '../widgets/mensaje_vacio.dart';
 import '../widgets/pagina_acceso.dart';
@@ -104,6 +105,110 @@ class _PantallaOfertasState extends State<PantallaOfertas> {
     }
   }
 
+  Future<void> _contraofertar(Map<String, dynamic> oferta) async {
+    final auth = context.read<ControladorAutenticacion>();
+    final pedida = oferta['pedida'] as Map<String, dynamic>;
+    final ofrecida = oferta['ofrecida'] as Map<String, dynamic>;
+    final idOferente = (ofrecida['id_usuario'] as num).toInt();
+    final idActual = (ofrecida['id'] as num).toInt();
+
+    List<Map<String, dynamic>> disponibles;
+    try {
+      disponibles = await auth.obtenerPublicacionesFeed(disponibilidad: 'disponible');
+    } on ExcepcionApi catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.mensaje)));
+      return;
+    }
+    if (!mounted) return;
+
+    final opciones = disponibles
+        .where((pub) =>
+            (pub['id_usuario'] as num).toInt() == idOferente &&
+            (pub['id'] as num).toInt() != idActual)
+        .toList();
+    final idNueva = await mostrarDialogoContraoferta(
+      context,
+      tituloPedido: pedida['titulo'] as String? ?? 'un objeto',
+      opciones: opciones,
+    );
+    if (idNueva == null || !mounted) return;
+
+    final id = (oferta['id'] as num).toInt();
+    setState(() => _enProgreso.add(id));
+    try {
+      final texto = await auth.contraofertar(id, idNueva);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(texto)));
+      await _cargar();
+    } on ExcepcionApi catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.mensaje)));
+    } finally {
+      if (mounted) setState(() => _enProgreso.remove(id));
+    }
+  }
+
+  String _fecha(String? texto) {
+    if (texto == null) return '';
+    final fecha = DateTime.parse(texto).toLocal();
+    final dia = fecha.day.toString().padLeft(2, '0');
+    final mes = fecha.month.toString().padLeft(2, '0');
+    final hora = fecha.hour.toString().padLeft(2, '0');
+    final minuto = fecha.minute.toString().padLeft(2, '0');
+    return '$dia/$mes $hora:$minuto';
+  }
+
+  Future<void> _verHistorial(Map<String, dynamic> oferta) async {
+    final auth = context.read<ControladorAutenticacion>();
+    List<Map<String, dynamic>> propuestas;
+    try {
+      propuestas = await auth.obtenerHistorialOferta((oferta['id'] as num).toInt());
+    } on ExcepcionApi catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.mensaje)));
+      return;
+    }
+    if (!mounted) return;
+
+    final pedida = oferta['pedida'] as Map<String, dynamic>;
+    await showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Historial de la negociación'),
+        content: SizedBox(
+          width: 420,
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('Se negocia: ${pedida['titulo']}'),
+                const SizedBox(height: 12),
+                for (final propuesta in propuestas) ...[
+                  Text(
+                    'Ronda ${propuesta['ronda']}: ${propuesta['oferente']['nombre']} propone ${propuesta['ofrecida']['titulo']}',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  Text(
+                    '${_nombreEstado(propuesta['estado'] as String)} · ${_fecha(propuesta['creado_en'] as String?)}',
+                  ),
+                  const SizedBox(height: 10),
+                ],
+              ],
+            ),
+          ),
+        ),
+        actions: [
+          FilledButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Cerrar'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     Widget contenido;
@@ -154,11 +259,13 @@ class _PantallaOfertasState extends State<PantallaOfertas> {
                 '¿Rechazas esta oferta? Quien la envió verá que fue rechazada.',
                 'Rechazar',
               ),
+              alContraofertar: () => _contraofertar(oferta),
+              alVerHistorial: () => _verHistorial(oferta),
               alCancelar: () => _responder(
                 (oferta['id'] as num).toInt(),
                 'cancelar',
                 'Cancelar oferta',
-                '¿Cancelas esta oferta? El dueño ya no podrá aceptarla.',
+                '¿Cancelas esta oferta? La otra persona ya no podrá aceptarla.',
                 'Cancelar oferta',
               ),
             ),
@@ -209,6 +316,8 @@ class _TarjetaOferta extends StatelessWidget {
     required this.alAceptar,
     required this.alRechazar,
     required this.alCancelar,
+    required this.alContraofertar,
+    required this.alVerHistorial,
   });
 
   final Map<String, dynamic> oferta;
@@ -217,6 +326,8 @@ class _TarjetaOferta extends StatelessWidget {
   final VoidCallback alAceptar;
   final VoidCallback alRechazar;
   final VoidCallback alCancelar;
+  final VoidCallback alContraofertar;
+  final VoidCallback alVerHistorial;
 
   @override
   Widget build(BuildContext context) {
@@ -228,9 +339,12 @@ class _TarjetaOferta extends StatelessWidget {
     final estado = (oferta['estado'] as String?) ?? 'pendiente';
     final pendiente = estado == 'pendiente';
 
+    final autorOfrecida = ofrecida['autor'] as Map<String, dynamic>? ?? {};
+    final receptor =
+        oferta['id_usuario'] == pedida['id_usuario'] ? autorOfrecida : autorPedida;
     final quien = recibida
         ? 'De: ${oferente['nombre'] ?? 'Alguien'}'
-        : 'Para: ${autorPedida['nombre'] ?? 'el dueño'}';
+        : 'Para: ${receptor['nombre'] ?? 'la otra persona'}';
 
     return Card(
       child: Padding(
@@ -245,7 +359,9 @@ class _TarjetaOferta extends StatelessWidget {
                 Text(quien, style: TextStyle(color: colores.onSurfaceVariant)),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 4),
+            Text('Ronda ${oferta['ronda'] ?? 1}', style: TextStyle(color: colores.onSurfaceVariant)),
+            const SizedBox(height: 8),
             Text('Quiere: ${pedida['titulo'] ?? 'un objeto'}'),
             const SizedBox(height: 4),
             Text(
@@ -285,7 +401,22 @@ class _TarjetaOferta extends StatelessWidget {
                   onPressed: alCancelar,
                   child: const Text('Cancelar oferta'),
                 ),
+              if (!enProgreso && recibida) ...[
+                const SizedBox(height: 8),
+                OutlinedButton(
+                  onPressed: alContraofertar,
+                  child: const Text('Contraofertar'),
+                ),
+              ],
             ],
+            const SizedBox(height: 4),
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton(
+                onPressed: alVerHistorial,
+                child: const Text('Ver historial'),
+              ),
+            ),
           ],
         ),
       ),
@@ -302,6 +433,7 @@ class _ChipEstado extends StatelessWidget {
   Widget build(BuildContext context) {
     final colores = Theme.of(context).colorScheme;
     final (texto, fondo, tinta) = switch (estado) {
+      'contraofertada' => ('Contraofertada', colores.tertiaryContainer, colores.onTertiaryContainer),
       'aceptada' => ('Aceptada', colores.primaryContainer, colores.onPrimaryContainer),
       'rechazada' => ('Rechazada', colores.errorContainer, colores.onErrorContainer),
       'cancelada' => ('Cancelada', colores.surfaceContainerHighest, colores.onSurfaceVariant),
@@ -316,4 +448,14 @@ class _ChipEstado extends StatelessWidget {
       child: Text(texto, style: TextStyle(color: tinta, fontWeight: FontWeight.w600)),
     );
   }
+}
+
+String _nombreEstado(String estado) {
+  return switch (estado) {
+    'aceptada' => 'Aceptada',
+    'rechazada' => 'Rechazada',
+    'cancelada' => 'Cancelada',
+    'contraofertada' => 'Contraofertada',
+    _ => 'Pendiente',
+  };
 }
