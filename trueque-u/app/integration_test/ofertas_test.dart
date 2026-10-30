@@ -16,11 +16,6 @@ Future<void> ofrecerDesdeElFeed(
   await tocarBoton(tester, 'Enviar oferta');
 }
 
-Future<void> abrirOfertas(WidgetTester tester) async {
-  await tocarBoton(tester, 'Ofertas de trueque');
-  await tester.pumpAndSettle();
-}
-
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 

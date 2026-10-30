@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -130,4 +132,29 @@ Future<void> cambiarDeUsuario(WidgetTester tester, List<String> persona) async {
   await cerrarSesion(tester);
   await irARuta(tester, '/');
   await iniciarSesion(tester, persona);
+}
+
+Future<void> abrirOfertas(WidgetTester tester) async {
+  await tocarBoton(tester, 'Ofertas de trueque');
+  await tester.pumpAndSettle();
+}
+
+Future<http.Response> pedirApi(
+  String metodo,
+  String ruta,
+  List<String> persona, [
+  Map<String, dynamic>? cuerpo,
+]) async {
+  const cabeceras = {'Content-Type': 'application/json'};
+  final sesion = await http.post(
+    Uri.parse('http://localhost:3000/api/sesiones'),
+    headers: cabeceras,
+    body: jsonEncode({'correo': persona[0], 'contrasena': persona[1]}),
+  );
+  final token = jsonDecode(sesion.body)['token'];
+  final conToken = {...cabeceras, 'Authorization': 'Bearer $token'};
+  final direccion = Uri.parse('http://localhost:3000/api$ruta');
+  if (metodo == 'GET') return http.get(direccion, headers: conToken);
+  if (metodo == 'PUT') return http.put(direccion, headers: conToken, body: jsonEncode(cuerpo ?? {}));
+  return http.post(direccion, headers: conToken, body: jsonEncode(cuerpo ?? {}));
 }
