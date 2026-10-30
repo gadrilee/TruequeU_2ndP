@@ -112,6 +112,37 @@ CORREO_CLAVE=contraseña-de-aplicación-de-16-letras
 
 (En Google: Cuenta > Seguridad > Verificación en dos pasos > Contraseñas de aplicaciones.) Si lo dejas vacío, la contraseña nueva aparece en la consola del backend.
 
+## Pruebas
+
+Backend:
+
+```bash
+cd backend
+npm test
+```
+
+E2E (con Docker abierto, cada comando en otra terminal):
+
+```bash
+docker compose up -d
+node app/integration_test/herramientas/entorno_e2e.js
+msedgedriver --port=4445
+node app/integration_test/herramientas/puente_edge.js
+```
+
+Después, desde `app`, corre un archivo de pruebas:
+
+```bash
+flutter drive --driver=test_driver/integration_test.dart --target=integration_test/acceso_test.dart -d web-server --browser-name=chrome --chrome-binary="C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe" --headless
+```
+
+Al terminar, apaga todo (ojo: cierra todos los procesos de Node):
+
+```bash
+taskkill /IM node.exe /F
+taskkill /IM msedgedriver.exe /F
+```
+
 ## Estructura
 
 ```
