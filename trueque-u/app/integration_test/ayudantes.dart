@@ -90,9 +90,12 @@ Future<void> cerrarSesion(WidgetTester tester) async {
 }
 
 Future<void> buscarEnElFeed(WidgetTester tester, String titulo) async {
-  await tester.enterText(find.widgetWithText(TextField, 'Buscar por título'), titulo);
+  final caja = find.widgetWithText(TextField, 'Buscar por título');
+  await tocar(tester, caja);
+  await tester.enterText(caja, titulo);
   await tester.pumpAndSettle();
-  await tocar(tester, find.byTooltip('Buscar'));
+  await tester.testTextInput.receiveAction(TextInputAction.search);
+  await tester.pump();
   await esperarTexto(tester, 'Título: $titulo');
   await tester.pumpAndSettle();
 }
