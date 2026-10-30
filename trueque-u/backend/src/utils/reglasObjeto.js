@@ -93,7 +93,78 @@ function puedeCrearOferta({ pedida, ofrecida, idUsuario, ofrecidaYaPrometida }) 
   return { permitido: true };
 }
 
+function idReceptor(oferta, pedida, ofrecida) {
+  return oferta.id_usuario === pedida.id_usuario
+    ? ofrecida.id_usuario
+    : pedida.id_usuario;
+}
+
+function puedeContraofertar({
+  oferta,
+  pedida,
+  ofrecidaActual,
+  nueva,
+  idUsuario,
+  nuevaYaPrometida,
+}) {
+  if (oferta.estado !== "pendiente") {
+    return {
+      permitido: false,
+      codigo: 409,
+      motivo: "Esta negociación ya está cerrada, no se puede contraofertar",
+    };
+  }
+  if (idReceptor(oferta, pedida, ofrecidaActual) !== idUsuario) {
+    return {
+      permitido: false,
+      codigo: 403,
+      motivo: "Solo quien recibe la oferta puede responder con una contraoferta",
+    };
+  }
+  if (!nueva) {
+    return { permitido: false, codigo: 404, motivo: "El objeto que propones no existe" };
+  }
+  if (nueva.id_usuario !== ofrecidaActual.id_usuario) {
+    return {
+      permitido: false,
+      codigo: 403,
+      motivo: "El objeto debe ser una publicación de quien ofrece en esta negociación",
+    };
+  }
+  if (nueva.id === ofrecidaActual.id) {
+    return {
+      permitido: false,
+      codigo: 400,
+      motivo: "La contraoferta tiene que cambiar el objeto ofrecido",
+    };
+  }
+  if (pedida.estado_publicacion !== "disponible") {
+    return {
+      permitido: false,
+      codigo: 409,
+      motivo: "La publicación que se pidió ya no está disponible",
+    };
+  }
+  if (nueva.estado_publicacion !== "disponible") {
+    return {
+      permitido: false,
+      codigo: 409,
+      motivo: "Solo puedes proponer un objeto que esté disponible",
+    };
+  }
+  if (nuevaYaPrometida) {
+    return {
+      permitido: false,
+      codigo: 409,
+      motivo: "Ese objeto ya está en otra oferta pendiente",
+    };
+  }
+  return { permitido: true };
+}
+
 module.exports = {
+  idReceptor,
+  puedeContraofertar,
   estaReservado,
   estaIntercambiado,
   puedeCompletarIntercambio,
