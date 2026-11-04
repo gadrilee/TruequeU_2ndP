@@ -317,11 +317,16 @@ class TarjetaFeed extends StatelessWidget {
           label: const Text('Ofrecer un objeto'),
           onPressed: alOfertar,
         ),
-        const SizedBox(height: 6),
-        OutlinedButton.icon(
+        const SizedBox(height: 2),
+        TextButton.icon(
           icon: const Icon(Icons.bookmark_add_outlined, size: 18),
           label: const Text('Reservar'),
           onPressed: alReservar,
+        ),
+        Text(
+          'Ofrecer: cambias un objeto tuyo. Reservar: solo lo apartas.',
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.outline),
         ),
       ],
     );

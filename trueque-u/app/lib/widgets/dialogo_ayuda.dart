@@ -32,7 +32,8 @@ Future<void> mostrarAyudaTrueque(BuildContext context) {
             SizedBox(height: 12),
             Text(
               'También puedes ofrecer uno de tus objetos: en una publicación disponible toca '
-              '"Ofrecer un objeto". El dueño la acepta, la rechaza o responde con una contraoferta en Ofertas de trueque.',
+              '"Ofrecer un objeto". El dueño la acepta, la rechaza o responde con una contraoferta en Ofertas de trueque. '
+              'Ofrecer cambia un objeto tuyo por el suyo; Reservar solo lo aparta.',
             ),
             SizedBox(height: 12),
             Text('Estados', style: TextStyle(fontWeight: FontWeight.bold)),
