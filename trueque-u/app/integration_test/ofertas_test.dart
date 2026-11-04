@@ -28,8 +28,10 @@ void main() {
         tester,
         'Oferta enviada. El dueño puede aceptarla o rechazarla Revísala en Ofertas de trueque.',
       );
+      await esperarTexto(tester, 'Oferta enviada');
 
-      expect(find.text('Ofrecer un objeto'), findsOneWidget);
+      expect(find.text('Ver mis ofertas'), findsOneWidget);
+      expect(find.text('Ofrecer un objeto'), findsNothing);
     });
 
     testWidgets('Job ve su oferta en la lista de enviadas', (tester) async {

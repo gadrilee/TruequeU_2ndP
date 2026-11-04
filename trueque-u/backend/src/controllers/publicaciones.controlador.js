@@ -101,10 +101,17 @@ const getPublicaciones = async (req, res) => {
       order: [["id", "DESC"]], // las más nuevas primero
     });
 
+    const misOfertas = await models.ofertas.findAll({
+      where: { id_usuario: idUsuario, estado: "pendiente" },
+      attributes: ["id_publicacion_pedida"],
+    });
+    const idsOfertados = new Set(misOfertas.map((o) => o.id_publicacion_pedida));
+
     // Quién reservó lo ven solo el dueño y quien reservó.
     // Para el resto la publicación solo figura como "reservado"
     const lista = publicaciones.map((publicacion) => {
       const datos = publicacion.toJSON();
+      datos.oferta_enviada = idsOfertados.has(datos.id);
       const esDueno = datos.id_usuario === idUsuario;
       const esQuienReservo = datos.id_usuario_reserva === idUsuario;
       if (!esDueno && !esQuienReservo) {

@@ -226,6 +226,7 @@ class _PantallaFeedPublicacionesState extends State<PantallaFeedPublicaciones> {
           content: Text('$mensaje Revísala en Ofertas de trueque.'),
         ),
       );
+      await _cargarPublicaciones();
     } on ExcepcionApi catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.mensaje)));
@@ -417,6 +418,7 @@ class _PantallaFeedPublicacionesState extends State<PantallaFeedPublicaciones> {
                     estaReservado: estaReservado,
                     loReserveYo: loReserveYo,
                     esMiPublicacion: esMiPublicacion,
+                    ofertaEnviada: pub['oferta_enviada'] == true,
                     enProgreso: enProgreso,
                     telefonoDueno: telefonoAutor,
                     alContactar: () => abrirWhatsapp(

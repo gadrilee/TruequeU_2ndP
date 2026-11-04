@@ -4,6 +4,7 @@ const { Op } = require("sequelize");
 jest.mock("../database/sequelize", () => ({
   models: {
     publicaciones: { findAll: jest.fn() },
+    ofertas: { findAll: jest.fn() },
     usuarios: {},
   },
 }));
@@ -23,6 +24,30 @@ function crearRespuesta() {
   res.json = jest.fn().mockReturnValue(res);
   return res;
 }
+
+beforeEach(() => {
+  models.ofertas.findAll.mockReset();
+  models.ofertas.findAll.mockResolvedValue([]);
+});
+
+describe("Marcar las publicaciones con oferta enviada", () => {
+  test("solo las que tienen una oferta pendiente mía llevan oferta_enviada", async () => {
+    models.publicaciones.findAll.mockResolvedValue([
+      crearFila({ id: 3, id_usuario: 1 }),
+      crearFila({ id: 8, id_usuario: 3 }),
+    ]);
+    models.ofertas.findAll.mockResolvedValue([{ id_publicacion_pedida: 3 }]);
+
+    const res = crearRespuesta();
+    await getPublicaciones({ usuario: { id: 2 }, query: {} }, res);
+
+    const lista = res.json.mock.calls[0][0];
+    expect(lista[0].oferta_enviada).toBe(true);
+    expect(lista[1].oferta_enviada).toBe(false);
+    const consulta = models.ofertas.findAll.mock.calls[0][0];
+    expect(consulta.where).toEqual({ id_usuario: 2, estado: "pendiente" });
+  });
+});
 
 describe("Buscar y filtrar publicaciones", () => {
   beforeEach(() => {

@@ -24,6 +24,7 @@ class TarjetaFeed extends StatelessWidget {
     required this.estaReservado,
     required this.loReserveYo,
     required this.esMiPublicacion,
+    this.ofertaEnviada = false,
     required this.enProgreso,
     required this.alContactar,
     required this.alReservar,
@@ -44,6 +45,7 @@ class TarjetaFeed extends StatelessWidget {
   final bool estaReservado;
   final bool loReserveYo;
   final bool esMiPublicacion;
+  final bool ofertaEnviada;
   final bool enProgreso;
   final VoidCallback alContactar;
   final VoidCallback alReservar;
@@ -304,6 +306,24 @@ class TarjetaFeed extends StatelessWidget {
         icon: const Icon(Icons.edit_outlined, size: 16),
         label: const Text('Ver en mis publicaciones'),
         onPressed: () => context.go('/mis-publicaciones'),
+      );
+    }
+
+    if (ofertaEnviada) {
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const FilledButton.tonal(
+            onPressed: null,
+            child: Text('Oferta enviada'),
+          ),
+          const SizedBox(height: 6),
+          OutlinedButton(
+            onPressed: () => context.go('/ofertas'),
+            child: const Text('Ver mis ofertas'),
+          ),
+        ],
       );
     }
 
