@@ -52,6 +52,7 @@ class TarjetaMiPublicacion extends StatelessWidget {
   Widget build(BuildContext context) {
     final colores = Theme.of(context).colorScheme;
     final estaReservada = estadoPublicacion == 'reservado';
+    final estaAcordada = estadoPublicacion == 'acordado';
 
     return Card(
       elevation: 1,
@@ -88,7 +89,7 @@ class TarjetaMiPublicacion extends StatelessWidget {
                 ),
                 // Con la publicación reservada estos tres controles no se
                 // muestran: el servidor los rechazaría (Ley de Hick).
-                if (!estaReservada) ...[
+                if (!estaReservada && !estaAcordada) ...[
                   // Botón lápiz para editar nombre y descripción
                   IconButton(
                     icon: Icon(
@@ -237,6 +238,14 @@ class TarjetaMiPublicacion extends StatelessWidget {
               ),
             ],
 
+            if (estaAcordada) ...[
+              const SizedBox(height: 8),
+              Text(
+                'Tiene un intercambio acordado: confirma la entrega o cancélalo en Ofertas de trueque.',
+                style: TextStyle(fontSize: 12, color: colores.onSurfaceVariant),
+              ),
+            ],
+
             const SizedBox(height: 12),
             Wrap(
               alignment: WrapAlignment.end,
@@ -285,6 +294,8 @@ class TarjetaMiPublicacion extends StatelessWidget {
         return 'Reservado';
       case 'intercambiado':
         return 'Intercambiado';
+      case 'acordado':
+        return 'Intercambio acordado';
       case 'oculto':
         return 'Oculto';
       case 'no disponible':

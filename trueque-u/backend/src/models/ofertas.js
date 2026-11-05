@@ -44,6 +44,25 @@ module.exports = function (sequelize, DataTypes) {
         allowNull: false,
         defaultValue: Sequelize.NOW,
       },
+      confirma_pedida: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
+      },
+      confirma_ofrecida: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
+      },
+      motivo_cancelacion: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
+      id_usuario_cancela: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        references: { model: "usuarios", key: "id" },
+      },
     },
     {
       sequelize,

@@ -162,11 +162,67 @@ function puedeContraofertar({
   return { permitido: true };
 }
 
+function estaAcordado(publicacion) {
+  return publicacion.estado_publicacion === "acordado";
+}
+
+function parteDelIntercambio(oferta, pedida, ofrecida, idUsuario) {
+  if (pedida.id_usuario === idUsuario) return "pedida";
+  if (ofrecida.id_usuario === idUsuario) return "ofrecida";
+  return null;
+}
+
+function puedeConfirmarEntrega({ oferta, pedida, ofrecida, idUsuario }) {
+  if (oferta.estado !== "aceptada") {
+    return {
+      permitido: false,
+      codigo: 409,
+      motivo: "Este intercambio no está esperando confirmaciones",
+    };
+  }
+  const parte = parteDelIntercambio(oferta, pedida, ofrecida, idUsuario);
+  if (!parte) {
+    return {
+      permitido: false,
+      codigo: 403,
+      motivo: "Solo quienes participan en el intercambio pueden confirmar la entrega",
+    };
+  }
+  if (oferta[`confirma_${parte}`]) {
+    return { permitido: false, codigo: 409, motivo: "Ya confirmaste tu entrega" };
+  }
+  return { permitido: true, parte };
+}
+
+function puedeCancelarIntercambio({ oferta, pedida, ofrecida, idUsuario, motivo }) {
+  if (oferta.estado !== "aceptada") {
+    return {
+      permitido: false,
+      codigo: 409,
+      motivo: "Solo se puede cancelar un intercambio acordado que aún no se completó",
+    };
+  }
+  if (!parteDelIntercambio(oferta, pedida, ofrecida, idUsuario)) {
+    return {
+      permitido: false,
+      codigo: 403,
+      motivo: "Solo quienes participan en el intercambio pueden cancelarlo",
+    };
+  }
+  if (typeof motivo !== "string" || motivo.trim() === "") {
+    return { permitido: false, codigo: 400, motivo: "Escribe el motivo de la cancelación" };
+  }
+  return { permitido: true };
+}
+
 module.exports = {
   idReceptor,
   puedeContraofertar,
   estaReservado,
   estaIntercambiado,
+  estaAcordado,
   puedeCompletarIntercambio,
   puedeCrearOferta,
+  puedeConfirmarEntrega,
+  puedeCancelarIntercambio,
 };

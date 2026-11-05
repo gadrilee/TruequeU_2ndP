@@ -231,6 +231,13 @@ class TarjetaFeed extends StatelessWidget {
       );
     }
 
+    if (estadoPublicacion == 'acordado') {
+      return const FilledButton.tonal(
+        onPressed: null,
+        child: Text('Intercambio acordado'),
+      );
+    }
+
     // Caso 1: Reservada por el usuario actual -> puede completar o cancelar la reserva
     if (estaReservado && loReserveYo) {
       final tieneTelefono = telefonoDueno != null && telefonoDueno!.isNotEmpty;

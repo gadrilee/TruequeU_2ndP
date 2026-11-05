@@ -19,7 +19,7 @@ Future<void> contraofertar(WidgetTester tester, String pedido, String objeto) as
 }
 
 Future<void> volverYCambiarDeUsuario(WidgetTester tester, List<String> persona) async {
-  await tocarBoton(tester, 'Volver al perfil');
+  await irARuta(tester, '/perfil');
   await cambiarDeUsuario(tester, persona);
   await abrirOfertas(tester);
 }
@@ -136,18 +136,23 @@ void main() {
 
       await tocarBoton(tester, 'Aceptar');
       await tocarBoton(tester, 'Aceptar');
-      await esperarTexto(tester, 'Aceptaste el trueque. Las dos publicaciones quedaron intercambiadas');
+      await esperarTexto(tester, 'Aceptaste el trueque. Ahora cada uno confirma la entrega');
 
       expect(find.text('Aceptada'), findsOneWidget);
       expect(find.text('Contraofertar'), findsNothing);
       expect(find.text('Rechazar'), findsNothing);
 
+      await confirmarEntrega(tester, mensajePrimeraConfirmacion);
+      await volverYCambiarDeUsuario(tester, eudenia);
+      await tocar(tester, find.text('Enviadas'));
+      await confirmarEntrega(tester, mensajeCompletado);
+
       await irARuta(tester, '/intercambios');
       await esperarTexto(tester, 'Calculo I - Stewart');
 
-      expect(find.text('Lo recibiste de: Eudenia Flores Veizaga'), findsOneWidget);
+      expect(find.text('Lo entregaste a: Carlos Mamani'), findsOneWidget);
       expect(find.text('Mandil de laboratorio'), findsOneWidget);
-      expect(find.text('Lo entregaste a: Eudenia Flores Veizaga'), findsOneWidget);
+      expect(find.text('Lo recibiste de: Carlos Mamani'), findsOneWidget);
     });
 
     testWidgets('Carlos rechaza la contraoferta de Eudenia', (tester) async {
@@ -200,7 +205,7 @@ void main() {
       await abrirOfertas(tester);
       await tocarBoton(tester, 'Aceptar');
       await tocarBoton(tester, 'Aceptar');
-      await esperarTexto(tester, 'Aceptaste el trueque. Las dos publicaciones quedaron intercambiadas');
+      await esperarTexto(tester, 'Aceptaste el trueque. Ahora cada uno confirma la entrega');
 
       final respuesta = await pedirApi('POST', '/ofertas/1/contraoferta', carlos, {
         'id_publicacion_ofrecida': 7,
@@ -243,7 +248,7 @@ void main() {
       await tocarBoton(tester, 'Cerrar');
       await tocarBoton(tester, 'Aceptar');
       await tocarBoton(tester, 'Aceptar');
-      await esperarTexto(tester, 'Aceptaste el trueque. Las dos publicaciones quedaron intercambiadas');
+      await esperarTexto(tester, 'Aceptaste el trueque. Ahora cada uno confirma la entrega');
 
       expect(find.text('Aceptada'), findsOneWidget);
     });

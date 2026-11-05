@@ -14,10 +14,15 @@ delete process.env.BD_URL;
 
 require(path.join(__dirname, "../../../backend/src/servidor.js"));
 
-const migracion = fs.readFileSync(
-  path.join(__dirname, "../../../base_de_datos/migracion_contraofertas.sql"),
-  "utf8"
-);
+const migracion =
+  fs.readFileSync(
+    path.join(__dirname, "../../../base_de_datos/migracion_contraofertas.sql"),
+    "utf8"
+  ) +
+  fs.readFileSync(
+    path.join(__dirname, "../../../base_de_datos/migracion_intercambio_acordado.sql"),
+    "utf8"
+  );
 
 const datos = fs.readFileSync(
   path.join(__dirname, "../../../base_de_datos/datos.sql"),
@@ -26,8 +31,9 @@ const datos = fs.readFileSync(
 
 function reiniciarBase(alTerminar) {
   const sql =
+    "TRUNCATE usuarios, sesiones, publicaciones, historial, ofertas RESTART IDENTITY CASCADE;\n" +
     migracion +
-    "\nTRUNCATE usuarios, sesiones, publicaciones, historial, ofertas RESTART IDENTITY CASCADE;\n" +
+    "\n" +
     datos;
   const proceso = execFile(
     "docker",

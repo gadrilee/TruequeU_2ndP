@@ -147,7 +147,7 @@ void main() {
 
       await tocarBoton(tester, 'Aceptar');
       await tocarBoton(tester, 'Aceptar');
-      await esperarTexto(tester, 'Aceptaste el trueque. Las dos publicaciones quedaron intercambiadas');
+      await esperarTexto(tester, 'Aceptaste el trueque. Ahora cada uno confirma la entrega');
 
       expect(find.text('Aceptada'), findsOneWidget);
       expect(find.text('Rechazar'), findsNothing);
@@ -202,8 +202,8 @@ void main() {
       await abrirOfertas(tester);
       await tocar(tester, enTarjeta('De: Carlos Mamani', find.text('Aceptar')));
       await tocarBoton(tester, 'Aceptar');
-      await esperarTexto(tester, 'Aceptaste el trueque. Las dos publicaciones quedaron intercambiadas');
-      await tocarBoton(tester, 'Volver al perfil');
+      await esperarTexto(tester, 'Aceptaste el trueque. Ahora cada uno confirma la entrega');
+      await irARuta(tester, '/perfil');
 
       await cambiarDeUsuario(tester, job);
       await abrirOfertas(tester);

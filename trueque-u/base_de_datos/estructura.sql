@@ -42,7 +42,7 @@ CREATE TABLE publicaciones (
     descripcion          TEXT,
     estado               VARCHAR(10)  NOT NULL CHECK (estado IN ('nuevo', 'usado')),
     estado_publicacion   VARCHAR(15)  NOT NULL DEFAULT 'disponible'
-                         CHECK (estado_publicacion IN ('oculto', 'disponible', 'reservado', 'no disponible', 'intercambiado')),
+                         CHECK (estado_publicacion IN ('oculto', 'disponible', 'reservado', 'no disponible', 'acordado', 'intercambiado')),
     -- libros, electronica, ropa u otros (lo valida el backend)
     categoria            VARCHAR(20)  NOT NULL DEFAULT 'otros',
     -- Usuario que reservó esta publicación (NULL si no está reservada o si se descartó la reserva).
@@ -75,10 +75,14 @@ CREATE TABLE ofertas (
     id_publicacion_ofrecida INTEGER     NOT NULL REFERENCES publicaciones (id) ON DELETE CASCADE,
     id_usuario              INTEGER     NOT NULL REFERENCES usuarios (id) ON DELETE CASCADE,
     estado                  VARCHAR(15) NOT NULL DEFAULT 'pendiente'
-                            CHECK (estado IN ('pendiente', 'aceptada', 'rechazada', 'cancelada', 'contraofertada')),
+                            CHECK (estado IN ('pendiente', 'aceptada', 'rechazada', 'cancelada', 'contraofertada', 'completada', 'anulada')),
     creado_en               TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     id_negociacion          INTEGER,
     id_oferta_anterior      INTEGER     REFERENCES ofertas (id) ON DELETE SET NULL,
+    confirma_pedida         BOOLEAN     NOT NULL DEFAULT FALSE,
+    confirma_ofrecida       BOOLEAN     NOT NULL DEFAULT FALSE,
+    motivo_cancelacion      TEXT,
+    id_usuario_cancela      INTEGER     REFERENCES usuarios (id) ON DELETE SET NULL,
     CONSTRAINT ofertas_publicaciones_distintas
         CHECK (id_publicacion_pedida <> id_publicacion_ofrecida)
 );

@@ -242,6 +242,16 @@ class ControladorAutenticacion extends ChangeNotifier {
     return (datos is Map ? datos['mensaje'] as String? : null) ?? 'Oferta cancelada';
   }
 
+  Future<String> confirmarEntrega(int id) async {
+    final datos = await _api.put('/ofertas/$id/entrega', {});
+    return (datos is Map ? datos['mensaje'] as String? : null) ?? 'Entrega confirmada';
+  }
+
+  Future<String> cancelarIntercambio(int id, String motivo) async {
+    final datos = await _api.put('/ofertas/$id/anulada', {'motivo': motivo});
+    return (datos is Map ? datos['mensaje'] as String? : null) ?? 'Intercambio cancelado';
+  }
+
   Future<String> contraofertar(int idOferta, int idPublicacionOfrecida) async {
     final datos = await _api.post('/ofertas/$idOferta/contraoferta', {
       'id_publicacion_ofrecida': idPublicacionOfrecida,

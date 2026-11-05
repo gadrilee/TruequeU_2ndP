@@ -139,6 +139,16 @@ Future<void> abrirOfertas(WidgetTester tester) async {
   await tester.pumpAndSettle();
 }
 
+const mensajeAceptar = 'Aceptaste el trueque. Ahora cada uno confirma la entrega';
+const mensajePrimeraConfirmacion = 'Confirmaste tu entrega. Falta que la otra persona confirme';
+const mensajeCompletado = 'Intercambio completado. Las dos partes confirmaron la entrega';
+
+Future<void> confirmarEntrega(WidgetTester tester, String mensaje) async {
+  await tocarBoton(tester, 'Confirmar entrega');
+  await tocarBoton(tester, 'Confirmar');
+  await esperarTexto(tester, mensaje);
+}
+
 Future<http.Response> pedirApi(
   String metodo,
   String ruta,

@@ -1,5 +1,5 @@
 const { sequelize, models } = require("../database/sequelize");
-const { estaIntercambiado } = require("../utils/reglasObjeto");
+const { estaIntercambiado, estaAcordado } = require("../utils/reglasObjeto");
 const { estaEnOfertaPendiente } = require("../utils/ofertasPendientes");
 
 // Datos que se agregan a cada publicación: quién la creó y quién la reservó
@@ -127,6 +127,12 @@ const putReservaDescartada = async (req, res) => {
       return res
         .status(409)
         .json({ error: "El intercambio ya fue completado, no se puede cambiar" });
+    }
+
+    if (estaAcordado(publicacion)) {
+      return res.status(409).json({
+        error: "Hay un intercambio acordado. Confírmalo o cancélalo desde Ofertas de trueque",
+      });
     }
 
     const esDueno = publicacion.id_usuario === idUsuario;

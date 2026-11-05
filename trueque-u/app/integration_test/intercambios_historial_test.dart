@@ -36,12 +36,20 @@ void main() {
       expect(find.text('Aún no tienes intercambios completados'), findsOneWidget);
     });
 
-    testWidgets('Eudenia acepta la oferta de Carlos y ve el intercambio completado', (tester) async {
+    testWidgets('Eudenia acepta la oferta de Carlos, los dos confirman y ve el intercambio completado', (tester) async {
       await abrirAppConSesion(tester, eudenia);
       await tocarBoton(tester, 'Ofertas de trueque');
       await tocarBoton(tester, 'Aceptar');
       await tocarBoton(tester, 'Aceptar');
-      await esperarTexto(tester, 'Aceptaste el trueque. Las dos publicaciones quedaron intercambiadas');
+      await esperarTexto(tester, mensajeAceptar);
+      await confirmarEntrega(tester, mensajePrimeraConfirmacion);
+      await irARuta(tester, '/perfil');
+      await cambiarDeUsuario(tester, carlos);
+      await abrirOfertas(tester);
+      await tocar(tester, find.text('Enviadas'));
+      await confirmarEntrega(tester, mensajeCompletado);
+      await irARuta(tester, '/perfil');
+      await cambiarDeUsuario(tester, eudenia);
 
       await irARuta(tester, '/intercambios');
       await esperarTexto(tester, 'Calculo I - Stewart');

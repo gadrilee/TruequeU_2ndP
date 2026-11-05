@@ -35,6 +35,11 @@ class ChipEstado extends StatelessWidget {
         texto = Colors.blue.shade900;
         etiqueta = 'Intercambiado';
         break;
+      case 'acordado':
+        fondo = Colors.purple.shade100;
+        texto = Colors.purple.shade900;
+        etiqueta = 'Intercambio acordado';
+        break;
       case 'no disponible':
         fondo = Colors.grey.shade200;
         texto = Colors.grey.shade700;

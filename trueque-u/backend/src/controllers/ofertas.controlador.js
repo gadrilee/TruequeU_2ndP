@@ -3,6 +3,8 @@ const { sequelize, models } = require("../database/sequelize");
 const {
   puedeCrearOferta,
   puedeContraofertar,
+  puedeConfirmarEntrega,
+  puedeCancelarIntercambio,
   idReceptor,
 } = require("../utils/reglasObjeto");
 
@@ -199,14 +201,8 @@ const putOfertaAceptada = async (req, res) => {
       }
 
       await oferta.update({ estado: "aceptada" }, { transaction: t });
-      await pedida.update(
-        { estado_publicacion: "intercambiado", id_usuario_reserva: ofrecida.id_usuario },
-        { transaction: t },
-      );
-      await ofrecida.update(
-        { estado_publicacion: "intercambiado", id_usuario_reserva: pedida.id_usuario },
-        { transaction: t },
-      );
+      await pedida.update({ estado_publicacion: "acordado" }, { transaction: t });
+      await ofrecida.update({ estado_publicacion: "acordado" }, { transaction: t });
 
       await models.ofertas.update(
         { estado: "cancelada" },
@@ -223,31 +219,6 @@ const putOfertaAceptada = async (req, res) => {
         },
       );
 
-      const idOtro =
-        idUsuario === ofrecida.id_usuario ? pedida.id_usuario : ofrecida.id_usuario;
-
-      await models.historial.bulkCreate(
-        [
-          {
-            tipo: "completo",
-            id_publicacion: pedida.id,
-            titulo: pedida.titulo,
-            categoria: pedida.categoria,
-            id_usuario: idUsuario,
-            id_otro_usuario: idOtro,
-          },
-          {
-            tipo: "completo",
-            id_publicacion: ofrecida.id,
-            titulo: ofrecida.titulo,
-            categoria: ofrecida.categoria,
-            id_usuario: idUsuario,
-            id_otro_usuario: idOtro,
-          },
-        ],
-        { transaction: t },
-      );
-
       return { oferta };
     });
 
@@ -259,7 +230,7 @@ const putOfertaAceptada = async (req, res) => {
     console.log(`[ofertas] Aceptada: ${id} (usuario ${idUsuario})`);
     res.json({
       oferta: resultado.oferta,
-      mensaje: "Aceptaste el trueque. Las dos publicaciones quedaron intercambiadas",
+      mensaje: "Aceptaste el trueque. Ahora cada uno confirma la entrega",
     });
   } catch (error) {
     console.error("Error al aceptar la oferta:", error);
@@ -433,6 +404,130 @@ const getHistorialOferta = async (req, res) => {
   }
 };
 
+async function cargarIntercambio(id, transaction) {
+  const oferta = await buscarOfertaPendiente(id, transaction);
+  if (!oferta) return { codigo: 404, error: "Oferta no encontrada" };
+  const pubs = await bloquearPublicaciones(
+    oferta.id_publicacion_pedida,
+    oferta.id_publicacion_ofrecida,
+    transaction,
+  );
+  const pedida = pubs[oferta.id_publicacion_pedida];
+  const ofrecida = pubs[oferta.id_publicacion_ofrecida];
+  if (!pedida || !ofrecida) {
+    return { codigo: 404, error: "Ya no existe alguna de las publicaciones" };
+  }
+  return { oferta, pedida, ofrecida };
+}
+
+const putOfertaEntrega = async (req, res) => {
+  try {
+    const idUsuario = req.usuario.id;
+    const id = idValido(req.params.id);
+    if (!id) return res.status(400).json({ error: "El id no es válido" });
+
+    const resultado = await sequelize.transaction(async (t) => {
+      const datos = await cargarIntercambio(id, t);
+      if (datos.error) return datos;
+      const { oferta, pedida, ofrecida } = datos;
+
+      const regla = puedeConfirmarEntrega({ oferta, pedida, ofrecida, idUsuario });
+      if (!regla.permitido) return { codigo: regla.codigo, error: regla.motivo };
+
+      await oferta.update({ [`confirma_${regla.parte}`]: true }, { transaction: t });
+      if (!(oferta.confirma_pedida && oferta.confirma_ofrecida)) {
+        return { oferta, completado: false };
+      }
+
+      await oferta.update({ estado: "completada" }, { transaction: t });
+      await pedida.update(
+        { estado_publicacion: "intercambiado", id_usuario_reserva: ofrecida.id_usuario },
+        { transaction: t },
+      );
+      await ofrecida.update(
+        { estado_publicacion: "intercambiado", id_usuario_reserva: pedida.id_usuario },
+        { transaction: t },
+      );
+      const idOtro =
+        idUsuario === ofrecida.id_usuario ? pedida.id_usuario : ofrecida.id_usuario;
+      await models.historial.bulkCreate(
+        [pedida, ofrecida].map((publicacion) => ({
+          tipo: "completo",
+          id_publicacion: publicacion.id,
+          titulo: publicacion.titulo,
+          categoria: publicacion.categoria,
+          id_usuario: idUsuario,
+          id_otro_usuario: idOtro,
+        })),
+        { transaction: t },
+      );
+      return { oferta, completado: true };
+    });
+
+    if (resultado.error) {
+      return res.status(resultado.codigo).json({ error: resultado.error });
+    }
+
+    await resultado.oferta.reload({ include: INCLUIR_OFERTA });
+    console.log(`[ofertas] Entrega confirmada: ${id} (usuario ${idUsuario})`);
+    res.json({
+      oferta: resultado.oferta,
+      mensaje: resultado.completado
+        ? "Intercambio completado. Las dos partes confirmaron la entrega"
+        : "Confirmaste tu entrega. Falta que la otra persona confirme",
+    });
+  } catch (error) {
+    console.error("Error al confirmar la entrega:", error);
+    res.status(500).json({ error: "Error al confirmar la entrega" });
+  }
+};
+
+const putOfertaAnulada = async (req, res) => {
+  try {
+    const idUsuario = req.usuario.id;
+    const id = idValido(req.params.id);
+    if (!id) return res.status(400).json({ error: "El id no es válido" });
+    const motivo = req.body?.motivo;
+
+    const resultado = await sequelize.transaction(async (t) => {
+      const datos = await cargarIntercambio(id, t);
+      if (datos.error) return datos;
+      const { oferta, pedida, ofrecida } = datos;
+
+      const regla = puedeCancelarIntercambio({ oferta, pedida, ofrecida, idUsuario, motivo });
+      if (!regla.permitido) return { codigo: regla.codigo, error: regla.motivo };
+
+      await oferta.update(
+        { estado: "anulada", motivo_cancelacion: motivo.trim(), id_usuario_cancela: idUsuario },
+        { transaction: t },
+      );
+      await pedida.update(
+        { estado_publicacion: "disponible", id_usuario_reserva: null },
+        { transaction: t },
+      );
+      await ofrecida.update(
+        { estado_publicacion: "disponible", id_usuario_reserva: null },
+        { transaction: t },
+      );
+      return { oferta };
+    });
+
+    if (resultado.error) {
+      return res.status(resultado.codigo).json({ error: resultado.error });
+    }
+
+    await resultado.oferta.reload({ include: INCLUIR_OFERTA });
+    console.log(`[ofertas] Intercambio cancelado: ${id} (usuario ${idUsuario})`);
+    res.json({
+      oferta: resultado.oferta,
+      mensaje: "Cancelaste el intercambio. Las dos publicaciones vuelven a estar disponibles",
+    });
+  } catch (error) {
+    console.error("Error al cancelar el intercambio:", error);
+    res.status(500).json({ error: "Error al cancelar el intercambio" });
+  }
+};
+
 const putOfertaRechazada = (req, res) => cerrarOferta(req, res, "rechazada");
 const putOfertaCancelada = (req, res) => cerrarOferta(req, res, "cancelada");
 
@@ -443,6 +538,8 @@ module.exports = {
   putOfertaAceptada,
   putOfertaRechazada,
   putOfertaCancelada,
+  putOfertaEntrega,
+  putOfertaAnulada,
   postContraoferta,
   getHistorialOferta,
 };

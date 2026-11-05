@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../estado/controlador_autenticacion.dart';
 import '../servicios/cliente_api.dart';
 import '../widgets/dialogo_confirmacion.dart';
+import '../widgets/dialogo_motivo.dart';
 import '../widgets/dialogo_oferta.dart';
 import '../widgets/error_con_reintento.dart';
 import '../widgets/mensaje_vacio.dart';
@@ -87,6 +88,7 @@ class _PantallaOfertasState extends State<PantallaOfertas> {
       final texto = switch (accion) {
         'aceptar' => await auth.aceptarOferta(id),
         'rechazar' => await auth.rechazarOferta(id),
+        'entrega' => await auth.confirmarEntrega(id),
         _ => await auth.cancelarOferta(id),
       };
       if (!mounted) return;
@@ -100,6 +102,24 @@ class _PantallaOfertasState extends State<PantallaOfertas> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('No se pudo actualizar la oferta')),
       );
+    } finally {
+      if (mounted) setState(() => _enProgreso.remove(id));
+    }
+  }
+
+  Future<void> _cancelarIntercambio(int id) async {
+    final motivo = await pedirMotivoCancelacion(context);
+    if (motivo == null || !mounted) return;
+
+    setState(() => _enProgreso.add(id));
+    try {
+      final texto = await context.read<ControladorAutenticacion>().cancelarIntercambio(id, motivo);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(texto)));
+      await _cargar();
+    } on ExcepcionApi catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.mensaje)));
     } finally {
       if (mounted) setState(() => _enProgreso.remove(id));
     }
@@ -193,6 +213,8 @@ class _PantallaOfertasState extends State<PantallaOfertas> {
                   Text(
                     '${_nombreEstado(propuesta['estado'] as String)} · ${_fecha(propuesta['creado_en'] as String?)}',
                   ),
+                  if (propuesta['motivo_cancelacion'] != null)
+                    Text('Motivo: ${propuesta['motivo_cancelacion']}'),
                   const SizedBox(height: 10),
                 ],
               ],
@@ -248,7 +270,7 @@ class _PantallaOfertasState extends State<PantallaOfertas> {
                   'aceptar',
                   'Aceptar trueque',
                   '¿Aceptas cambiar «${ofrecida['titulo']}» por «${pedida['titulo']}»? '
-                      'Las dos quedarán intercambiadas y las otras ofertas pendientes de esos objetos se cancelarán.',
+                      'Las dos publicaciones quedarán acordadas, cada uno confirmará la entrega y las otras ofertas pendientes de esos objetos se cancelarán.',
                   'Aceptar',
                 );
               },
@@ -259,6 +281,15 @@ class _PantallaOfertasState extends State<PantallaOfertas> {
                 '¿Rechazas esta oferta? Quien la envió verá que fue rechazada.',
                 'Rechazar',
               ),
+              idYo: context.read<ControladorAutenticacion>().usuario?.id,
+              alConfirmarEntrega: () => _responder(
+                (oferta['id'] as num).toInt(),
+                'entrega',
+                'Confirmar entrega',
+                '¿Confirmas que ya entregaste tu objeto y recibiste el otro? Cuando las dos partes confirmen, el intercambio queda completado.',
+                'Confirmar',
+              ),
+              alCancelarIntercambio: () => _cancelarIntercambio((oferta['id'] as num).toInt()),
               alContraofertar: () => _contraofertar(oferta),
               alVerHistorial: () => _verHistorial(oferta),
               alCancelar: () => _responder(
@@ -318,10 +349,16 @@ class _TarjetaOferta extends StatelessWidget {
     required this.alCancelar,
     required this.alContraofertar,
     required this.alVerHistorial,
+    required this.idYo,
+    required this.alConfirmarEntrega,
+    required this.alCancelarIntercambio,
   });
 
   final Map<String, dynamic> oferta;
   final bool recibida;
+  final int? idYo;
+  final VoidCallback alConfirmarEntrega;
+  final VoidCallback alCancelarIntercambio;
   final bool enProgreso;
   final VoidCallback alAceptar;
   final VoidCallback alRechazar;
@@ -338,6 +375,11 @@ class _TarjetaOferta extends StatelessWidget {
     final autorPedida = pedida['autor'] as Map<String, dynamic>? ?? {};
     final estado = (oferta['estado'] as String?) ?? 'pendiente';
     final pendiente = estado == 'pendiente';
+    final soyPedida = pedida['id_usuario'] == idYo;
+    final miaConfirmada =
+        (soyPedida ? oferta['confirma_pedida'] : oferta['confirma_ofrecida']) == true;
+    final otraConfirmada =
+        (soyPedida ? oferta['confirma_ofrecida'] : oferta['confirma_pedida']) == true;
 
     final autorOfrecida = ofrecida['autor'] as Map<String, dynamic>? ?? {};
     final receptor =
@@ -409,6 +451,43 @@ class _TarjetaOferta extends StatelessWidget {
                 ),
               ],
             ],
+            if (estado == 'aceptada') ...[
+              const SizedBox(height: 12),
+              Text(miaConfirmada ? 'Tu entrega: confirmada' : 'Tu entrega: pendiente'),
+              Text(
+                otraConfirmada
+                    ? 'La otra persona: confirmada'
+                    : 'La otra persona: pendiente',
+              ),
+              const SizedBox(height: 8),
+              if (enProgreso)
+                const Center(
+                  child: SizedBox(
+                    height: 28,
+                    width: 28,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                )
+              else ...[
+                FilledButton(
+                  onPressed: miaConfirmada ? null : alConfirmarEntrega,
+                  child: const Text('Confirmar entrega'),
+                ),
+                const SizedBox(height: 8),
+                OutlinedButton(
+                  onPressed: alCancelarIntercambio,
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: colores.error,
+                    side: BorderSide(color: colores.error),
+                  ),
+                  child: const Text('Cancelar intercambio'),
+                ),
+              ],
+            ],
+            if (estado == 'anulada' && oferta['motivo_cancelacion'] != null) ...[
+              const SizedBox(height: 8),
+              Text('Motivo: ${oferta['motivo_cancelacion']}'),
+            ],
             const SizedBox(height: 4),
             Align(
               alignment: Alignment.centerRight,
@@ -435,6 +514,8 @@ class _ChipEstado extends StatelessWidget {
     final (texto, fondo, tinta) = switch (estado) {
       'contraofertada' => ('Contraofertada', colores.tertiaryContainer, colores.onTertiaryContainer),
       'aceptada' => ('Aceptada', colores.primaryContainer, colores.onPrimaryContainer),
+      'completada' => ('Intercambio completado', colores.primaryContainer, colores.onPrimaryContainer),
+      'anulada' => ('Intercambio cancelado', colores.errorContainer, colores.onErrorContainer),
       'rechazada' => ('Rechazada', colores.errorContainer, colores.onErrorContainer),
       'cancelada' => ('Cancelada', colores.surfaceContainerHighest, colores.onSurfaceVariant),
       _ => ('Pendiente', colores.secondaryContainer, colores.onSecondaryContainer),
@@ -453,6 +534,8 @@ class _ChipEstado extends StatelessWidget {
 String _nombreEstado(String estado) {
   return switch (estado) {
     'aceptada' => 'Aceptada',
+    'completada' => 'Intercambio completado',
+    'anulada' => 'Intercambio cancelado',
     'rechazada' => 'Rechazada',
     'cancelada' => 'Cancelada',
     'contraofertada' => 'Contraofertada',

@@ -6,6 +6,8 @@ const {
   putOfertaAceptada,
   putOfertaRechazada,
   putOfertaCancelada,
+  putOfertaEntrega,
+  putOfertaAnulada,
   postContraoferta,
   getHistorialOferta,
 } = require("../controllers/ofertas.controlador");
@@ -21,5 +23,7 @@ rutas.get("/:id/historial", exigirSesion, getHistorialOferta);
 rutas.put("/:id/aceptada", exigirSesion, putOfertaAceptada);
 rutas.put("/:id/rechazada", exigirSesion, putOfertaRechazada);
 rutas.put("/:id/cancelada", exigirSesion, putOfertaCancelada);
+rutas.put("/:id/entrega", exigirSesion, putOfertaEntrega);
+rutas.put("/:id/anulada", exigirSesion, putOfertaAnulada);
 
 module.exports = rutas;

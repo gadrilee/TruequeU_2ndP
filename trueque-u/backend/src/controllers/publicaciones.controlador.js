@@ -1,6 +1,6 @@
 const { Op } = require("sequelize");
 const { models } = require("../database/sequelize");
-const { estaReservado, estaIntercambiado } = require("../utils/reglasObjeto");
+const { estaReservado, estaIntercambiado, estaAcordado } = require("../utils/reglasObjeto");
 const { estaEnOfertaPendiente } = require("../utils/ofertasPendientes");
 
 // Condición del objeto: solo puede ser "nuevo" o "usado"
@@ -292,6 +292,12 @@ const putPublicacion = async (req, res) => {
       });
     }
 
+    if (estaAcordado(publicacion)) {
+      return res.status(409).json({
+        error: "No puedes editar una publicación con un intercambio acordado",
+      });
+    }
+
     const { titulo, descripcion, estado, categoria } = req.body || {};
     const cambios = {}; // aquí se van juntando solo los datos que llegaron
 
@@ -381,6 +387,12 @@ const deletePublicacion = async (req, res) => {
       });
     }
 
+    if (estaAcordado(publicacion)) {
+      return res.status(409).json({
+        error: "No puedes eliminar una publicación con un intercambio acordado",
+      });
+    }
+
     if (await estaEnOfertaPendiente(publicacion.id)) {
       return res.status(409).json({
         error:
@@ -437,6 +449,12 @@ const putPublicacionOculto = async (req, res) => {
     if (estaIntercambiado(publicacion)) {
       return res.status(409).json({
         error: "No puedes ocultar una publicación que ya fue intercambiada",
+      });
+    }
+
+    if (estaAcordado(publicacion)) {
+      return res.status(409).json({
+        error: "No puedes ocultar una publicación con un intercambio acordado",
       });
     }
 
@@ -504,6 +522,12 @@ const putPublicacionNoDisponible = async (req, res) => {
     if (estaIntercambiado(publicacion)) {
       return res.status(409).json({
         error: "No puedes marcar como no disponible una publicación que ya fue intercambiada",
+      });
+    }
+
+    if (estaAcordado(publicacion)) {
+      return res.status(409).json({
+        error: "No puedes marcar como no disponible una publicación con un intercambio acordado",
       });
     }
 
