@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 640" width="900" height="640" font-family="Segoe UI, Roboto, Arial, sans-serif">
+  <rect width="900" height="640" fill="#ffffff"/>
+
+  <text x="215" y="36" text-anchor="middle" font-size="20" font-weight="700" fill="#333333">Antes</text>
+  <text x="665" y="36" text-anchor="middle" font-size="20" font-weight="700" fill="#333333">Propuesta</text>
+
+  <rect x="60" y="54" width="310" height="490" rx="14" fill="#fff8f5" stroke="#999999" stroke-width="2"/>
+  <text x="80" y="86" font-size="16" fill="#333333">Mi perfil</text>
+
+  <text x="80" y="124" font-size="13" font-weight="700" fill="#666666">PUBLICACIONES</text>
+  <rect x="80" y="134" width="270" height="36" rx="18" fill="#8f4c38"/>
+  <text x="215" y="157" text-anchor="middle" font-size="14" fill="#ffffff">Explorar publicaciones</text>
+  <rect x="80" y="178" width="270" height="36" rx="18" fill="none" stroke="#8f4c38"/>
+  <text x="215" y="201" text-anchor="middle" font-size="14" fill="#8f4c38">Crear nueva publicación</text>
+  <rect x="80" y="222" width="270" height="36" rx="18" fill="none" stroke="#8f4c38"/>
+  <text x="215" y="245" text-anchor="middle" font-size="14" fill="#8f4c38">Mis publicaciones</text>
+  <rect x="80" y="266" width="270" height="36" rx="18" fill="#fde8e4" stroke="#c0392b" stroke-width="2"/>
+  <text x="215" y="289" text-anchor="middle" font-size="14" fill="#8f4c38">Ofertas de trueque</text>
+  <rect x="80" y="310" width="270" height="36" rx="18" fill="#fde8e4" stroke="#c0392b" stroke-width="2"/>
+  <text x="215" y="333" text-anchor="middle" font-size="14" fill="#8f4c38">Historial</text>
+
+  <text x="80" y="376" font-size="13" font-weight="700" fill="#666666">CUENTA</text>
+  <rect x="80" y="386" width="270" height="36" rx="18" fill="none" stroke="#8f4c38"/>
+  <text x="215" y="409" text-anchor="middle" font-size="14" fill="#8f4c38">Cambiar contraseña</text>
+  <text x="215" y="462" text-anchor="middle" font-size="14" fill="#c0392b">Cerrar sesión</text>
+
+  <rect x="80" y="486" width="270" height="44" rx="6" fill="none" stroke="#c0392b" stroke-dasharray="6 4"/>
+  <text x="215" y="505" text-anchor="middle" font-size="12" fill="#c0392b">Intercambios completados:</text>
+  <text x="215" y="521" text-anchor="middle" font-size="12" fill="#c0392b">la pantalla existe, pero ningún botón lleva a ella</text>
+
+  <path d="M388 300 H 492" stroke="#666666" stroke-width="2" fill="none"/>
+  <path d="M492 300 l-12 -7 v14 z" fill="#666666"/>
+
+  <rect x="510" y="54" width="310" height="490" rx="14" fill="#fff8f5" stroke="#999999" stroke-width="2"/>
+  <text x="530" y="86" font-size="16" fill="#333333">Mi perfil</text>
+
+  <text x="530" y="124" font-size="13" font-weight="700" fill="#666666">PUBLICACIONES</text>
+  <rect x="530" y="134" width="270" height="36" rx="18" fill="#8f4c38"/>
+  <text x="665" y="157" text-anchor="middle" font-size="14" fill="#ffffff">Explorar publicaciones</text>
+  <rect x="530" y="178" width="270" height="36" rx="18" fill="none" stroke="#8f4c38"/>
+  <text x="665" y="201" text-anchor="middle" font-size="14" fill="#8f4c38">Crear nueva publicación</text>
+  <rect x="530" y="222" width="270" height="36" rx="18" fill="none" stroke="#8f4c38"/>
+  <text x="665" y="245" text-anchor="middle" font-size="14" fill="#8f4c38">Mis publicaciones</text>
+
+  <text x="530" y="284" font-size="13" font-weight="700" fill="#1e7d4f">MIS TRUEQUES (sección nueva)</text>
+  <rect x="530" y="294" width="270" height="36" rx="18" fill="#e6f4ec" stroke="#1e7d4f" stroke-width="2"/>
+  <text x="665" y="317" text-anchor="middle" font-size="14" fill="#8f4c38">Ofertas de trueque</text>
+  <rect x="530" y="338" width="270" height="36" rx="18" fill="#e6f4ec" stroke="#1e7d4f" stroke-width="2"/>
+  <text x="665" y="361" text-anchor="middle" font-size="14" font-weight="700" fill="#1e7d4f">Intercambios completados</text>
+  <rect x="530" y="382" width="270" height="36" rx="18" fill="#e6f4ec" stroke="#1e7d4f" stroke-width="2"/>
+  <text x="665" y="405" text-anchor="middle" font-size="14" fill="#8f4c38">Historial</text>
+
+  <text x="530" y="444" font-size="13" font-weight="700" fill="#666666">CUENTA</text>
+  <rect x="530" y="454" width="270" height="36" rx="18" fill="none" stroke="#8f4c38"/>
+  <text x="665" y="477" text-anchor="middle" font-size="14" fill="#8f4c38">Cambiar contraseña</text>
+  <text x="665" y="522" text-anchor="middle" font-size="14" fill="#c0392b">Cerrar sesión</text>
+
+  <text x="450" y="584" text-anchor="middle" font-size="14" fill="#333333">Rojo: lo que estaba mal ubicado o sin acceso. Verde: la sección nueva.</text>
+  <text x="450" y="608" text-anchor="middle" font-size="14" fill="#333333">Acceso a la función: Mi perfil → Mis trueques → Intercambios completados (1 toque).</text>
+</svg>
