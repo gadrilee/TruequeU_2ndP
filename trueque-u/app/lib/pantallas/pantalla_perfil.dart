@@ -9,7 +9,7 @@ import '../widgets/pagina_acceso.dart';
 ///
 /// Mejora de interacción (Clase 16):
 /// - Fitts: botones más altos y "Cerrar sesión" separada del resto.
-/// - Hick: acciones agrupadas en dos bloques y una sola acción principal.
+/// - Hick: acciones agrupadas en tres bloques y una sola acción principal.
 /// - Carga cognitiva: etiquetas distintas entre sí y relleno solo en la principal.
 class PantallaPerfil extends StatelessWidget {
   const PantallaPerfil({super.key});
@@ -76,11 +76,21 @@ class PantallaPerfil extends StatelessWidget {
           onPressed: () => context.go('/mis-publicaciones'),
           child: const Text('Mis publicaciones'),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 24),
+
+        // ---- Bloque 2: lo que pasa con cada trueque ----
+        Text('MIS TRUEQUES', style: estiloTitulo),
+        const SizedBox(height: 8),
         OutlinedButton(
           style: estiloContorno,
           onPressed: () => context.go('/ofertas'),
           child: const Text('Ofertas de trueque'),
+        ),
+        const SizedBox(height: 12),
+        OutlinedButton(
+          style: estiloContorno,
+          onPressed: () => context.go('/intercambios'),
+          child: const Text('Intercambios completados'),
         ),
         const SizedBox(height: 12),
         OutlinedButton(
@@ -90,7 +100,7 @@ class PantallaPerfil extends StatelessWidget {
         ),
         const SizedBox(height: 24),
 
-        // ---- Bloque 2: cuenta ----
+        // ---- Bloque 3: cuenta ----
         Text('CUENTA', style: estiloTitulo),
         const SizedBox(height: 8),
         OutlinedButton(
