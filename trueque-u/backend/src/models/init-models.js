@@ -7,6 +7,7 @@ var _member = require("./member");
 var _ofertas = require("./ofertas");
 var _organization = require("./organization");
 var _project_config = require("./project_config");
+var _propuestas_entrega = require("./propuestas_entrega");
 var _publicaciones = require("./publicaciones");
 var _sesiones = require("./sesiones");
 var _session = require("./session");
@@ -23,6 +24,7 @@ function initModels(sequelize) {
   var ofertas = _ofertas(sequelize, DataTypes);
   var organization = _organization(sequelize, DataTypes);
   var project_config = _project_config(sequelize, DataTypes);
+  var propuestas_entrega = _propuestas_entrega(sequelize, DataTypes);
   var publicaciones = _publicaciones(sequelize, DataTypes);
   var sesiones = _sesiones(sequelize, DataTypes);
   var session = _session(sequelize, DataTypes);
@@ -52,6 +54,10 @@ function initModels(sequelize) {
   usuarios.hasMany(historial, { as: "historials", foreignKey: "id_usuario"});
   historial.belongsTo(usuarios, { as: "id_otro_usuario_usuario", foreignKey: "id_otro_usuario"});
   usuarios.hasMany(historial, { as: "id_otro_usuario_historials", foreignKey: "id_otro_usuario"});
+  propuestas_entrega.belongsTo(ofertas, { as: "oferta", foreignKey: "id_oferta"});
+  ofertas.hasMany(propuestas_entrega, { as: "propuestas_entrega", foreignKey: "id_oferta"});
+  propuestas_entrega.belongsTo(usuarios, { as: "proponente", foreignKey: "id_usuario"});
+  usuarios.hasMany(propuestas_entrega, { as: "propuestas_entrega", foreignKey: "id_usuario"});
   sesiones.belongsTo(usuarios, { as: "usuario", foreignKey: "usuario_id"});
   usuarios.hasMany(sesiones, { as: "sesiones", foreignKey: "usuario_id"});
 
@@ -64,6 +70,7 @@ function initModels(sequelize) {
     ofertas,
     organization,
     project_config,
+    propuestas_entrega,
     publicaciones,
     sesiones,
     session,
