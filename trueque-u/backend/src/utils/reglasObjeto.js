@@ -221,6 +221,7 @@ module.exports = {
   estaReservado,
   estaIntercambiado,
   estaAcordado,
+  parteDelIntercambio,
   puedeCompletarIntercambio,
   puedeCrearOferta,
   puedeConfirmarEntrega,

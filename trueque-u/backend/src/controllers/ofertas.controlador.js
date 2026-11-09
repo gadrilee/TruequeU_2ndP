@@ -7,6 +7,7 @@ const {
   puedeCancelarIntercambio,
   idReceptor,
 } = require("../utils/reglasObjeto");
+const { idValido } = require("../utils/idValido");
 
 const INCLUIR_OFERTA = [
   { model: models.usuarios, as: "oferente", attributes: ["id", "nombre"] },
@@ -23,11 +24,6 @@ const INCLUIR_OFERTA = [
     include: [{ model: models.usuarios, as: "autor", attributes: ["id", "nombre"] }],
   },
 ];
-
-function idValido(valor) {
-  const id = Number(valor);
-  return Number.isInteger(id) && id > 0 ? id : null;
-}
 
 const postOferta = async (req, res) => {
   try {
