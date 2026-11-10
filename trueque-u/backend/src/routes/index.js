@@ -7,6 +7,7 @@ const reservasRutas = require('./reservas.rutas');
 const intercambiosRutas = require('./intercambios.rutas');
 const historialRutas = require('./historial.rutas');
 const ofertasRutas = require('./ofertas.rutas');
+const propuestasEntregaRutas = require('./propuestasEntrega.rutas');
 
 const rutas = Router();
 
@@ -18,5 +19,6 @@ rutas.use('/publicaciones', publicacionesRutas);
 rutas.use('/publicaciones', reservasRutas); // reservar y descartar reserva (mismas URLs de siempre)
 rutas.use('/historial', historialRutas);
 rutas.use('/ofertas', ofertasRutas);
+rutas.use('/propuestas-entrega', propuestasEntregaRutas);
 
 module.exports = rutas;
