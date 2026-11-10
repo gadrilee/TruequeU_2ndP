@@ -6,13 +6,6 @@ import 'package:integration_test/integration_test.dart';
 
 import 'ayudantes.dart';
 
-Future<void> aceptarOfertaDeCarlos(WidgetTester tester) async {
-  await abrirOfertas(tester);
-  await tocar(tester, enTarjeta('De: Carlos Mamani', find.text('Aceptar')));
-  await tocarBoton(tester, 'Aceptar');
-  await esperarTexto(tester, mensajeAceptar);
-}
-
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 

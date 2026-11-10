@@ -143,6 +143,22 @@ const mensajeAceptar = 'Aceptaste el trueque. Ahora cada uno confirma la entrega
 const mensajePrimeraConfirmacion = 'Confirmaste tu entrega. Falta que la otra persona confirme';
 const mensajeCompletado = 'Intercambio completado. Las dos partes confirmaron la entrega';
 
+Future<void> aceptarOfertaDeCarlos(WidgetTester tester) async {
+  await abrirOfertas(tester);
+  await tocar(tester, enTarjeta('De: Carlos Mamani', find.text('Aceptar')));
+  await tocarBoton(tester, 'Aceptar');
+  await esperarTexto(tester, mensajeAceptar);
+}
+
+Future<void> recargarApp(WidgetTester tester) async {
+  dotenv.testLoad(fileInput: 'api_url=http://localhost:3000');
+  final preferencias = await SharedPreferences.getInstance();
+  final autenticacion = ControladorAutenticacion(ClienteApi(), preferencias);
+  await autenticacion.restaurarSesion();
+  await tester.pumpWidget(AplicacionTruequeU(key: UniqueKey(), autenticacion: autenticacion));
+  await tester.pumpAndSettle();
+}
+
 Future<void> confirmarEntrega(WidgetTester tester, String mensaje) async {
   await tocarBoton(tester, 'Confirmar entrega');
   await tocarBoton(tester, 'Confirmar');
