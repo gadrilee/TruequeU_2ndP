@@ -1,0 +1,9 @@
+$ flutter test integration_test/<archivo>_test.dart -d linux (un archivo a la vez)
+=== acceso_test.dart: +17: All tests passed!
+=== publicaciones_test.dart: +17: All tests passed!
+=== feed_test.dart: +17: All tests passed!
+=== ofertas_test.dart: +18: All tests passed!
+=== intercambios_historial_test.dart: +14: All tests passed!
+=== contraofertas_test.dart: +16: All tests passed!
+=== intercambio_acordado_test.dart: +8: All tests passed!
+=== coordinar_entrega_test.dart: +5: All tests passed!

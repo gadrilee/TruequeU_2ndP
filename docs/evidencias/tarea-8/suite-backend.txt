@@ -1,0 +1,6 @@
+$ jest
+Test Suites: 10 passed, 10 total
+Tests:       105 passed, 105 total
+Snapshots:   0 total
+Time:        1.203 s
+Ran all test suites.
