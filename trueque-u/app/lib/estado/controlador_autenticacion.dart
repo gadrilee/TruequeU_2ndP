@@ -268,6 +268,26 @@ class ControladorAutenticacion extends ChangeNotifier {
     return [];
   }
 
+  Future<Map<String, dynamic>> obtenerEntrega(int idOferta) async {
+    final datos = await _api.get('/propuestas-entrega?id_oferta=$idOferta');
+    return datos is Map ? Map<String, dynamic>.from(datos) : {};
+  }
+
+  Future<String> proponerEntrega(int idOferta, Map<String, String> propuesta) async {
+    final datos = await _api.post('/propuestas-entrega', {'id_oferta': idOferta, ...propuesta});
+    return (datos is Map ? datos['mensaje'] as String? : null) ?? 'Propuesta enviada';
+  }
+
+  Future<String> contraproponerEntrega(int idPropuesta, Map<String, String> propuesta) async {
+    final datos = await _api.post('/propuestas-entrega/$idPropuesta/contrapropuesta', propuesta);
+    return (datos is Map ? datos['mensaje'] as String? : null) ?? 'Contrapropuesta enviada';
+  }
+
+  Future<String> aceptarEntrega(int idPropuesta) async {
+    final datos = await _api.put('/propuestas-entrega/$idPropuesta/aceptada', {});
+    return (datos is Map ? datos['mensaje'] as String? : null) ?? 'Propuesta aceptada';
+  }
+
   Future<List<Map<String, dynamic>>> _listaOfertas(String ruta) async {
     final respuesta = await _api.get(ruta);
     if (respuesta is List) {

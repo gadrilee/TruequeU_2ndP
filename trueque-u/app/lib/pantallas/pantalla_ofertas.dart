@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../estado/controlador_autenticacion.dart';
 import '../servicios/cliente_api.dart';
+import '../widgets/bloque_entrega.dart';
 import '../widgets/dialogo_confirmacion.dart';
 import '../widgets/dialogo_motivo.dart';
 import '../widgets/dialogo_oferta.dart';
@@ -452,6 +453,12 @@ class _TarjetaOferta extends StatelessWidget {
               ],
             ],
             if (estado == 'aceptada') ...[
+              const SizedBox(height: 12),
+              BloqueEntrega(
+                key: ValueKey('entrega-${oferta['id']}'),
+                idOferta: (oferta['id'] as num).toInt(),
+                idYo: idYo,
+              ),
               const SizedBox(height: 12),
               Text(miaConfirmada ? 'Tu entrega: confirmada' : 'Tu entrega: pendiente'),
               Text(

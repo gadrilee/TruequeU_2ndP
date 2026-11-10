@@ -41,7 +41,7 @@ Future<void> mostrarAyudaTrueque(BuildContext context) {
             Text(
               '• Disponible: se puede reservar.\n'
               '• Reservado: alguien lo apartó.\n'
-              '• Intercambio acordado: se aceptó una oferta; cada parte confirma la entrega y, si algo falla, cualquiera puede cancelar con un motivo.\n'
+              '• Intercambio acordado: se aceptó una oferta; acuerdan fecha y lugar, cada parte confirma la entrega y, si algo falla, cualquiera puede cancelar con un motivo.\n'
               '• No disponible: se ve, pero nadie puede reservarlo.\n'
               '• Oculta: solo la ve su dueño.\n'
               '• Intercambiado: el trueque ya se completó.',
