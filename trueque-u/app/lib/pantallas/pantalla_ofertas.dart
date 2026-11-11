@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../estado/controlador_autenticacion.dart';
 import '../servicios/cliente_api.dart';
+import '../widgets/bloque_calificacion.dart';
 import '../widgets/bloque_entrega.dart';
 import '../widgets/dialogo_confirmacion.dart';
 import '../widgets/dialogo_motivo.dart';
@@ -388,6 +389,8 @@ class _TarjetaOferta extends StatelessWidget {
     final quien = recibida
         ? 'De: ${oferente['nombre'] ?? 'Alguien'}'
         : 'Para: ${receptor['nombre'] ?? 'la otra persona'}';
+    final nombreOtra =
+        ((recibida ? oferente['nombre'] : receptor['nombre']) as String?) ?? 'la otra persona';
 
     return Card(
       child: Padding(
@@ -490,6 +493,14 @@ class _TarjetaOferta extends StatelessWidget {
                   child: const Text('Cancelar intercambio'),
                 ),
               ],
+            ],
+            if (estado == 'completada') ...[
+              const SizedBox(height: 12),
+              BloqueCalificacion(
+                key: ValueKey('calificacion-${oferta['id']}'),
+                idOferta: (oferta['id'] as num).toInt(),
+                nombreOtra: nombreOtra,
+              ),
             ],
             if (estado == 'anulada' && oferta['motivo_cancelacion'] != null) ...[
               const SizedBox(height: 8),
