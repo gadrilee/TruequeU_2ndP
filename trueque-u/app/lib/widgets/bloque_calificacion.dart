@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../estado/controlador_autenticacion.dart';
+import '../servicios/analitica.dart';
 import '../servicios/cliente_api.dart';
 import 'dialogo_calificacion.dart';
 import 'estrellas.dart';
@@ -48,6 +49,7 @@ class _BloqueCalificacionState extends State<BloqueCalificacion> {
 
   Future<void> _calificar() async {
     final auth = context.read<ControladorAutenticacion>();
+    track('calificacion_iniciada', {'id_oferta': widget.idOferta}, auth.api);
     final datos = await pedirCalificacion(context, nombre: widget.nombreOtra);
     if (datos == null || !mounted) return;
     setState(() => _enviando = true);
@@ -57,6 +59,11 @@ class _BloqueCalificacionState extends State<BloqueCalificacion> {
         datos['puntaje'] as int,
         datos['comentario'] as String,
       );
+      track('calificacion_enviada', {
+        'id_oferta': widget.idOferta,
+        'puntaje': datos['puntaje'],
+        'con_comentario': (datos['comentario'] as String).isNotEmpty,
+      }, auth.api);
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(texto)));
       await _cargar();
