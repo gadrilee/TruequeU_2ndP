@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../estado/controlador_autenticacion.dart';
+import '../servicios/analitica.dart';
 import '../servicios/cliente_api.dart';
 import '../utilidades/whatsapp.dart';
 import '../widgets/dialogo_ayuda.dart';
@@ -189,7 +190,7 @@ class _PantallaFeedPublicacionesState extends State<PantallaFeedPublicaciones> {
     }
   }
 
-  Future<void> _ofrecer(int idPublicacion, String titulo) async {
+  Future<void> _ofrecer(int idPublicacion, String titulo, String categoria) async {
     final auth = context.read<ControladorAutenticacion>();
     if (auth.usuario == null) return;
 
@@ -206,6 +207,11 @@ class _PantallaFeedPublicacionesState extends State<PantallaFeedPublicaciones> {
     final disponibles = mias
         .where((pub) => pub['estado_publicacion'] == 'disponible')
         .toList();
+    track('oferta_iniciada', {
+      'id_publicacion': idPublicacion,
+      'categoria': categoria,
+      'objetos_disponibles': disponibles.length,
+    }, auth.api);
     final idOfrecida = await mostrarDialogoOferta(
       context,
       tituloDeseado: titulo,
@@ -219,6 +225,11 @@ class _PantallaFeedPublicacionesState extends State<PantallaFeedPublicaciones> {
         idPublicacionPedida: idPublicacion,
         idPublicacionOfrecida: idOfrecida,
       );
+      track('oferta_enviada', {
+        'id_publicacion': idPublicacion,
+        'id_publicacion_ofrecida': idOfrecida,
+        'categoria': categoria,
+      }, auth.api);
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -428,7 +439,11 @@ class _PantallaFeedPublicacionesState extends State<PantallaFeedPublicaciones> {
                           'Hola $nombreAutor, reservé "$tituloPub" en Trueque U. ¿Coordinamos la entrega?',
                     ),
                     alReservar: () => _reservar(id, tituloPub),
-                    alOfertar: () => _ofrecer(id, tituloPub),
+                    alOfertar: () => _ofrecer(
+                      id,
+                      tituloPub,
+                      (pub['categoria'] as String?) ?? 'otros',
+                    ),
                     alDescartar: () => _descartarReserva(id, tituloPub),
                     alCompletar: () => _completar(id, tituloPub),
                   );

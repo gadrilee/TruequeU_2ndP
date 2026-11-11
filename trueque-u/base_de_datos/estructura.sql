@@ -115,3 +115,10 @@ CREATE UNIQUE INDEX propuestas_entrega_pendiente_idx
 CREATE UNIQUE INDEX propuestas_entrega_vigente_idx
     ON propuestas_entrega (id_oferta)
     WHERE estado = 'aceptada';
+
+CREATE TABLE eventos (
+    id     INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    evento VARCHAR(50) NOT NULL,
+    props  JSONB,
+    fecha  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
