@@ -1,0 +1,35 @@
+Intercambios: 1 = Carlos y Eudenia (completado), 2 = Job y Eudenia (completado), 3 = Carlos y Job (cancelado)
+
+Segunda calificación de Carlos en el intercambio 1
+  POST /api/calificaciones como Carlos: {"id_oferta":1,"puntaje":1,"comentario":"otra vez"}
+  -> 409 {"error":"Ya calificaste este intercambio"}
+
+Segunda calificación de Eudenia en el intercambio 1
+  POST /api/calificaciones como Eudenia: {"id_oferta":1,"puntaje":2}
+  -> 409 {"error":"Ya calificaste este intercambio"}
+
+Calificar el intercambio cancelado (Carlos)
+  POST /api/calificaciones como Carlos: {"id_oferta":3,"puntaje":5}
+  -> 409 {"error":"Un intercambio cancelado no se puede calificar"}
+
+Calificar el intercambio cancelado (Job)
+  POST /api/calificaciones como Job: {"id_oferta":3,"puntaje":5}
+  -> 409 {"error":"Un intercambio cancelado no se puede calificar"}
+
+Una persona que no participó (Eudenia en el intercambio 3)
+  POST /api/calificaciones como Eudenia: {"id_oferta":3,"puntaje":5}
+  -> 403 {"error":"Solo quienes participan en el intercambio pueden calificarlo"}
+
+Puntaje fuera de rango (Eudenia en el intercambio 2)
+  POST /api/calificaciones como Eudenia: {"id_oferta":2,"puntaje":7}
+  -> 400 {"error":"El puntaje tiene que ser un número de 1 a 5"}
+
+Resumen que muestra el perfil
+  GET /api/calificaciones/resumen?id_usuario=1 (Eudenia) -> 200 {"cantidad":2,"promedio":4.5}
+  GET /api/calificaciones/resumen?id_usuario=2 (Job) -> 200 {"cantidad":0,"promedio":null}
+  GET /api/calificaciones/resumen?id_usuario=3 (Carlos) -> 200 {"cantidad":1,"promedio":5}
+
+Analítica (total acumulado, incluye lo que dejaron las pruebas E2E)
+  GET /api/analitica
+  calificacion_enviada: 4
+  calificacion_iniciada: 5
