@@ -1,5 +1,6 @@
 const { sequelize, models } = require("../database/sequelize");
 const { idValido } = require("../utils/idValido");
+const { cargarOferta } = require("../utils/cargarOferta");
 const { parteDelIntercambio } = require("../utils/reglasObjeto");
 const {
   puedeProponerEntrega,
@@ -17,18 +18,6 @@ function aJson(propuesta) {
   const datos = propuesta.toJSON();
   datos.hora = String(datos.hora).slice(0, 5);
   return datos;
-}
-
-async function cargarOferta(id, transaction) {
-  const opciones = transaction ? { transaction, lock: transaction.LOCK.UPDATE } : {};
-  const oferta = await models.ofertas.findByPk(id, opciones);
-  if (!oferta) return { codigo: 404, error: "Oferta no encontrada" };
-  const pedida = await models.publicaciones.findByPk(oferta.id_publicacion_pedida, { transaction });
-  const ofrecida = await models.publicaciones.findByPk(oferta.id_publicacion_ofrecida, { transaction });
-  if (!pedida || !ofrecida) {
-    return { codigo: 404, error: "Ya no existe alguna de las publicaciones" };
-  }
-  return { oferta, pedida, ofrecida };
 }
 
 async function cargarPropuesta(id, transaction) {
