@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../estado/controlador_autenticacion.dart';
 import '../widgets/pagina_acceso.dart';
+import '../widgets/resumen_calificaciones.dart';
 
 /// RUTA PRIVADA ("/perfil"): sin sesión, el router redirige a "/iniciar-sesion".
 ///
@@ -53,7 +54,12 @@ class PantallaPerfil extends StatelessWidget {
           textAlign: TextAlign.center,
           style: Theme.of(context).textTheme.headlineSmall,
         ),
-        const SizedBox(height: 32),
+        const SizedBox(height: 8),
+        ResumenCalificaciones(
+          key: ValueKey('calificaciones-${usuario.id}'),
+          idUsuario: usuario.id,
+        ),
+        const SizedBox(height: 24),
 
         // ---- Bloque 1: publicaciones (la acción principal va primero) ----
         Text('PUBLICACIONES', style: estiloTitulo),
