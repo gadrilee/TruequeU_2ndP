@@ -1,5 +1,6 @@
 var DataTypes = require("sequelize").DataTypes;
 var _account = require("./account");
+var _calificaciones = require("./calificaciones");
 var _invitation = require("./invitation");
 var _eventos = require("./eventos");
 var _historial = require("./historial");
@@ -18,6 +19,7 @@ var _verification = require("./verification");
 
 function initModels(sequelize) {
   var account = _account(sequelize, DataTypes);
+  var calificaciones = _calificaciones(sequelize, DataTypes);
   var invitation = _invitation(sequelize, DataTypes);
   var eventos = _eventos(sequelize, DataTypes);
   var historial = _historial(sequelize, DataTypes);
@@ -65,6 +67,7 @@ function initModels(sequelize) {
 
   return {
     account,
+    calificaciones,
     eventos,
     historial,
     invitation,
