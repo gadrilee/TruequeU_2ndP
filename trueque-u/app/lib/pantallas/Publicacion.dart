@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../estado/controlador_autenticacion.dart';
+import '../servicios/analitica.dart';
 import '../servicios/cliente_api.dart';
 import '../utilidades/etiquetas.dart';
 import '../widgets/banner_error.dart';
@@ -42,12 +43,18 @@ class _PantallaPublicacionState extends State<PantallaPublicacion> {
     });
 
     try {
-      await context.read<ControladorAutenticacion>().crearPublicacion(
+      final auth = context.read<ControladorAutenticacion>();
+      await auth.crearPublicacion(
             titulo: _nombre.text,
             descripcion: _descripcion.text,
             estado: _estado,
             categoria: _categoria,
           );
+      track('publicacion_creada', {
+        'categoria': _categoria,
+        'estado': _estado,
+        'tiene_descripcion': _descripcion.text.trim().isNotEmpty,
+      }, auth.api);
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(

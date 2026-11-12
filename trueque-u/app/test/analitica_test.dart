@@ -42,4 +42,48 @@ void main() {
 
     await track('oferta_iniciada', {'id_publicacion': 5}, ClienteApi(cliente: cliente));
   });
+
+  test('feed_filtrado envia filtros y conteo sin el texto de busqueda', () async {
+    final enviados = <http.Request>[];
+    final cliente = MockClient((peticion) async {
+      enviados.add(peticion);
+      return http.Response('{}', 201);
+    });
+
+    await track(
+      'feed_filtrado',
+      {
+        'categoria': 'libros',
+        'condicion': null,
+        'disponibilidad': 'disponible',
+        'tiene_busqueda': true,
+        'num_resultados': 3,
+      },
+      ClienteApi(cliente: cliente),
+    );
+
+    final cuerpo = jsonDecode(enviados.first.body);
+    expect(cuerpo['evento'], 'feed_filtrado');
+    expect(cuerpo['props']['tiene_busqueda'], true);
+    expect(cuerpo['props']['num_resultados'], 3);
+    expect(cuerpo['props'].containsKey('buscar'), false);
+  });
+
+  test('reserva_cancelada envia el origen', () async {
+    final enviados = <http.Request>[];
+    final cliente = MockClient((peticion) async {
+      enviados.add(peticion);
+      return http.Response('{}', 201);
+    });
+
+    await track(
+      'reserva_cancelada',
+      {'id_publicacion': 4, 'origen': 'feed'},
+      ClienteApi(cliente: cliente),
+    );
+
+    final cuerpo = jsonDecode(enviados.first.body);
+    expect(cuerpo['evento'], 'reserva_cancelada');
+    expect(cuerpo['props'], {'id_publicacion': 4, 'origen': 'feed'});
+  });
 }

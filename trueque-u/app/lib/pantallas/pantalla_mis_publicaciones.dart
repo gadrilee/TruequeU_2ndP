@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../estado/controlador_autenticacion.dart';
+import '../servicios/analitica.dart';
 import '../servicios/cliente_api.dart';
 import '../utilidades/whatsapp.dart';
 import '../widgets/dialogo_confirmacion.dart';
@@ -87,7 +88,9 @@ class _PantallaMisPublicacionesState extends State<PantallaMisPublicaciones> {
 
     setState(() => _accionesEnProgreso.add(id));
     try {
-      await context.read<ControladorAutenticacion>().eliminarPublicacion(id);
+      final auth = context.read<ControladorAutenticacion>();
+      await auth.eliminarPublicacion(id);
+      track('publicacion_eliminada', {'id_publicacion': id}, auth.api);
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Publicación eliminada')),
@@ -108,9 +111,12 @@ class _PantallaMisPublicacionesState extends State<PantallaMisPublicaciones> {
   Future<void> _cambiarEstado(int id, String nuevoEstado) async {
     setState(() => _accionesEnProgreso.add(id));
     try {
-      await context
-          .read<ControladorAutenticacion>()
-          .cambiarEstadoPublicacion(id, nuevoEstado);
+      final auth = context.read<ControladorAutenticacion>();
+      await auth.cambiarEstadoPublicacion(id, nuevoEstado);
+      track('publicacion_estado_cambiado', {
+        'id_publicacion': id,
+        'nuevo_estado': nuevoEstado,
+      }, auth.api);
       if (!mounted) return;
       const nombres = {
         'disponible': 'disponible',
@@ -143,7 +149,12 @@ class _PantallaMisPublicacionesState extends State<PantallaMisPublicaciones> {
   /// Función para descartar la reserva activa y regresar el objeto a 'disponible'
   Future<void> _descartarReserva(int id) async {
     try {
-      await context.read<ControladorAutenticacion>().descartarReservaPublicacion(id);
+      final auth = context.read<ControladorAutenticacion>();
+      await auth.descartarReservaPublicacion(id);
+      track('reserva_cancelada', {
+        'id_publicacion': id,
+        'origen': 'mis_publicaciones',
+      }, auth.api);
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Reserva descartada. Publicación ahora disponible.')),
@@ -188,7 +199,12 @@ class _PantallaMisPublicacionesState extends State<PantallaMisPublicaciones> {
 
     setState(() => _accionesEnProgreso.add(id));
     try {
-      await context.read<ControladorAutenticacion>().completarIntercambio(id);
+      final auth = context.read<ControladorAutenticacion>();
+      await auth.completarIntercambio(id);
+      track('intercambio_completado', {
+        'id_publicacion': id,
+        'origen': 'mis_publicaciones',
+      }, auth.api);
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('¡Intercambio completado!')),
@@ -238,6 +254,9 @@ class _PantallaMisPublicacionesState extends State<PantallaMisPublicaciones> {
     );
 
     if (resultado == true && mounted) {
+      track('publicacion_editada', {
+        'id_publicacion': id,
+      }, context.read<ControladorAutenticacion>().api);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Publicación actualizada correctamente')),
       );
@@ -309,7 +328,13 @@ class _PantallaMisPublicacionesState extends State<PantallaMisPublicaciones> {
                 telefonoReserva: telefonoReserva,
                 enProgreso: _accionesEnProgreso.contains(idPub),
                 alCompletar: () => _completar(idPub, tituloPub, estaReservada),
-                alAbrirWhatsapp: () => abrirWhatsapp(context, telefonoReserva ?? ''),
+                alAbrirWhatsapp: () {
+                  track('whatsapp_abierto', {
+                    'id_publicacion': idPub,
+                    'rol': 'dueno',
+                  }, context.read<ControladorAutenticacion>().api);
+                  abrirWhatsapp(context, telefonoReserva ?? '');
+                },
                 alEditar: () => _editar(
                   idPub,
                   (pub['titulo'] as String?) ?? '',

@@ -64,9 +64,17 @@ class _PantallaFeedPublicacionesState extends State<PantallaFeedPublicaciones> {
   }
 
   /// Cambia un filtro y vuelve a pedir las publicaciones
-  void _aplicarFiltro(VoidCallback cambio) {
+  Future<void> _aplicarFiltro(VoidCallback cambio) async {
     setState(cambio);
-    _cargarPublicaciones();
+    await _cargarPublicaciones();
+    if (!mounted || _error != null || !_hayFiltros) return;
+    track('feed_filtrado', {
+      'categoria': _categoria,
+      'condicion': _condicion,
+      'disponibilidad': _disponibilidad,
+      'tiene_busqueda': _busqueda.isNotEmpty,
+      'num_resultados': _publicaciones.length,
+    }, context.read<ControladorAutenticacion>().api);
   }
 
   /// Aplica el texto escrito en el buscador
@@ -141,12 +149,16 @@ class _PantallaFeedPublicacionesState extends State<PantallaFeedPublicaciones> {
 
   /// LÓGICA DE RESERVAR:
   /// Envía la petición PUT /api/publicaciones/:id/reservado (el servidor usa la sesión)
-  Future<void> _reservar(int idPublicacion, String titulo) async {
+  Future<void> _reservar(int idPublicacion, String titulo, String categoria) async {
     final auth = context.read<ControladorAutenticacion>();
     // Solo se reserva con la sesión iniciada
     if (auth.usuario == null) return;
 
     // H5 (prevención de errores): se pide confirmación antes de apartar el objeto
+    track('reserva_iniciada', {
+      'id_publicacion': idPublicacion,
+      'categoria': categoria,
+    }, auth.api);
     final acepta = await confirmarAccion(
       context,
       titulo: 'Reservar publicación',
@@ -161,6 +173,10 @@ class _PantallaFeedPublicacionesState extends State<PantallaFeedPublicaciones> {
 
     try {
       await auth.reservarPublicacion(idPublicacion);
+      track('reserva_hecha', {
+        'id_publicacion': idPublicacion,
+        'categoria': categoria,
+      }, auth.api);
       if (!mounted) return;
       // H1/H7: se dice qué pasó y cuál es el siguiente paso
       ScaffoldMessenger.of(context).showSnackBar(
@@ -272,6 +288,10 @@ class _PantallaFeedPublicacionesState extends State<PantallaFeedPublicaciones> {
 
     try {
       await auth.descartarReservaPublicacion(idPublicacion);
+      track('reserva_cancelada', {
+        'id_publicacion': idPublicacion,
+        'origen': 'feed',
+      }, auth.api);
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Reserva descartada. Publicación nuevamente disponible.')),
@@ -314,6 +334,10 @@ class _PantallaFeedPublicacionesState extends State<PantallaFeedPublicaciones> {
 
     try {
       await auth.completarIntercambio(idPublicacion);
+      track('intercambio_completado', {
+        'id_publicacion': idPublicacion,
+        'origen': 'feed',
+      }, auth.api);
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('¡Intercambio completado!')),
@@ -432,13 +456,24 @@ class _PantallaFeedPublicacionesState extends State<PantallaFeedPublicaciones> {
                     ofertaEnviada: pub['oferta_enviada'] == true,
                     enProgreso: enProgreso,
                     telefonoDueno: telefonoAutor,
-                    alContactar: () => abrirWhatsapp(
-                      context,
-                      telefonoAutor ?? '',
-                      mensaje:
-                          'Hola $nombreAutor, reservé "$tituloPub" en Trueque U. ¿Coordinamos la entrega?',
+                    alContactar: () {
+                      track('whatsapp_abierto', {
+                        'id_publicacion': id,
+                        'categoria': (pub['categoria'] as String?) ?? 'otros',
+                        'rol': 'reservante',
+                      }, context.read<ControladorAutenticacion>().api);
+                      abrirWhatsapp(
+                        context,
+                        telefonoAutor ?? '',
+                        mensaje:
+                            'Hola $nombreAutor, reservé "$tituloPub" en Trueque U. ¿Coordinamos la entrega?',
+                      );
+                    },
+                    alReservar: () => _reservar(
+                      id,
+                      tituloPub,
+                      (pub['categoria'] as String?) ?? 'otros',
                     ),
-                    alReservar: () => _reservar(id, tituloPub),
                     alOfertar: () => _ofrecer(
                       id,
                       tituloPub,

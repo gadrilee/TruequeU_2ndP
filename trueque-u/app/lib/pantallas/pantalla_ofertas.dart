@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../estado/controlador_autenticacion.dart';
+import '../servicios/analitica.dart';
 import '../servicios/cliente_api.dart';
 import '../widgets/bloque_calificacion.dart';
 import '../widgets/bloque_entrega.dart';
@@ -93,6 +94,13 @@ class _PantallaOfertasState extends State<PantallaOfertas> {
         'entrega' => await auth.confirmarEntrega(id),
         _ => await auth.cancelarOferta(id),
       };
+      final evento = switch (accion) {
+        'aceptar' => 'oferta_aceptada',
+        'rechazar' => 'oferta_rechazada',
+        'entrega' => 'entrega_confirmada',
+        _ => 'oferta_cancelada',
+      };
+      track(evento, {'id_oferta': id}, auth.api);
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(texto)));
       await _cargar();
@@ -115,7 +123,9 @@ class _PantallaOfertasState extends State<PantallaOfertas> {
 
     setState(() => _enProgreso.add(id));
     try {
-      final texto = await context.read<ControladorAutenticacion>().cancelarIntercambio(id, motivo);
+      final auth = context.read<ControladorAutenticacion>();
+      final texto = await auth.cancelarIntercambio(id, motivo);
+      track('intercambio_cancelado', {'id_oferta': id}, auth.api);
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(texto)));
       await _cargar();
@@ -149,6 +159,10 @@ class _PantallaOfertasState extends State<PantallaOfertas> {
             (pub['id_usuario'] as num).toInt() == idOferente &&
             (pub['id'] as num).toInt() != idActual)
         .toList();
+    track('contraoferta_iniciada', {
+      'id_oferta': (oferta['id'] as num).toInt(),
+      'num_opciones': opciones.length,
+    }, auth.api);
     final idNueva = await mostrarDialogoContraoferta(
       context,
       tituloPedido: pedida['titulo'] as String? ?? 'un objeto',
@@ -160,6 +174,11 @@ class _PantallaOfertasState extends State<PantallaOfertas> {
     setState(() => _enProgreso.add(id));
     try {
       final texto = await auth.contraofertar(id, idNueva);
+      track('contraoferta_enviada', {
+        'id_oferta': id,
+        'id_publicacion_nueva': idNueva,
+        'id_publicacion_anterior': idActual,
+      }, auth.api);
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(texto)));
       await _cargar();

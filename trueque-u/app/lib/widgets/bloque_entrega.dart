@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../estado/controlador_autenticacion.dart';
+import '../servicios/analitica.dart';
 import '../servicios/cliente_api.dart';
 import '../utilidades/formato_entrega.dart';
 import 'dialogo_entrega.dart';
@@ -56,11 +57,16 @@ class _BloqueEntregaState extends State<BloqueEntrega> {
     }
   }
 
-  Future<void> _ejecutar(Future<String> Function() accion) async {
+  Future<void> _ejecutar(
+    Future<String> Function() accion,
+    String evento,
+    Map<String, dynamic> props,
+  ) async {
     setState(() => _enviando = true);
     try {
       final texto = await accion();
       if (!mounted) return;
+      track(evento, props, context.read<ControladorAutenticacion>().api);
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(texto)));
       await _cargar();
     } on ExcepcionApi catch (e) {
@@ -82,6 +88,8 @@ class _BloqueEntregaState extends State<BloqueEntrega> {
     if (datos == null || !mounted) return;
     await _ejecutar(
       () => context.read<ControladorAutenticacion>().proponerEntrega(widget.idOferta, datos),
+      'entrega_propuesta',
+      {'id_oferta': widget.idOferta, 'reprograma': reprograma},
     );
   }
 
@@ -96,12 +104,18 @@ class _BloqueEntregaState extends State<BloqueEntrega> {
     final id = (_pendiente!['id'] as num).toInt();
     await _ejecutar(
       () => context.read<ControladorAutenticacion>().contraproponerEntrega(id, datos),
+      'entrega_contrapropuesta',
+      {'id_oferta': widget.idOferta, 'id_propuesta': id},
     );
   }
 
   Future<void> _aceptar() async {
     final id = (_pendiente!['id'] as num).toInt();
-    await _ejecutar(() => context.read<ControladorAutenticacion>().aceptarEntrega(id));
+    await _ejecutar(
+      () => context.read<ControladorAutenticacion>().aceptarEntrega(id),
+      'entrega_aceptada',
+      {'id_oferta': widget.idOferta, 'id_propuesta': id},
+    );
   }
 
   String _nombreEstado(String estado) {
