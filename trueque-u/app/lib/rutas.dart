@@ -13,6 +13,7 @@ import 'pantallas/pantalla_ofertas.dart';
 import 'pantallas/pantalla_perfil.dart';
 import 'pantallas/pantalla_recuperar_contrasena.dart';
 import 'pantallas/pantalla_registro.dart';
+import 'widgets/estructura_principal.dart';
 
 /// Rutas que exigen sesión iniciada (protegidas).
 const _rutasPrivadas = {
@@ -41,9 +42,9 @@ GoRouter construirRutas(ControladorAutenticacion autenticacion) {
       if (_rutasPrivadas.contains(ruta) && !autenticacion.autenticado) {
         return '/iniciar-sesion';
       }
-      // Inicio de sesión o registro con sesión activa -> directo al perfil.
+      // Inicio de sesión o registro con sesión activa -> directo a Explorar.
       if (_rutasSoloInvitados.contains(ruta) && autenticacion.autenticado) {
-        return '/perfil';
+        return '/feed';
       }
       return null;
     },
@@ -62,10 +63,43 @@ GoRouter construirRutas(ControladorAutenticacion autenticacion) {
         path: '/recuperar-contrasena',
         builder: (context, estado) => const PantallaRecuperarContrasena(),
       ),
-      // PRIVADAS: exigen sesión (ver redirect).
-      GoRoute(
-        path: '/perfil',
-        builder: (context, estado) => const PantallaPerfil(),
+      StatefulShellRoute.indexedStack(
+        builder: (context, estado, navegacion) =>
+            EstructuraPrincipal(navegacion: navegacion),
+        branches: [
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/feed',
+                builder: (context, estado) => const PantallaFeedPublicaciones(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/mis-publicaciones',
+                builder: (context, estado) => const PantallaMisPublicaciones(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/ofertas',
+                builder: (context, estado) => const PantallaOfertas(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/perfil',
+                builder: (context, estado) => const PantallaPerfil(),
+              ),
+            ],
+          ),
+        ],
       ),
       GoRoute(
         path: '/cambiar-contrasena',
@@ -75,28 +109,15 @@ GoRouter construirRutas(ControladorAutenticacion autenticacion) {
         path: '/publicacion',
         builder: (context, estado) => const PantallaPublicacion(),
       ),
-      GoRoute(
-        path: '/mis-publicaciones',
-        builder: (context, estado) => const PantallaMisPublicaciones(),
-      ),
       // Intercambios completados de la persona con sesión
       GoRoute(
         path: '/intercambios',
         builder: (context, estado) => const PantallaIntercambios(),
       ),
-      GoRoute(
-        path: '/ofertas',
-        builder: (context, estado) => const PantallaOfertas(),
-      ),
       // Historial de reservas e intercambios de la persona con sesión
       GoRoute(
         path: '/historial',
         builder: (context, estado) => const PantallaHistorial(),
-      ),
-      // Feed general: vista pública en cuadrícula de todas las ofertas de trueque
-      GoRoute(
-        path: '/feed',
-        builder: (context, estado) => const PantallaFeedPublicaciones(),
       ),
     ],
   );
