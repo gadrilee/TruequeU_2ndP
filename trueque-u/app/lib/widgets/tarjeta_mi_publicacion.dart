@@ -108,33 +108,33 @@ class TarjetaMiPublicacion extends StatelessWidget {
                     enabled: !enProgreso,
                     onSelected: alCambiarEstado,
                     itemBuilder: (ctx) => [
-                      const PopupMenuItem(
+                      PopupMenuItem(
                         value: 'disponible',
                         child: Row(
                           children: [
-                            Icon(Icons.check_circle_outline, size: 18, color: Colors.green),
-                            SizedBox(width: 8),
-                            Text('Marcar como Disponible'),
+                            Icon(Icons.check_circle_outline, size: 18, color: colores.tertiary),
+                            const SizedBox(width: 8),
+                            const Text('Marcar como Disponible'),
                           ],
                         ),
                       ),
-                      const PopupMenuItem(
+                      PopupMenuItem(
                         value: 'oculto',
                         child: Row(
                           children: [
-                            Icon(Icons.visibility_off_outlined, size: 18, color: Colors.grey),
-                            SizedBox(width: 8),
-                            Text('Ocultar publicación'),
+                            Icon(Icons.visibility_off_outlined, size: 18, color: colores.onSurfaceVariant),
+                            const SizedBox(width: 8),
+                            const Text('Ocultar publicación'),
                           ],
                         ),
                       ),
-                      const PopupMenuItem(
+                      PopupMenuItem(
                         value: 'no disponible',
                         child: Row(
                           children: [
-                            Icon(Icons.block_outlined, size: 18, color: Colors.red),
-                            SizedBox(width: 8),
-                            Text('Marcar como No disponible'),
+                            Icon(Icons.block_outlined, size: 18, color: colores.error),
+                            const SizedBox(width: 8),
+                            const Text('Marcar como No disponible'),
                           ],
                         ),
                       ),
@@ -177,18 +177,18 @@ class TarjetaMiPublicacion extends StatelessWidget {
                 Etiqueta(
                   icono: Icons.category_outlined,
                   texto: etiquetasCategoria[categoria] ?? 'Otros',
-                  fondo: colores.secondaryContainer,
-                  colorTexto: colores.onSecondaryContainer,
+                  fondo: colores.primaryContainer,
+                  colorTexto: colores.onPrimaryContainer,
                 ),
                 Etiqueta(
                   icono: Icons.info_outline,
                   texto: _formatearEstadoPublicacion(estadoPublicacion),
                   fondo: estaReservada
-                      ? Colors.amber.shade100
-                      : colores.secondaryContainer,
+                      ? colores.secondaryContainer
+                      : colores.primaryContainer,
                   colorTexto: estaReservada
-                      ? Colors.amber.shade900
-                      : colores.onSecondaryContainer,
+                      ? colores.onSecondaryContainer
+                      : colores.onPrimaryContainer,
                 ),
                 // Indicador explícito de quién reservó la publicación
                 if (estaReservada)
@@ -197,15 +197,15 @@ class TarjetaMiPublicacion extends StatelessWidget {
                     texto: nombreReserva != null
                         ? 'Reservado por: $nombreReserva'
                         : 'Reservado por un usuario',
-                    fondo: colores.tertiaryContainer,
-                    colorTexto: colores.onTertiaryContainer,
+                    fondo: colores.secondaryContainer,
+                    colorTexto: colores.onSecondaryContainer,
                   ),
                 if (estaReservada)
                   Etiqueta(
                     icono: Icons.phone_outlined,
                     texto: 'El contacto se ve cuando los dos aceptan',
-                    fondo: colores.tertiaryContainer,
-                    colorTexto: colores.onTertiaryContainer,
+                    fondo: colores.primaryContainer,
+                    colorTexto: colores.onPrimaryContainer,
                   ),
                 if (estaAcordada &&
                     telefonoReserva != null &&
@@ -218,8 +218,8 @@ class TarjetaMiPublicacion extends StatelessWidget {
                       child: Etiqueta(
                         icono: Icons.chat_outlined,
                         texto: 'Escribir por WhatsApp',
-                        fondo: Colors.green.shade100,
-                        colorTexto: Colors.green.shade900,
+                        fondo: colores.tertiaryContainer,
+                        colorTexto: colores.onTertiaryContainer,
                       ),
                     ),
                   ),

@@ -49,7 +49,7 @@ class _ResumenCalificacionesState extends State<ResumenCalificaciones> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        const Icon(Icons.star, color: Colors.amber),
+        Icon(Icons.star_border, color: Theme.of(context).colorScheme.secondary),
         const SizedBox(width: 6),
         Text('${_promedio.toStringAsFixed(1)} de 5 · $_cantidad $palabra'),
       ],

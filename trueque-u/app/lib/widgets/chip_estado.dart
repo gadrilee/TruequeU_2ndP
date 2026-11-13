@@ -21,28 +21,28 @@ class ChipEstado extends StatelessWidget {
 
     switch (estado) {
       case 'disponible':
-        fondo = Colors.green.shade100;
-        texto = Colors.green.shade900;
+        fondo = colores.primaryContainer;
+        texto = colores.onPrimaryContainer;
         etiqueta = 'Disponible';
         break;
       case 'reservado':
-        fondo = loReserveYo ? colores.primaryContainer : Colors.amber.shade100;
-        texto = loReserveYo ? colores.onPrimaryContainer : Colors.amber.shade900;
+        fondo = colores.secondaryContainer;
+        texto = colores.onSecondaryContainer;
         etiqueta = loReserveYo ? 'Reservado por ti' : 'Reservado';
         break;
       case 'intercambiado':
-        fondo = Colors.blue.shade100;
-        texto = Colors.blue.shade900;
+        fondo = colores.tertiaryContainer;
+        texto = colores.onTertiaryContainer;
         etiqueta = 'Intercambiado';
         break;
       case 'acordado':
-        fondo = Colors.purple.shade100;
-        texto = Colors.purple.shade900;
+        fondo = colores.primary;
+        texto = colores.onPrimary;
         etiqueta = 'Intercambio acordado';
         break;
       case 'no disponible':
-        fondo = Colors.grey.shade200;
-        texto = Colors.grey.shade700;
+        fondo = colores.surfaceContainerHighest;
+        texto = colores.onSurfaceVariant;
         etiqueta = 'No disponible';
         break;
       default:
