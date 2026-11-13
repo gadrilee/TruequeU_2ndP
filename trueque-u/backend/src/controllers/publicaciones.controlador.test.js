@@ -10,7 +10,7 @@ jest.mock("../database/sequelize", () => ({
 }));
 
 const { models } = require("../database/sequelize");
-const { getPublicaciones } = require("./publicaciones.controlador");
+const { getPublicaciones, getMisPublicaciones } = require("./publicaciones.controlador");
 
 // Una fila falsa como las que devuelve la base de datos (con toJSON)
 function crearFila(datos) {
@@ -149,6 +149,35 @@ describe("Buscar y filtrar publicaciones", () => {
       expect(publicacion.usuario_reserva).toBeNull();
       expect(publicacion.id_usuario_reserva).toBeNull();
     });
+  });
+});
+
+describe("telefono de quien reservo", () => {
+  function fila(estado) {
+    return crearFila({
+      id: 2,
+      id_usuario: 1,
+      estado_publicacion: estado,
+      usuario_reserva: { id: 2, nombre: "Job", telefono: "70111222" },
+    });
+  }
+
+  async function pedir(estado) {
+    models.publicaciones.findAll.mockResolvedValue([fila(estado)]);
+    const res = crearRespuesta();
+    await getMisPublicaciones({ usuario: { id: 1 } }, res);
+    return res.json.mock.calls[0][0][0];
+  }
+
+  test("en una reserva el dueño no recibe el telefono", async () => {
+    const pub = await pedir("reservado");
+    expect(pub.usuario_reserva.telefono).toBeUndefined();
+    expect(pub.usuario_reserva.nombre).toBe("Job");
+  });
+
+  test("cuando los dos aceptan el dueño si recibe el telefono", async () => {
+    const pub = await pedir("acordado");
+    expect(pub.usuario_reserva.telefono).toBe("70111222");
   });
 });
 

@@ -137,7 +137,7 @@ const getPublicaciones = async (req, res) => {
 // GET /api/publicaciones/mias
 // Solo las publicaciones de la persona con sesión, en cualquier estado menos "intercambiado"
 // (las intercambiadas salen en GET /api/publicaciones/intercambiadas).
-// Aquí el dueño también ve el teléfono de quien reservó
+// el telefono de quien reservo solo sale si los dos ya aceptaron
 const getMisPublicaciones = async (req, res) => {
   try {
     const idUsuario = req.usuario.id;
@@ -150,7 +150,17 @@ const getMisPublicaciones = async (req, res) => {
       include: INCLUIR_USUARIOS_DUENO,
       order: [["id", "DESC"]],
     });
-    res.json(publicaciones);
+
+    const lista = publicaciones.map((publicacion) => {
+      const datos = publicacion.toJSON();
+      if (datos.estado_publicacion !== "acordado" && datos.usuario_reserva) {
+        const reserva = { ...datos.usuario_reserva };
+        delete reserva.telefono;
+        datos.usuario_reserva = reserva;
+      }
+      return datos;
+    });
+    res.json(lista);
   } catch (error) {
     console.error("Error al obtener mis publicaciones:", error);
     res.status(500).json({ error: "Error al obtener tus publicaciones" });

@@ -200,8 +200,14 @@ class TarjetaMiPublicacion extends StatelessWidget {
                     fondo: colores.tertiaryContainer,
                     colorTexto: colores.onTertiaryContainer,
                   ),
-                // Teléfono de quien reservó: al tocarlo se abre WhatsApp
-                if (estaReservada &&
+                if (estaReservada)
+                  Etiqueta(
+                    icono: Icons.phone_outlined,
+                    texto: 'El contacto se ve cuando los dos aceptan',
+                    fondo: colores.tertiaryContainer,
+                    colorTexto: colores.onTertiaryContainer,
+                  ),
+                if (estaAcordada &&
                     telefonoReserva != null &&
                     telefonoReserva!.isNotEmpty)
                   InkWell(
@@ -211,19 +217,11 @@ class TarjetaMiPublicacion extends StatelessWidget {
                       message: 'Abrir WhatsApp',
                       child: Etiqueta(
                         icono: Icons.chat_outlined,
-                        texto: 'WhatsApp: $telefonoReserva',
+                        texto: 'Escribir por WhatsApp',
                         fondo: Colors.green.shade100,
                         colorTexto: Colors.green.shade900,
                       ),
                     ),
-                  ),
-                if (estaReservada &&
-                    (telefonoReserva == null || telefonoReserva!.isEmpty))
-                  Etiqueta(
-                    icono: Icons.phone_outlined,
-                    texto: 'Sin teléfono registrado',
-                    fondo: colores.tertiaryContainer,
-                    colorTexto: colores.onTertiaryContainer,
                   ),
               ],
             ),
@@ -232,8 +230,7 @@ class TarjetaMiPublicacion extends StatelessWidget {
             if (estaReservada) ...[
               const SizedBox(height: 8),
               Text(
-                'Está reservada: solo puedes completar el intercambio '
-                'o escribir a quien la reservó.',
+                'Está reservada: solo puedes completar el intercambio.',
                 style: TextStyle(fontSize: 12, color: colores.onSurfaceVariant),
               ),
             ],
