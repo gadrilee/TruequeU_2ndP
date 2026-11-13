@@ -8,6 +8,7 @@ import 'configuracion.dart';
 import 'estado/controlador_autenticacion.dart';
 import 'rutas.dart';
 import 'servicios/cliente_api.dart';
+import 'tema.dart';
 
 Future<void> main() async {
   debugPrint('[inicio] Arrancando Trueque U...');
@@ -50,10 +51,7 @@ class _AplicacionTruequeUState extends State<AplicacionTruequeU> {
       child: MaterialApp.router(
         title: 'Trueque U',
         debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF91230C)),
-          useMaterial3: true,
-        ),
+        theme: TemaTruequeU.claro(),
         routerConfig: _rutas,
       ),
     );
