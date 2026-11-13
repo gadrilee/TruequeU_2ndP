@@ -57,9 +57,31 @@ class _PantallaRecuperarContrasenaState extends State<PantallaRecuperarContrasen
 
   @override
   Widget build(BuildContext context) {
+    final colores = Theme.of(context).colorScheme;
+
     return PaginaAcceso(
       titulo: 'Recuperar contraseña',
+      subtitulo: 'Te ayudamos a volver a entrar',
+      alVolver: () => context.go('/iniciar-sesion'),
+      pie: TextButton.icon(
+        onPressed: () => context.go('/iniciar-sesion'),
+        icon: const Icon(Icons.arrow_back, size: 18),
+        label: const Text('Volver a iniciar sesión'),
+      ),
       hijos: [
+        Align(
+          alignment: Alignment.centerLeft,
+          child: Container(
+            width: 56,
+            height: 56,
+            decoration: BoxDecoration(
+              color: colores.primaryContainer,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Icon(Icons.vpn_key, color: colores.primary),
+          ),
+        ),
+        const SizedBox(height: 16),
         const Text(
           'Escribe el correo de tu cuenta y te enviaremos una contraseña nueva.',
         ),
@@ -72,6 +94,7 @@ class _PantallaRecuperarContrasenaState extends State<PantallaRecuperarContrasen
               CampoTexto(
                 controlador: _correo,
                 etiqueta: 'Correo',
+                icono: Icons.mail_outline,
                 tipoTeclado: TextInputType.emailAddress,
                 accionTeclado: TextInputAction.done,
                 alEnviar: _enviar,
@@ -89,13 +112,26 @@ class _PantallaRecuperarContrasenaState extends State<PantallaRecuperarContrasen
         ),
         if (_enviado) ...[
           const SizedBox(height: 16),
-          const Text('Listo. Revisa tu correo: ahí está tu contraseña nueva.'),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: colores.tertiaryContainer,
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.check_circle_outline, color: colores.onTertiaryContainer),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'Listo. Revisa tu correo: ahí está tu contraseña nueva.',
+                    style: TextStyle(color: colores.onTertiaryContainer),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
-        const SizedBox(height: 8),
-        TextButton(
-          onPressed: () => context.go('/iniciar-sesion'),
-          child: const Text('Volver a iniciar sesión'),
-        ),
       ],
     );
   }

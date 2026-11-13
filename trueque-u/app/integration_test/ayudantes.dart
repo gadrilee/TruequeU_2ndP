@@ -76,9 +76,19 @@ Future<void> iniciarSesion(WidgetTester tester, List<String> persona) async {
   await tocarBoton(tester, 'Iniciar sesión');
   await escribir(tester, 'Correo', persona[0]);
   await escribir(tester, 'Contraseña', persona[1]);
-  await tocarBoton(tester, 'Entrar');
+  await tocarBoton(tester, 'Iniciar sesión');
+  await esperarTexto(tester, 'Explorar');
+  await abrirPestana(tester, 'Perfil');
   await esperarTexto(tester, 'Mi perfil');
   await tester.pumpAndSettle();
+}
+
+Future<void> abrirPestana(WidgetTester tester, String nombre) async {
+  final pestana = find.descendant(
+    of: find.byType(NavigationBar),
+    matching: find.text(nombre),
+  );
+  await tocar(tester, pestana);
 }
 
 Future<void> abrirAppConSesion(WidgetTester tester, List<String> persona) async {
@@ -88,7 +98,7 @@ Future<void> abrirAppConSesion(WidgetTester tester, List<String> persona) async 
 
 Future<void> cerrarSesion(WidgetTester tester) async {
   await tocarBoton(tester, 'Cerrar sesión');
-  await esperarTexto(tester, 'Entrar');
+  await esperarTexto(tester, 'Inicia sesión');
 }
 
 Future<void> buscarEnElFeed(WidgetTester tester, String titulo) async {
@@ -124,6 +134,8 @@ Future<void> crearCuenta(
   await escribir(tester, 'Contraseña', contrasena);
   await escribir(tester, 'Repite la contraseña', contrasena);
   await tocar(tester, find.widgetWithText(FilledButton, 'Crear cuenta'));
+  await esperarTexto(tester, 'Explorar');
+  await abrirPestana(tester, 'Perfil');
   await esperarTexto(tester, 'Mi perfil');
   await tester.pumpAndSettle();
 }

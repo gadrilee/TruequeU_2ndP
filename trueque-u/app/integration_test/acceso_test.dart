@@ -21,7 +21,7 @@ void main() {
 
       await irARuta(tester, '/perfil');
 
-      expect(find.widgetWithText(FilledButton, 'Entrar'), findsOneWidget);
+      expect(find.widgetWithText(FilledButton, 'Iniciar sesión'), findsOneWidget);
       expect(find.text('Mi perfil'), findsNothing);
     });
   });
@@ -42,7 +42,7 @@ void main() {
 
       await escribir(tester, 'Correo', 'eudeniaflores@gmail.com');
       await escribir(tester, 'Contraseña', 'clave-equivocada');
-      await tocarBoton(tester, 'Entrar');
+      await tocarBoton(tester, 'Iniciar sesión');
       await esperarTexto(tester, 'Correo o contraseña incorrectos');
 
       expect(find.text('Correo o contraseña incorrectos'), findsOneWidget);
@@ -53,7 +53,7 @@ void main() {
       await abrirApp(tester);
       await tocarBoton(tester, 'Iniciar sesión');
 
-      await tocarBoton(tester, 'Entrar');
+      await tocarBoton(tester, 'Iniciar sesión');
 
       expect(find.text('Escribe tu correo'), findsOneWidget);
       expect(find.text('Escribe tu contraseña'), findsOneWidget);
@@ -64,7 +64,7 @@ void main() {
 
       await cerrarSesion(tester);
 
-      expect(find.widgetWithText(FilledButton, 'Entrar'), findsOneWidget);
+      expect(find.widgetWithText(FilledButton, 'Iniciar sesión'), findsOneWidget);
       expect(find.text('Hola, Eudenia Flores Veizaga'), findsNothing);
     });
   });
@@ -80,6 +80,8 @@ void main() {
       await escribir(tester, 'Contraseña', 'ana12345');
       await escribir(tester, 'Repite la contraseña', 'ana12345');
       await tocar(tester, find.widgetWithText(FilledButton, 'Crear cuenta'));
+      await esperarTexto(tester, 'Explorar');
+      await abrirPestana(tester, 'Perfil');
       await esperarTexto(tester, 'Mi perfil');
 
       expect(find.text('Hola, Ana Quispe'), findsOneWidget);
@@ -160,7 +162,7 @@ void main() {
 
       await tocarBoton(tester, 'Volver a iniciar sesión');
 
-      expect(find.widgetWithText(FilledButton, 'Entrar'), findsOneWidget);
+      expect(find.widgetWithText(FilledButton, 'Iniciar sesión'), findsOneWidget);
     });
   });
 

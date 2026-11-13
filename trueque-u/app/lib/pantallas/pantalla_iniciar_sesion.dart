@@ -42,7 +42,7 @@ class _PantallaIniciarSesionState extends State<PantallaIniciarSesion> {
           .read<ControladorAutenticacion>()
           .iniciarSesion(_correo.text, _contrasena.text);
       if (!mounted) return;
-      context.go('/perfil');
+      context.go('/feed');
     } on ExcepcionApi catch (e) {
       if (!mounted) return;
       setState(() {
@@ -55,8 +55,32 @@ class _PantallaIniciarSesionState extends State<PantallaIniciarSesion> {
   @override
   Widget build(BuildContext context) {
     return PaginaAcceso(
-      titulo: 'Iniciar sesión',
+      titulo: 'Trueque U',
+      subtitulo: 'Qué bueno verte de nuevo',
+      conLogo: true,
+      pie: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Text('¿No tienes cuenta?'),
+          TextButton(
+            style: TextButton.styleFrom(
+              foregroundColor: Theme.of(context).colorScheme.secondary,
+              textStyle: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            onPressed: () => context.go('/registro'),
+            child: const Text('Crear cuenta'),
+          ),
+        ],
+      ),
       hijos: [
+        Text(
+          'Inicia sesión',
+          style: Theme.of(context)
+              .textTheme
+              .headlineSmall
+              ?.copyWith(fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 16),
         Form(
           key: _formulario,
           child: Column(
@@ -65,6 +89,7 @@ class _PantallaIniciarSesionState extends State<PantallaIniciarSesion> {
               CampoTexto(
                 controlador: _correo,
                 etiqueta: 'Correo',
+                icono: Icons.mail_outline,
                 tipoTeclado: TextInputType.emailAddress,
                 accionTeclado: TextInputAction.next,
                 validador: validarCorreo,
@@ -73,25 +98,28 @@ class _PantallaIniciarSesionState extends State<PantallaIniciarSesion> {
               CampoTexto(
                 controlador: _contrasena,
                 etiqueta: 'Contraseña',
+                icono: Icons.lock_outline,
                 ocultar: true,
                 accionTeclado: TextInputAction.done,
                 alEnviar: _enviar,
                 validador: (v) => (v ?? '').isEmpty ? 'Escribe tu contraseña' : null,
               ),
-              const SizedBox(height: 16),
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton(
+                  onPressed: () => context.go('/recuperar-contrasena'),
+                  child: const Text('¿Olvidaste tu contraseña?'),
+                ),
+              ),
+              const SizedBox(height: 8),
               BannerError(_error),
-              BotonCarga(texto: 'Entrar', cargando: _cargando, alPresionar: _enviar),
+              BotonCarga(
+                texto: 'Iniciar sesión',
+                cargando: _cargando,
+                alPresionar: _enviar,
+              ),
             ],
           ),
-        ),
-        const SizedBox(height: 8),
-        TextButton(
-          onPressed: () => context.go('/recuperar-contrasena'),
-          child: const Text('¿Olvidaste tu contraseña?'),
-        ),
-        TextButton(
-          onPressed: () => context.go('/registro'),
-          child: const Text('¿No tienes cuenta? Regístrate'),
         ),
       ],
     );

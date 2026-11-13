@@ -49,8 +49,7 @@ class _PantallaRegistroState extends State<PantallaRegistro> {
           .registrar(_nombre.text, _correo.text, _contrasena.text,
               telefono: _telefono.text);
       if (!mounted) return;
-      // La cuenta nueva queda con la sesión iniciada.
-      context.go('/perfil');
+      context.go('/feed');
     } on ExcepcionApi catch (e) {
       if (!mounted) return;
       setState(() {
@@ -64,6 +63,21 @@ class _PantallaRegistroState extends State<PantallaRegistro> {
   Widget build(BuildContext context) {
     return PaginaAcceso(
       titulo: 'Crear cuenta',
+      subtitulo: 'Únete a la comunidad de tu campus',
+      alVolver: () => context.go('/iniciar-sesion'),
+      pie: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Text('¿Ya tienes cuenta?'),
+          TextButton(
+            style: TextButton.styleFrom(
+              textStyle: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            onPressed: () => context.go('/iniciar-sesion'),
+            child: const Text('Inicia sesión'),
+          ),
+        ],
+      ),
       hijos: [
         Form(
           key: _formulario,
@@ -73,6 +87,7 @@ class _PantallaRegistroState extends State<PantallaRegistro> {
               CampoTexto(
                 controlador: _nombre,
                 etiqueta: 'Nombre completo',
+                icono: Icons.person_outline,
                 accionTeclado: TextInputAction.next,
                 validador: (v) =>
                     (v ?? '').trim().length < 2 ? 'Escribe tu nombre' : null,
@@ -81,6 +96,7 @@ class _PantallaRegistroState extends State<PantallaRegistro> {
               CampoTexto(
                 controlador: _correo,
                 etiqueta: 'Correo',
+                icono: Icons.mail_outline,
                 tipoTeclado: TextInputType.emailAddress,
                 accionTeclado: TextInputAction.next,
                 validador: validarCorreo,
@@ -89,6 +105,7 @@ class _PantallaRegistroState extends State<PantallaRegistro> {
               CampoTexto(
                 controlador: _telefono,
                 etiqueta: 'Teléfono (opcional, 8 dígitos)',
+                icono: Icons.phone_outlined,
                 tipoTeclado: TextInputType.phone,
                 accionTeclado: TextInputAction.next,
                 validador: validarTelefonoOpcional,
@@ -97,6 +114,7 @@ class _PantallaRegistroState extends State<PantallaRegistro> {
               CampoTexto(
                 controlador: _contrasena,
                 etiqueta: 'Contraseña',
+                icono: Icons.lock_outline,
                 ocultar: true,
                 accionTeclado: TextInputAction.next,
                 validador: validarContrasenaNueva,
@@ -105,6 +123,7 @@ class _PantallaRegistroState extends State<PantallaRegistro> {
               CampoTexto(
                 controlador: _confirmacion,
                 etiqueta: 'Repite la contraseña',
+                icono: Icons.lock_outline,
                 ocultar: true,
                 accionTeclado: TextInputAction.done,
                 alEnviar: _enviar,
@@ -117,14 +136,10 @@ class _PantallaRegistroState extends State<PantallaRegistro> {
                 texto: 'Crear cuenta',
                 cargando: _cargando,
                 alPresionar: _enviar,
+                rojo: true,
               ),
             ],
           ),
-        ),
-        const SizedBox(height: 8),
-        TextButton(
-          onPressed: () => context.go('/iniciar-sesion'),
-          child: const Text('¿Ya tienes cuenta? Inicia sesión'),
         ),
       ],
     );

@@ -7,15 +7,22 @@ class BotonCarga extends StatelessWidget {
     required this.texto,
     required this.cargando,
     required this.alPresionar,
+    this.rojo = false,
   });
 
   final String texto;
   final bool cargando;
   final VoidCallback alPresionar;
+  final bool rojo;
 
   @override
   Widget build(BuildContext context) {
     return FilledButton(
+      style: rojo
+          ? FilledButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.secondary,
+            )
+          : null,
       onPressed: cargando ? null : alPresionar,
       child: cargando
           ? const SizedBox(

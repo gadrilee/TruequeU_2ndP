@@ -11,18 +11,10 @@ class PantallaInicio extends StatelessWidget {
   Widget build(BuildContext context) {
     return PaginaAcceso(
       titulo: 'Trueque U',
+      subtitulo: 'Intercambia objetos y materiales con otros estudiantes.',
+      conLogo: true,
       hijos: [
-        Text(
-          'Trueque U',
-          textAlign: TextAlign.center,
-          style: Theme.of(context).textTheme.headlineMedium,
-        ),
-        const SizedBox(height: 8),
-        const Text(
-          'Intercambia objetos y materiales con otros estudiantes.',
-          textAlign: TextAlign.center,
-        ),
-        const SizedBox(height: 32),
+        const SizedBox(height: 16),
         FilledButton(
           onPressed: () => context.go('/iniciar-sesion'),
           child: const Text('Iniciar sesión'),
