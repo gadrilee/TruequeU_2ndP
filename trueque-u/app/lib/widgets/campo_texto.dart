@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
-/// Campo de texto con borde, usado en todos los formularios.
-class CampoTexto extends StatelessWidget {
+class CampoTexto extends StatefulWidget {
   const CampoTexto({
     super.key,
     required this.controlador,
     required this.etiqueta,
+    this.icono,
     this.validador,
     this.tipoTeclado,
     this.accionTeclado,
@@ -16,6 +16,7 @@ class CampoTexto extends StatelessWidget {
 
   final TextEditingController controlador;
   final String etiqueta;
+  final IconData? icono;
   final String? Function(String?)? validador;
   final TextInputType? tipoTeclado;
   final TextInputAction? accionTeclado;
@@ -24,18 +25,36 @@ class CampoTexto extends StatelessWidget {
   final int lineas;
 
   @override
+  State<CampoTexto> createState() => _CampoTextoState();
+}
+
+class _CampoTextoState extends State<CampoTexto> {
+  bool _verTexto = false;
+
+  @override
   Widget build(BuildContext context) {
+    final oculto = widget.ocultar && !_verTexto;
+
     return TextFormField(
-      controller: controlador,
-      obscureText: ocultar,
-      keyboardType: tipoTeclado,
-      textInputAction: accionTeclado,
-      maxLines: ocultar ? 1 : lineas,
-      validator: validador,
-      onFieldSubmitted: (_) => alEnviar?.call(),
+      controller: widget.controlador,
+      obscureText: oculto,
+      keyboardType: widget.tipoTeclado,
+      textInputAction: widget.accionTeclado,
+      maxLines: widget.ocultar ? 1 : widget.lineas,
+      validator: widget.validador,
+      onFieldSubmitted: (_) => widget.alEnviar?.call(),
       decoration: InputDecoration(
-        labelText: etiqueta,
-        border: const OutlineInputBorder(),
+        labelText: widget.etiqueta,
+        prefixIcon: widget.icono != null ? Icon(widget.icono) : null,
+        suffixIcon: widget.ocultar
+            ? IconButton(
+                tooltip: _verTexto ? 'Ocultar contraseña' : 'Mostrar contraseña',
+                icon: Icon(
+                  _verTexto ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                ),
+                onPressed: () => setState(() => _verTexto = !_verTexto),
+              )
+            : null,
       ),
     );
   }
