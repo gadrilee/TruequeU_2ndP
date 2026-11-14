@@ -74,7 +74,7 @@ void main() {
       expect(find.text('Intercambio cancelado'), findsOneWidget);
       expect(find.text('Motivo: No pude ir a la entrega'), findsOneWidget);
 
-      await tocarBoton(tester, 'Volver al perfil');
+      await abrirPestana(tester, 'Perfil');
       await abrirFeed(tester);
       await buscarEnElFeed(tester, 'Calculo');
 

@@ -26,6 +26,8 @@ class TemaTruequeU {
       tertiaryContainer: verdeClaro,
       onTertiaryContainer: verdeOscuro,
       error: rojo,
+      errorContainer: rojoClaro,
+      onErrorContainer: rojoOscuro,
       surface: fondo,
       outlineVariant: borde,
     );

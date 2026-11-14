@@ -245,7 +245,7 @@ void main() {
       await tocarBoton(tester, 'Cancelar oferta');
       await tocarBoton(tester, 'Cancelar oferta');
       await esperarTexto(tester, 'Cancelaste la oferta');
-      await tocarBoton(tester, 'Volver al perfil');
+      await abrirPestana(tester, 'Perfil');
 
       await cambiarDeUsuario(tester, eudenia);
       await abrirOfertas(tester);
@@ -267,7 +267,7 @@ void main() {
       await abrirAppConSesion(tester, carlos);
       await abrirOfertas(tester);
 
-      await tocarBoton(tester, 'Volver al perfil');
+      await abrirPestana(tester, 'Perfil');
 
       expect(find.text('Hola, Carlos Mamani'), findsOneWidget);
     });

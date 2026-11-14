@@ -330,7 +330,6 @@ class _PantallaOfertasState extends State<PantallaOfertas> {
     return PaginaAcceso(
       titulo: 'Ofertas de trueque',
       anchoMaximo: 560,
-      alVolver: () => context.go('/perfil'),
       acciones: [
         IconButton(
           icon: const Icon(Icons.refresh),
@@ -345,16 +344,16 @@ class _PantallaOfertasState extends State<PantallaOfertas> {
             ButtonSegment(value: 1, label: Text('Enviadas'), icon: Icon(Icons.outbox_outlined)),
           ],
           selected: {_viendoEnviadas ? 1 : 0},
+          style: SegmentedButton.styleFrom(
+            backgroundColor: Colors.white,
+            selectedBackgroundColor: Theme.of(context).colorScheme.primaryContainer,
+            selectedForegroundColor: Theme.of(context).colorScheme.onPrimaryContainer,
+          ),
           onSelectionChanged: (valor) =>
               setState(() => _viendoEnviadas = valor.first == 1),
         ),
         const SizedBox(height: 16),
         contenido,
-        const SizedBox(height: 16),
-        TextButton(
-          onPressed: () => context.go('/perfil'),
-          child: const Text('Volver al perfil'),
-        ),
       ],
     );
   }
@@ -549,13 +548,13 @@ class _ChipEstado extends StatelessWidget {
   Widget build(BuildContext context) {
     final colores = Theme.of(context).colorScheme;
     final (texto, fondo, tinta) = switch (estado) {
-      'contraofertada' => ('Contraofertada', colores.tertiaryContainer, colores.onTertiaryContainer),
-      'aceptada' => ('Aceptada', colores.primaryContainer, colores.onPrimaryContainer),
-      'completada' => ('Intercambio completado', colores.primaryContainer, colores.onPrimaryContainer),
+      'contraofertada' => ('Contraofertada', colores.secondaryContainer, colores.onSecondaryContainer),
+      'aceptada' => ('Aceptada', colores.tertiaryContainer, colores.onTertiaryContainer),
+      'completada' => ('Intercambio completado', colores.tertiaryContainer, colores.onTertiaryContainer),
       'anulada' => ('Intercambio cancelado', colores.errorContainer, colores.onErrorContainer),
       'rechazada' => ('Rechazada', colores.errorContainer, colores.onErrorContainer),
       'cancelada' => ('Cancelada', colores.surfaceContainerHighest, colores.onSurfaceVariant),
-      _ => ('Pendiente', colores.secondaryContainer, colores.onSecondaryContainer),
+      _ => ('Pendiente', colores.primaryContainer, colores.onPrimaryContainer),
     };
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
