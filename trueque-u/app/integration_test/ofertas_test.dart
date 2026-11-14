@@ -41,7 +41,7 @@ void main() {
         tester,
         'Oferta enviada. El dueño puede aceptarla o rechazarla Revísala en Ofertas de trueque.',
       );
-      await tocar(tester, find.byTooltip('Volver al perfil'));
+      await abrirPestana(tester, 'Perfil');
 
       await abrirOfertas(tester);
       await tocar(tester, find.text('Enviadas'));
@@ -59,7 +59,7 @@ void main() {
         tester,
         'Oferta enviada. El dueño puede aceptarla o rechazarla Revísala en Ofertas de trueque.',
       );
-      await tocar(tester, find.byTooltip('Volver al perfil'));
+      await abrirPestana(tester, 'Perfil');
 
       await cambiarDeUsuario(tester, eudenia);
       await abrirOfertas(tester);
@@ -184,7 +184,7 @@ void main() {
       expect(find.text('Nadie te ha ofrecido un trueque'), findsOneWidget);
 
       await tocarBoton(tester, 'Explorar publicaciones');
-      await esperarTexto(tester, 'Publicaciones');
+      await esperarTexto(tester, '¿Qué quieres intercambiar hoy?');
 
       expect(find.byTooltip('Ayuda: ¿cómo funciona?'), findsOneWidget);
     });
@@ -196,7 +196,7 @@ void main() {
         tester,
         'Oferta enviada. El dueño puede aceptarla o rechazarla Revísala en Ofertas de trueque.',
       );
-      await tocar(tester, find.byTooltip('Volver al perfil'));
+      await abrirPestana(tester, 'Perfil');
 
       await cambiarDeUsuario(tester, eudenia);
       await abrirOfertas(tester);

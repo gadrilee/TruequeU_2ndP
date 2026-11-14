@@ -490,44 +490,68 @@ class _PantallaFeedPublicacionesState extends State<PantallaFeedPublicaciones> {
       );
     }
 
+    final primerNombre = (usuarioActual?.nombre ?? '').split(' ').first;
+
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Publicaciones'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          tooltip: 'Volver al perfil',
-          onPressed: () => context.go('/perfil'),
-        ),
-        actions: [
-          // H10: ayuda contextual, siempre a un toque
-          IconButton(
-            icon: const Icon(Icons.help_outline),
-            tooltip: 'Ayuda: ¿cómo funciona?',
-            onPressed: () => mostrarAyudaTrueque(context),
-          ),
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            tooltip: 'Actualizar feed',
-            onPressed: _cargarPublicaciones,
-          ),
-        ],
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => context.go('/publicacion'),
+        icon: const Icon(Icons.add),
+        label: const Text('Publicar'),
       ),
-      // Arriba el buscador y los filtros; abajo la lista
-      body: Column(
-        children: [
-          FiltrosFeed(
-            buscarCtrl: _buscarCtrl,
-            busqueda: _busqueda,
-            categoria: _categoria,
-            condicion: _condicion,
-            disponibilidad: _disponibilidad,
-            alBuscar: _buscar,
-            alElegir: _elegirFiltro,
-            alQuitar: _quitarFiltro,
-            alQuitarTodos: _quitarFiltros,
-          ),
-          Expanded(child: cuerpo),
-        ],
+      body: SafeArea(
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 16, 8, 0),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Hola, $primerNombre',
+                          style: Theme.of(context).textTheme.bodyLarge,
+                        ),
+                        Text(
+                          '¿Qué quieres intercambiar hoy?',
+                          style: Theme.of(context)
+                              .textTheme
+                              .titleLarge
+                              ?.copyWith(fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // H10: ayuda contextual, siempre a un toque
+                  IconButton(
+                    icon: const Icon(Icons.help_outline),
+                    tooltip: 'Ayuda: ¿cómo funciona?',
+                    onPressed: () => mostrarAyudaTrueque(context),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.refresh),
+                    tooltip: 'Actualizar feed',
+                    onPressed: _cargarPublicaciones,
+                  ),
+                ],
+              ),
+            ),
+            // Arriba el buscador y los filtros; abajo la lista
+            FiltrosFeed(
+              buscarCtrl: _buscarCtrl,
+              busqueda: _busqueda,
+              categoria: _categoria,
+              condicion: _condicion,
+              disponibilidad: _disponibilidad,
+              alBuscar: _buscar,
+              alElegir: _elegirFiltro,
+              alQuitar: _quitarFiltro,
+              alQuitarTodos: _quitarFiltros,
+            ),
+            Expanded(child: cuerpo),
+          ],
+        ),
       ),
     );
   }

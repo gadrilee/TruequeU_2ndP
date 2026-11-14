@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../tema.dart';
 import '../utilidades/etiquetas.dart';
 
 /// Buscador por título + menús de filtros + chips de los filtros activos.
@@ -45,11 +46,18 @@ class FiltrosFeed extends StatelessWidget {
           PopupMenuItem<String>(value: opcion.key, child: Text(opcion.value)),
       ],
       child: Chip(
-        avatar: const Icon(Icons.filter_list, size: 16),
+        avatar: const Icon(Icons.tune, size: 16),
         label: Text(titulo),
+        backgroundColor: Colors.white,
+        shape: const StadiumBorder(side: BorderSide(color: TemaTruequeU.borde)),
       ),
     );
   }
+
+  static final buscadorBorde = OutlineInputBorder(
+    borderRadius: BorderRadius.circular(28),
+    borderSide: const BorderSide(color: TemaTruequeU.borde),
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -66,9 +74,10 @@ class FiltrosFeed extends StatelessWidget {
                 textInputAction: TextInputAction.search,
                 onSubmitted: (_) => alBuscar(),
                 decoration: InputDecoration(
-                  hintText: 'Buscar por título',
+                  hintText: 'Buscar objetos',
                   isDense: true,
-                  border: const OutlineInputBorder(),
+                  border: buscadorBorde,
+                  enabledBorder: buscadorBorde,
                   prefixIcon: const Icon(Icons.search),
                   suffixIcon: IconButton(
                     icon: const Icon(Icons.arrow_forward),

@@ -58,13 +58,10 @@ class TarjetaFeed extends StatelessWidget {
     final colores = Theme.of(context).colorScheme;
 
     return Card(
-      elevation: 2,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
         side: BorderSide(
-          color: loReserveYo
-              ? colores.primary.withValues(alpha: 0.5)
-              : colores.outlineVariant,
+          color: loReserveYo ? colores.primary : colores.outlineVariant,
           width: loReserveYo ? 1.5 : 1,
         ),
       ),
@@ -142,7 +139,7 @@ class TarjetaFeed extends StatelessWidget {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
-                    color: colores.secondaryContainer.withValues(alpha: 0.5),
+                    color: colores.primaryContainer,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
@@ -152,7 +149,7 @@ class TarjetaFeed extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w500,
-                      color: colores.onSecondaryContainer,
+                      color: colores.onPrimaryContainer,
                     ),
                   ),
                 ),
@@ -160,7 +157,7 @@ class TarjetaFeed extends StatelessWidget {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
-                    color: colores.secondaryContainer.withValues(alpha: 0.5),
+                    color: colores.primaryContainer,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
@@ -168,7 +165,7 @@ class TarjetaFeed extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w500,
-                      color: colores.onSecondaryContainer,
+                      color: colores.onPrimaryContainer,
                     ),
                   ),
                 ),
@@ -178,7 +175,7 @@ class TarjetaFeed extends StatelessWidget {
                     padding:
                         const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                     decoration: BoxDecoration(
-                      color: colores.tertiaryContainer,
+                      color: colores.secondaryContainer,
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
@@ -186,7 +183,7 @@ class TarjetaFeed extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
-                        color: colores.onTertiaryContainer,
+                        color: colores.onSecondaryContainer,
                       ),
                     ),
                   ),

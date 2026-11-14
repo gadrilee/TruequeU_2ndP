@@ -23,7 +23,7 @@ void main() {
       await abrirAppConSesion(tester, eudenia);
       await abrirFeed(tester);
 
-      await tocar(tester, find.byTooltip('Volver al perfil'));
+      await abrirPestana(tester, 'Perfil');
 
       expect(find.text('Hola, Eudenia Flores Veizaga'), findsOneWidget);
     });

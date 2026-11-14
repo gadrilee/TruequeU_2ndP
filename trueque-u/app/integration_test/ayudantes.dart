@@ -102,7 +102,7 @@ Future<void> cerrarSesion(WidgetTester tester) async {
 }
 
 Future<void> buscarEnElFeed(WidgetTester tester, String titulo) async {
-  final caja = find.widgetWithText(TextField, 'Buscar por título');
+  final caja = find.widgetWithText(TextField, 'Buscar objetos');
   await tocar(tester, caja);
   await tester.enterText(caja, titulo);
   await tester.pumpAndSettle();
@@ -114,7 +114,7 @@ Future<void> buscarEnElFeed(WidgetTester tester, String titulo) async {
 
 Future<void> abrirFeed(WidgetTester tester) async {
   await tocarBoton(tester, 'Explorar publicaciones');
-  await esperarTexto(tester, 'Publicaciones');
+  await esperarTexto(tester, '¿Qué quieres intercambiar hoy?');
   await tester.pumpAndSettle();
 }
 

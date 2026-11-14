@@ -149,7 +149,7 @@ void main() {
       await tocarBoton(tester, 'Reservar');
       await tocarBoton(tester, 'Reservar');
       await esperarTexto(tester, 'Reservado por ti');
-      await tocar(tester, find.byTooltip('Volver al perfil'));
+      await abrirPestana(tester, 'Perfil');
 
       await tocarBoton(tester, 'Historial');
       await esperarTexto(tester, 'Reservaste «Fisica General - Serway» de Job Contreras');
@@ -167,7 +167,7 @@ void main() {
       await tocarBoton(tester, 'Cancelar reserva');
       await tocarBoton(tester, 'Sí, cancelar reserva');
       await esperarTexto(tester, 'Reserva descartada. Publicación nuevamente disponible.');
-      await tocar(tester, find.byTooltip('Volver al perfil'));
+      await abrirPestana(tester, 'Perfil');
 
       await tocarBoton(tester, 'Historial');
       await esperarTexto(tester, 'Cancelaste tu reserva de «Fisica General - Serway»');
