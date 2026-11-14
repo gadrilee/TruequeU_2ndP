@@ -32,7 +32,7 @@ void main() {
 
       await iniciarSesion(tester, eudenia);
 
-      expect(find.text('Hola, Eudenia Flores Veizaga'), findsOneWidget);
+      expect(find.text('Eudenia Flores Veizaga'), findsOneWidget);
       expect(find.text('Mis publicaciones'), findsOneWidget);
     });
 
@@ -65,7 +65,7 @@ void main() {
       await cerrarSesion(tester);
 
       expect(find.widgetWithText(FilledButton, 'Iniciar sesión'), findsOneWidget);
-      expect(find.text('Hola, Eudenia Flores Veizaga'), findsNothing);
+      expect(find.text('Eudenia Flores Veizaga'), findsNothing);
     });
   });
 
@@ -84,7 +84,7 @@ void main() {
       await abrirPestana(tester, 'Perfil');
       await esperarTexto(tester, 'Mi perfil');
 
-      expect(find.text('Hola, Ana Quispe'), findsOneWidget);
+      expect(find.text('Ana Quispe'), findsOneWidget);
     });
 
     testWidgets('Ana escribe contraseñas distintas y la app se lo avisa', (tester) async {
@@ -180,7 +180,7 @@ void main() {
       await irARuta(tester, '/');
       await iniciarSesion(tester, ['eudeniaflores@gmail.com', 'nueva1234']);
 
-      expect(find.text('Hola, Eudenia Flores Veizaga'), findsOneWidget);
+      expect(find.text('Eudenia Flores Veizaga'), findsOneWidget);
     });
 
     testWidgets('Eudenia se equivoca con su contraseña actual y ve el error', (tester) async {
@@ -214,7 +214,7 @@ void main() {
 
       await tocarBoton(tester, 'Cancelar');
 
-      expect(find.text('Hola, Eudenia Flores Veizaga'), findsOneWidget);
+      expect(find.text('Eudenia Flores Veizaga'), findsOneWidget);
     });
   });
 }

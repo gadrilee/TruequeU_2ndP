@@ -66,7 +66,7 @@ void main() {
 
       await tocarBoton(tester, 'Volver al perfil');
 
-      expect(find.text('Hola, Job Contreras'), findsOneWidget);
+      expect(find.text('Job Contreras'), findsOneWidget);
     });
   });
 
@@ -182,7 +182,7 @@ void main() {
 
       await tocarBoton(tester, 'Volver al perfil');
 
-      expect(find.text('Hola, Eudenia Flores Veizaga'), findsOneWidget);
+      expect(find.text('Eudenia Flores Veizaga'), findsOneWidget);
     });
   });
 }

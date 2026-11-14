@@ -60,8 +60,8 @@ class _PantallaPublicacionState extends State<PantallaPublicacion> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Publicación guardada exitosamente')),
       );
-      // Cierra la pantalla y vuelve a pantalla_perfil.dart
-      context.go('/perfil');
+      // Cierra la pantalla y vuelve a las publicaciones de la persona
+      context.go('/mis-publicaciones');
     } on ExcepcionApi catch (e) {
       if (!mounted) return;
       setState(() {
@@ -81,7 +81,7 @@ class _PantallaPublicacionState extends State<PantallaPublicacion> {
   Widget build(BuildContext context) {
     return PaginaAcceso(
       titulo: 'Nueva publicación',
-      alVolver: () => context.go('/perfil'),
+      alVolver: () => context.go('/mis-publicaciones'),
       hijos: [
         Form(
           key: _formulario,
@@ -153,7 +153,7 @@ class _PantallaPublicacionState extends State<PantallaPublicacion> {
         ),
         const SizedBox(height: 12),
         TextButton(
-          onPressed: () => context.go('/perfil'),
+          onPressed: () => context.go('/mis-publicaciones'),
           child: const Text('Cancelar'),
         ),
       ],

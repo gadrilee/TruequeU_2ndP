@@ -10,7 +10,7 @@ void main() {
   group('Publicar un objeto', () {
     testWidgets('Eudenia publica un libro usado y lo ve en sus publicaciones', (tester) async {
       await abrirAppConSesion(tester, eudenia);
-      await tocarBoton(tester, 'Crear nueva publicación');
+      await abrirNuevaPublicacion(tester);
 
       await escribir(tester, 'Nombre del objeto', 'Algebra Lineal - Lay');
       await escribir(tester, 'Descripción (opcional)', 'Cuarta edicion, sin subrayar');
@@ -21,7 +21,7 @@ void main() {
       await tocarBoton(tester, 'Guardar');
       await esperarTexto(tester, 'Publicación guardada exitosamente');
 
-      await tocarBoton(tester, 'Mis publicaciones');
+      await abrirPestana(tester, 'Mis publicaciones');
       await esperarTexto(tester, 'Algebra Lineal - Lay');
 
       expect(find.text('Total: 4'), findsOneWidget);
@@ -30,20 +30,20 @@ void main() {
 
     testWidgets('Eudenia deja el nombre vacío y la app se lo pide', (tester) async {
       await abrirAppConSesion(tester, eudenia);
-      await tocarBoton(tester, 'Crear nueva publicación');
+      await abrirNuevaPublicacion(tester);
 
       await tocarBoton(tester, 'Guardar');
 
       expect(find.text('Escribe el nombre del objeto'), findsOneWidget);
     });
 
-    testWidgets('Eudenia cancela la publicación y vuelve a su perfil', (tester) async {
+    testWidgets('Eudenia cancela la publicación y vuelve a sus publicaciones', (tester) async {
       await abrirAppConSesion(tester, eudenia);
-      await tocarBoton(tester, 'Crear nueva publicación');
+      await abrirNuevaPublicacion(tester);
 
       await tocarBoton(tester, 'Cancelar');
 
-      expect(find.text('Hola, Eudenia Flores Veizaga'), findsOneWidget);
+      expect(find.text('Total: 3'), findsOneWidget);
     });
   });
 
@@ -51,7 +51,7 @@ void main() {
     testWidgets('Eudenia ve sus tres publicaciones', (tester) async {
       await abrirAppConSesion(tester, eudenia);
 
-      await tocarBoton(tester, 'Mis publicaciones');
+      await abrirPestana(tester, 'Mis publicaciones');
       await esperarTexto(tester, 'Total: 3');
 
       expect(find.text('Calculo I - Stewart'), findsOneWidget);
@@ -63,7 +63,7 @@ void main() {
       await abrirApp(tester);
       await crearCuenta(tester, 'Ana Quispe', 'ana@ejemplo.com', 'ana12345');
 
-      await tocarBoton(tester, 'Mis publicaciones');
+      await abrirPestana(tester, 'Mis publicaciones');
       await esperarTexto(tester, 'Aún no tienes publicaciones');
 
       expect(find.text('Crear nueva publicación'), findsOneWidget);
@@ -71,7 +71,7 @@ void main() {
 
     testWidgets('Eudenia corrige el título de su chompa', (tester) async {
       await abrirAppConSesion(tester, eudenia);
-      await tocarBoton(tester, 'Mis publicaciones');
+      await abrirPestana(tester, 'Mis publicaciones');
       await esperarTexto(tester, 'Total: 3');
 
       await tocar(tester, enTarjeta('Chompa de la U talla M', find.byTooltip('Editar información')));
@@ -85,7 +85,7 @@ void main() {
 
     testWidgets('Eudenia cancela la edición y su chompa queda igual', (tester) async {
       await abrirAppConSesion(tester, eudenia);
-      await tocarBoton(tester, 'Mis publicaciones');
+      await abrirPestana(tester, 'Mis publicaciones');
       await esperarTexto(tester, 'Total: 3');
 
       await tocar(tester, enTarjeta('Chompa de la U talla M', find.byTooltip('Editar información')));
@@ -98,7 +98,7 @@ void main() {
 
     testWidgets('Eudenia no puede editar la calculadora porque Job la reservó', (tester) async {
       await abrirAppConSesion(tester, eudenia);
-      await tocarBoton(tester, 'Mis publicaciones');
+      await abrirPestana(tester, 'Mis publicaciones');
       await esperarTexto(tester, 'Total: 3');
 
       expect(find.text('Reservado por: Job Contreras'), findsOneWidget);
@@ -108,7 +108,7 @@ void main() {
 
     testWidgets('Eudenia oculta su chompa', (tester) async {
       await abrirAppConSesion(tester, eudenia);
-      await tocarBoton(tester, 'Mis publicaciones');
+      await abrirPestana(tester, 'Mis publicaciones');
       await esperarTexto(tester, 'Total: 3');
 
       await tocar(tester, enTarjeta('Chompa de la U talla M', find.byTooltip('Cambiar estado de la publicación')));
@@ -120,7 +120,7 @@ void main() {
 
     testWidgets('Eudenia marca su chompa como no disponible', (tester) async {
       await abrirAppConSesion(tester, eudenia);
-      await tocarBoton(tester, 'Mis publicaciones');
+      await abrirPestana(tester, 'Mis publicaciones');
       await esperarTexto(tester, 'Total: 3');
 
       await tocar(tester, enTarjeta('Chompa de la U talla M', find.byTooltip('Cambiar estado de la publicación')));
@@ -132,7 +132,7 @@ void main() {
 
     testWidgets('Eudenia oculta su chompa y después la vuelve a dejar disponible', (tester) async {
       await abrirAppConSesion(tester, eudenia);
-      await tocarBoton(tester, 'Mis publicaciones');
+      await abrirPestana(tester, 'Mis publicaciones');
       await esperarTexto(tester, 'Total: 3');
       await tocar(tester, enTarjeta('Chompa de la U talla M', find.byTooltip('Cambiar estado de la publicación')));
       await tocar(tester, find.text('Ocultar publicación'));
@@ -147,7 +147,7 @@ void main() {
 
     testWidgets('Eudenia no puede ocultar su libro de cálculo porque tiene una oferta pendiente', (tester) async {
       await abrirAppConSesion(tester, eudenia);
-      await tocarBoton(tester, 'Mis publicaciones');
+      await abrirPestana(tester, 'Mis publicaciones');
       await esperarTexto(tester, 'Total: 3');
 
       await tocar(tester, enTarjeta('Calculo I - Stewart', find.byTooltip('Cambiar estado de la publicación')));
@@ -162,7 +162,7 @@ void main() {
 
     testWidgets('Eudenia elimina su chompa', (tester) async {
       await abrirAppConSesion(tester, eudenia);
-      await tocarBoton(tester, 'Mis publicaciones');
+      await abrirPestana(tester, 'Mis publicaciones');
       await esperarTexto(tester, 'Total: 3');
 
       await tocar(tester, enTarjeta('Chompa de la U talla M', find.byTooltip('Eliminar definitivamente')));
@@ -175,7 +175,7 @@ void main() {
 
     testWidgets('Eudenia se arrepiente y no elimina su chompa', (tester) async {
       await abrirAppConSesion(tester, eudenia);
-      await tocarBoton(tester, 'Mis publicaciones');
+      await abrirPestana(tester, 'Mis publicaciones');
       await esperarTexto(tester, 'Total: 3');
 
       await tocar(tester, enTarjeta('Chompa de la U talla M', find.byTooltip('Eliminar definitivamente')));
@@ -187,7 +187,7 @@ void main() {
 
     testWidgets('Eudenia no puede eliminar su libro de cálculo porque tiene una oferta pendiente', (tester) async {
       await abrirAppConSesion(tester, eudenia);
-      await tocarBoton(tester, 'Mis publicaciones');
+      await abrirPestana(tester, 'Mis publicaciones');
       await esperarTexto(tester, 'Total: 3');
 
       await tocar(tester, enTarjeta('Calculo I - Stewart', find.byTooltip('Eliminar definitivamente')));
@@ -202,7 +202,7 @@ void main() {
 
     testWidgets('Eudenia completa el intercambio de su calculadora reservada', (tester) async {
       await abrirAppConSesion(tester, eudenia);
-      await tocarBoton(tester, 'Mis publicaciones');
+      await abrirPestana(tester, 'Mis publicaciones');
       await esperarTexto(tester, 'Total: 3');
 
       await tocar(tester, enTarjeta('Calculadora Casio fx-991', find.text('Completar intercambio')));
@@ -215,12 +215,12 @@ void main() {
 
     testWidgets('Eudenia sale de sus publicaciones con la barra inferior', (tester) async {
       await abrirAppConSesion(tester, eudenia);
-      await tocarBoton(tester, 'Mis publicaciones');
+      await abrirPestana(tester, 'Mis publicaciones');
       await esperarTexto(tester, 'Total: 3');
 
       await abrirPestana(tester, 'Perfil');
 
-      expect(find.text('Hola, Eudenia Flores Veizaga'), findsOneWidget);
+      expect(find.text('Eudenia Flores Veizaga'), findsOneWidget);
     });
   });
 }

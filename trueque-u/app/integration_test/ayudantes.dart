@@ -113,7 +113,7 @@ Future<void> buscarEnElFeed(WidgetTester tester, String titulo) async {
 }
 
 Future<void> abrirFeed(WidgetTester tester) async {
-  await tocarBoton(tester, 'Explorar publicaciones');
+  await abrirPestana(tester, 'Explorar');
   await esperarTexto(tester, '¿Qué quieres intercambiar hoy?');
   await tester.pumpAndSettle();
 }
@@ -140,6 +140,11 @@ Future<void> crearCuenta(
   await tester.pumpAndSettle();
 }
 
+Future<void> abrirNuevaPublicacion(WidgetTester tester) async {
+  await abrirPestana(tester, 'Mis publicaciones');
+  await tocar(tester, find.text('Publicar'));
+}
+
 Future<void> cambiarDeUsuario(WidgetTester tester, List<String> persona) async {
   await cerrarSesion(tester);
   await irARuta(tester, '/');
@@ -147,7 +152,7 @@ Future<void> cambiarDeUsuario(WidgetTester tester, List<String> persona) async {
 }
 
 Future<void> abrirOfertas(WidgetTester tester) async {
-  await tocarBoton(tester, 'Ofertas de trueque');
+  await abrirPestana(tester, 'Ofertas');
   await tester.pumpAndSettle();
 }
 

@@ -269,7 +269,7 @@ void main() {
 
       await abrirPestana(tester, 'Perfil');
 
-      expect(find.text('Hola, Carlos Mamani'), findsOneWidget);
+      expect(find.text('Carlos Mamani'), findsOneWidget);
     });
   });
 }

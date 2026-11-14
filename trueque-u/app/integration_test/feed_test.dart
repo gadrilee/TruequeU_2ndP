@@ -25,7 +25,7 @@ void main() {
 
       await abrirPestana(tester, 'Perfil');
 
-      expect(find.text('Hola, Eudenia Flores Veizaga'), findsOneWidget);
+      expect(find.text('Eudenia Flores Veizaga'), findsOneWidget);
     });
 
     testWidgets('Eudenia lee la ayuda del feed y la cierra', (tester) async {
