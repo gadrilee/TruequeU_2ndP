@@ -523,7 +523,6 @@ class _PantallaFeedPublicacionesState extends State<PantallaFeedPublicaciones> {
                       ],
                     ),
                   ),
-                  // H10: ayuda contextual, siempre a un toque
                   IconButton(
                     icon: const Icon(Icons.help_outline),
                     tooltip: 'Ayuda: ¿cómo funciona?',
@@ -537,7 +536,6 @@ class _PantallaFeedPublicacionesState extends State<PantallaFeedPublicaciones> {
                 ],
               ),
             ),
-            // Arriba el buscador y los filtros; abajo la lista
             FiltrosFeed(
               buscarCtrl: _buscarCtrl,
               busqueda: _busqueda,

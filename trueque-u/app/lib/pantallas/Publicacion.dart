@@ -60,7 +60,6 @@ class _PantallaPublicacionState extends State<PantallaPublicacion> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Publicación guardada exitosamente')),
       );
-      // Cierra la pantalla y vuelve a las publicaciones de la persona
       context.go('/mis-publicaciones');
     } on ExcepcionApi catch (e) {
       if (!mounted) return;

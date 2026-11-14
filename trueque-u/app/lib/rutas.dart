@@ -42,7 +42,6 @@ GoRouter construirRutas(ControladorAutenticacion autenticacion) {
       if (_rutasPrivadas.contains(ruta) && !autenticacion.autenticado) {
         return '/iniciar-sesion';
       }
-      // Inicio de sesión o registro con sesión activa -> directo a Explorar.
       if (_rutasSoloInvitados.contains(ruta) && autenticacion.autenticado) {
         return '/feed';
       }

@@ -6,7 +6,6 @@ import '../estado/controlador_autenticacion.dart';
 import '../widgets/pagina_acceso.dart';
 import '../widgets/resumen_calificaciones.dart';
 
-/// RUTA PRIVADA ("/perfil"): sin sesión, el router redirige a "/iniciar-sesion".
 class PantallaPerfil extends StatelessWidget {
   const PantallaPerfil({super.key});
 
@@ -29,7 +28,6 @@ class PantallaPerfil extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final usuario = context.watch<ControladorAutenticacion>().usuario;
-    // Al cerrar sesión, el router tarda un instante en redirigir.
     if (usuario == null) return const SizedBox.shrink();
 
     final colores = Theme.of(context).colorScheme;
