@@ -213,12 +213,12 @@ void main() {
       expect(find.text('Calculadora Casio fx-991'), findsNothing);
     });
 
-    testWidgets('Eudenia sale de sus publicaciones con el botón de volver al perfil', (tester) async {
+    testWidgets('Eudenia sale de sus publicaciones con la barra inferior', (tester) async {
       await abrirAppConSesion(tester, eudenia);
       await tocarBoton(tester, 'Mis publicaciones');
       await esperarTexto(tester, 'Total: 3');
 
-      await tocarBoton(tester, 'Volver al perfil');
+      await abrirPestana(tester, 'Perfil');
 
       expect(find.text('Hola, Eudenia Flores Veizaga'), findsOneWidget);
     });

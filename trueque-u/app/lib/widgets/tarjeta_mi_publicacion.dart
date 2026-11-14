@@ -55,13 +55,10 @@ class TarjetaMiPublicacion extends StatelessWidget {
     final estaAcordada = estadoPublicacion == 'acordado';
 
     return Card(
-      elevation: 1,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(20),
         side: BorderSide(
-          color: estaReservada
-              ? colores.primary.withValues(alpha: 0.4)
-              : colores.outlineVariant,
+          color: estaReservada ? colores.primary : colores.outlineVariant,
         ),
       ),
       child: Padding(

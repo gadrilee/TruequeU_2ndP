@@ -291,19 +291,9 @@ class _PantallaMisPublicacionesState extends State<PantallaMisPublicaciones> {
       contenido = Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Total: ${_publicaciones.length}',
-                style: TextStyle(color: colores.onSurfaceVariant),
-              ),
-              TextButton.icon(
-                icon: const Icon(Icons.add, size: 18),
-                label: const Text('Nueva publicación'),
-                onPressed: () => context.go('/publicacion'),
-              ),
-            ],
+          Text(
+            'Total: ${_publicaciones.length}',
+            style: TextStyle(color: colores.onSurfaceVariant),
           ),
           const SizedBox(height: 12),
           for (final pub in _publicaciones) ...[
@@ -358,7 +348,11 @@ class _PantallaMisPublicacionesState extends State<PantallaMisPublicaciones> {
     return PaginaAcceso(
       titulo: 'Mis publicaciones',
       anchoMaximo: 560,
-      alVolver: () => context.go('/perfil'),
+      botonFlotante: FloatingActionButton.extended(
+        onPressed: () => context.go('/publicacion'),
+        icon: const Icon(Icons.add),
+        label: const Text('Publicar'),
+      ),
       acciones: [
         IconButton(
           icon: const Icon(Icons.refresh),
@@ -368,11 +362,7 @@ class _PantallaMisPublicacionesState extends State<PantallaMisPublicaciones> {
       ],
       hijos: [
         contenido,
-        const SizedBox(height: 16),
-        TextButton(
-          onPressed: () => context.go('/perfil'),
-          child: const Text('Volver al perfil'),
-        ),
+        const SizedBox(height: 72),
       ],
     );
   }
