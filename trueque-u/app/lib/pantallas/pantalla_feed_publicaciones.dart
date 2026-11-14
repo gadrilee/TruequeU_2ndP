@@ -494,6 +494,7 @@ class _PantallaFeedPublicacionesState extends State<PantallaFeedPublicaciones> {
 
     return Scaffold(
       floatingActionButton: FloatingActionButton.extended(
+        heroTag: 'publicar_feed',
         onPressed: () => context.go('/publicacion'),
         icon: const Icon(Icons.add),
         label: const Text('Publicar'),

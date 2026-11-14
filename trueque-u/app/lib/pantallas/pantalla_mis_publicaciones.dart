@@ -349,6 +349,7 @@ class _PantallaMisPublicacionesState extends State<PantallaMisPublicaciones> {
       titulo: 'Mis publicaciones',
       anchoMaximo: 560,
       botonFlotante: FloatingActionButton.extended(
+        heroTag: 'publicar_mis_publicaciones',
         onPressed: () => context.go('/publicacion'),
         icon: const Icon(Icons.add),
         label: const Text('Publicar'),
