@@ -66,25 +66,15 @@ class _PantallaMisPublicacionesState extends State<PantallaMisPublicaciones> {
   }
 
   Future<void> _eliminar(int id, String titulo) async {
-    final confirmar = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Eliminar publicación'),
-        content: Text('¿Deseas eliminar "$titulo"? Esta acción no se puede deshacer.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Cancelar'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text('Eliminar'),
-          ),
-        ],
-      ),
+    final confirmar = await confirmarAccion(
+      context,
+      titulo: 'Eliminar publicación',
+      mensaje: '¿Deseas eliminar "$titulo"? Esta acción no se puede deshacer.',
+      textoBoton: 'Eliminar',
+      destructivo: true,
     );
 
-    if (confirmar != true || !mounted) return;
+    if (!confirmar || !mounted) return;
 
     setState(() => _accionesEnProgreso.add(id));
     try {

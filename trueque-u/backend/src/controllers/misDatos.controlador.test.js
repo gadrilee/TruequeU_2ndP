@@ -1,6 +1,6 @@
 jest.mock("../database/sequelize", () => ({
   models: {
-    usuarios: { findByPk: jest.fn() },
+    usuarios: { findByPk: jest.fn(), update: jest.fn() },
     publicaciones: { findAll: jest.fn() },
     ofertas: { findAll: jest.fn() },
     calificaciones: { findAll: jest.fn() },
@@ -9,7 +9,7 @@ jest.mock("../database/sequelize", () => ({
 }));
 
 const { models } = require("../database/sequelize");
-const { getMisDatos } = require("./misDatos.controlador");
+const { getMisDatos, deleteTelefono } = require("./misDatos.controlador");
 
 function crearRespuesta() {
   const res = {};
@@ -102,6 +102,28 @@ describe("Descarga de mis datos", () => {
     jest.spyOn(console, "error").mockImplementation(() => {});
 
     const res = await llamar("json");
+
+    expect(res.status).toHaveBeenCalledWith(500);
+  });
+});
+
+describe("Quitar mi teléfono", () => {
+  test("deja el teléfono vacío solo en mi cuenta", async () => {
+    models.usuarios.update.mockResolvedValue([1]);
+    const res = crearRespuesta();
+
+    await deleteTelefono({ usuario: { id: 1 } }, res);
+
+    expect(models.usuarios.update).toHaveBeenCalledWith({ telefono: null }, { where: { id: 1 } });
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ ok: true }));
+  });
+
+  test("si falla la base de datos responde 500", async () => {
+    models.usuarios.update.mockRejectedValue(new Error("falla"));
+    jest.spyOn(console, "error").mockImplementation(() => {});
+    const res = crearRespuesta();
+
+    await deleteTelefono({ usuario: { id: 1 } }, res);
 
     expect(res.status).toHaveBeenCalledWith(500);
   });

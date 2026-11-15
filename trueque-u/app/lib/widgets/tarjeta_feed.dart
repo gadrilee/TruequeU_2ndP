@@ -278,7 +278,7 @@ class TarjetaFeed extends StatelessWidget {
           if (!tieneTelefono) ...[
             const SizedBox(height: 4),
             Text(
-              'El dueño no registró teléfono',
+              'El contacto se ve cuando los dos aceptan',
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 11, color: colores.outline),
             ),

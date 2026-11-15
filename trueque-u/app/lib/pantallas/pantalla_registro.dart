@@ -105,6 +105,8 @@ class _PantallaRegistroState extends State<PantallaRegistro> {
               CampoTexto(
                 controlador: _telefono,
                 etiqueta: 'Teléfono (opcional, 8 dígitos)',
+                ayuda:
+                    'Solo lo verá la persona con la que acuerdes un trueque. Puedes dejarlo vacío.',
                 icono: Icons.phone_outlined,
                 tipoTeclado: TextInputType.phone,
                 accionTeclado: TextInputAction.next,

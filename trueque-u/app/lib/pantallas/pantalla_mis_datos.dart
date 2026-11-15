@@ -78,6 +78,17 @@ class _PantallaMisDatosState extends State<PantallaMisDatos> {
     }
   }
 
+  Future<void> _quitarTelefono() async {
+    final mensajes = ScaffoldMessenger.of(context);
+    try {
+      await context.read<ControladorAutenticacion>().quitarTelefono();
+      mensajes.showSnackBar(const SnackBar(content: Text('Quitamos tu teléfono')));
+      await _cargar();
+    } on ExcepcionApi catch (e) {
+      mensajes.showSnackBar(SnackBar(content: Text(e.mensaje)));
+    }
+  }
+
   String _fecha(dynamic iso) {
     final texto = iso as String? ?? '';
     return texto.length >= 10 ? texto.substring(0, 10) : texto;
@@ -89,7 +100,7 @@ class _PantallaMisDatosState extends State<PantallaMisDatos> {
     return valores.map((e) => Map<String, dynamic>.from(e as Map)).toList();
   }
 
-  Widget _tarjeta(String titulo, List<String> lineas, String vacio) {
+  Widget _tarjeta(String titulo, List<String> lineas, String vacio, {Widget? accion}) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -110,6 +121,7 @@ class _PantallaMisDatosState extends State<PantallaMisDatos> {
                 padding: const EdgeInsets.only(bottom: 4),
                 child: Text(linea),
               ),
+            if (accion != null) accion,
           ],
         ),
       ),
@@ -140,6 +152,12 @@ class _PantallaMisDatosState extends State<PantallaMisDatos> {
           'Cuenta creada: ${_fecha(perfil['creado_en'])}',
         ],
         '',
+        accion: telefono == null || telefono.isEmpty
+            ? null
+            : TextButton(
+                onPressed: _quitarTelefono,
+                child: const Text('Quitar mi teléfono'),
+              ),
       ),
       _tarjeta(
         'Tus publicaciones',

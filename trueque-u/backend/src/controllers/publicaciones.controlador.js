@@ -118,9 +118,8 @@ const getPublicaciones = async (req, res) => {
         datos.id_usuario_reserva = null;
         datos.usuario_reserva = null;
       }
-      // El teléfono del dueño solo lo recibe quien reservó (mientras esté reservada)
       const puedeVerTelefono =
-        esQuienReservo && datos.estado_publicacion === "reservado";
+        esQuienReservo && datos.estado_publicacion === "acordado";
       if (datos.autor && !puedeVerTelefono) {
         datos.autor = { ...datos.autor };
         delete datos.autor.telefono;

@@ -43,6 +43,17 @@ describe("Eventos y analitica", () => {
     expect(models.eventos.create).not.toHaveBeenCalled();
   });
 
+  test("rechaza props con datos personales y no guarda", async () => {
+    for (const clave of ["correo", "nombre", "telefono", "id_usuario", "email"]) {
+      const res = crearRespuesta();
+
+      await postEvento({ body: { evento: "oferta_enviada", props: { [clave]: "x" } } }, res);
+
+      expect(res.status).toHaveBeenCalledWith(400);
+    }
+    expect(models.eventos.create).not.toHaveBeenCalled();
+  });
+
   test("sin evento da error 400", async () => {
     const res = crearRespuesta();
 

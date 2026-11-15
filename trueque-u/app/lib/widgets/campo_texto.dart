@@ -12,6 +12,7 @@ class CampoTexto extends StatefulWidget {
     this.alEnviar,
     this.ocultar = false,
     this.lineas = 1,
+    this.ayuda,
   });
 
   final TextEditingController controlador;
@@ -23,6 +24,7 @@ class CampoTexto extends StatefulWidget {
   final VoidCallback? alEnviar;
   final bool ocultar;
   final int lineas;
+  final String? ayuda;
 
   @override
   State<CampoTexto> createState() => _CampoTextoState();
@@ -45,6 +47,8 @@ class _CampoTextoState extends State<CampoTexto> {
       onFieldSubmitted: (_) => widget.alEnviar?.call(),
       decoration: InputDecoration(
         labelText: widget.etiqueta,
+        helperText: widget.ayuda,
+        helperMaxLines: 3,
         prefixIcon: widget.icono != null ? Icon(widget.icono) : null,
         suffixIcon: widget.ocultar
             ? IconButton(

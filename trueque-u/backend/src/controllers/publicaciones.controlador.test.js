@@ -204,9 +204,25 @@ describe("Teléfono del dueño en el catálogo (H7)", () => {
     return res.json.mock.calls[0][0][0];
   }
 
-  test("quien reservó recibe el teléfono del dueño", async () => {
+  test("quien reservó no recibe el teléfono mientras solo esté reservada", async () => {
     const pub = await pedirComo(2);
-    expect(pub.autor.telefono).toBe("70000000");
+    expect(pub.autor.telefono).toBeUndefined();
+  });
+
+  test("quien reservó recibe el teléfono cuando el intercambio está acordado", async () => {
+    models.publicaciones.findAll.mockResolvedValue([
+      crearFila({
+        id: 7,
+        id_usuario: 1,
+        id_usuario_reserva: 2,
+        estado_publicacion: "acordado",
+        autor: { id: 1, nombre: "Ana", telefono: "70000000" },
+        usuario_reserva: { id: 2, nombre: "Beto" },
+      }),
+    ]);
+    const res = crearRespuesta();
+    await getPublicaciones({ usuario: { id: 2 }, query: {} }, res);
+    expect(res.json.mock.calls[0][0][0].autor.telefono).toBe("70000000");
   });
 
   test("otra persona no recibe el teléfono del dueño", async () => {

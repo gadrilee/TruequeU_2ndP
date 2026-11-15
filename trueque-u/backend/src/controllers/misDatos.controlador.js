@@ -140,4 +140,17 @@ const getMisDatos = async (req, res) => {
   }
 };
 
-module.exports = { getMisDatos };
+const deleteTelefono = async (req, res) => {
+  try {
+    await models.usuarios.update(
+      { telefono: null },
+      { where: { id: req.usuario.id } },
+    );
+    res.json({ ok: true, mensaje: "Quitamos tu teléfono" });
+  } catch (error) {
+    console.error("Error al quitar el teléfono:", error);
+    res.status(500).json({ error: "Error al quitar tu teléfono" });
+  }
+};
+
+module.exports = { getMisDatos, deleteTelefono };

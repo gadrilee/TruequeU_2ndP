@@ -17,7 +17,7 @@ Future<void> mostrarAyudaTrueque(BuildContext context) {
             ),
             _Paso(
               numero: '2',
-              texto: 'Coordinar: escribe al dueño con el botón "WhatsApp" para acordar lugar y hora.',
+              texto: 'Coordinar: el teléfono del dueño aparece cuando los dos aceptan el trueque. Entonces puedes escribirle por WhatsApp para acordar lugar y hora.',
             ),
             _Paso(
               numero: '3',

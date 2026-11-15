@@ -75,13 +75,17 @@ class _PantallaOfertasState extends State<PantallaOfertas> {
     String accion,
     String titulo,
     String mensaje,
-    String boton,
-  ) async {
+    String boton, {
+    bool destructivo = false,
+    String textoCancelar = 'Cancelar',
+  }) async {
     final acepta = await confirmarAccion(
       context,
       titulo: titulo,
       mensaje: mensaje,
       textoBoton: boton,
+      textoCancelar: textoCancelar,
+      destructivo: destructivo,
     );
     if (!acepta || !mounted) return;
 
@@ -301,6 +305,7 @@ class _PantallaOfertasState extends State<PantallaOfertas> {
                 'Rechazar oferta',
                 '¿Rechazas esta oferta? Quien la envió verá que fue rechazada.',
                 'Rechazar',
+                destructivo: true,
               ),
               idYo: context.read<ControladorAutenticacion>().usuario?.id,
               alConfirmarEntrega: () => _responder(
@@ -318,7 +323,9 @@ class _PantallaOfertasState extends State<PantallaOfertas> {
                 'cancelar',
                 'Cancelar oferta',
                 '¿Cancelas esta oferta? La otra persona ya no podrá aceptarla.',
-                'Cancelar oferta',
+                'Sí, cancelar oferta',
+                textoCancelar: 'Volver',
+                destructivo: true,
               ),
             ),
             const SizedBox(height: 12),

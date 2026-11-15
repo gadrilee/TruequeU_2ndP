@@ -183,7 +183,7 @@ class _PantallaFeedPublicacionesState extends State<PantallaFeedPublicaciones> {
         SnackBar(
           duration: const Duration(seconds: 6),
           content: Text(
-            'Reservaste "$titulo". Escríbele al dueño por WhatsApp para coordinar la entrega.',
+            'Reservaste "$titulo". El contacto se ve cuando los dos aceptan.',
           ),
         ),
       );

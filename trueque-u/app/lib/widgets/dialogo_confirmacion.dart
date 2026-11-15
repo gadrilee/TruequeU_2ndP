@@ -7,6 +7,7 @@ Future<bool> confirmarAccion(
   required String mensaje,
   required String textoBoton,
   String textoCancelar = 'Cancelar',
+  bool destructivo = false,
 }) async {
   final respuesta = await showDialog<bool>(
     context: context,
@@ -19,6 +20,12 @@ Future<bool> confirmarAccion(
           child: Text(textoCancelar),
         ),
         FilledButton(
+          style: destructivo
+              ? FilledButton.styleFrom(
+                  backgroundColor: Theme.of(ctx).colorScheme.error,
+                  foregroundColor: Theme.of(ctx).colorScheme.onError,
+                )
+              : null,
           onPressed: () => Navigator.of(ctx).pop(true),
           child: Text(textoBoton),
         ),

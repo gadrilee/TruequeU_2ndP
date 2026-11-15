@@ -72,7 +72,7 @@ class ControladorAutenticacion extends ChangeNotifier {
     String contrasena, {
     String? telefono,
   }) async {
-    debugPrint('[registro] Creando cuenta para $correo');
+    debugPrint('[registro] Creando cuenta');
     final datos = await _api.post('/usuarios', {
       'nombre': nombre.trim(),
       'correo': correo.trim(),
@@ -84,7 +84,7 @@ class ControladorAutenticacion extends ChangeNotifier {
   }
 
   Future<void> iniciarSesion(String correo, String contrasena) async {
-    debugPrint('[login] Iniciando sesión de $correo');
+    debugPrint('[login] Iniciando sesión');
     final datos = await _api.post('/sesiones', {
       'correo': correo.trim(),
       'contrasena': contrasena,
@@ -106,7 +106,7 @@ class ControladorAutenticacion extends ChangeNotifier {
 
   /// Pide una contraseña nueva: el servidor la envía al correo de la persona.
   Future<void> recuperarContrasena(String correo) async {
-    debugPrint('[recuperar] Pidiendo contraseña nueva para $correo');
+    debugPrint('[recuperar] Pidiendo contraseña nueva');
     await _api.post('/recuperaciones', {'correo': correo.trim()});
     debugPrint('[recuperar] Listo, debería llegar al correo');
   }
@@ -125,6 +125,10 @@ class ControladorAutenticacion extends ChangeNotifier {
   Future<Map<String, dynamic>> obtenerMisDatos() async {
     final datos = await _api.get('/usuarios/yo/datos');
     return datos is Map ? Map<String, dynamic>.from(datos) : {};
+  }
+
+  Future<void> quitarTelefono() async {
+    await _api.delete('/usuarios/yo/telefono');
   }
 
   Future<String> descargarMisDatos(String formato) {

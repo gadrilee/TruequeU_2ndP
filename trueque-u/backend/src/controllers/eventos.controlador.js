@@ -1,12 +1,21 @@
 const { fn } = require("sequelize");
 const { models } = require("../database/sequelize");
 
+const CLAVES_PERSONALES = ["correo", "nombre", "telefono", "id_usuario", "email"];
+
 const postEvento = async (req, res) => {
   try {
     const { evento, props } = req.body;
 
     if (typeof evento !== "string" || evento.trim() === "") {
       return res.status(400).json({ error: "El evento es obligatorio" });
+    }
+
+    const clavesProps = props && typeof props === "object" ? Object.keys(props) : [];
+    if (clavesProps.some((clave) => CLAVES_PERSONALES.includes(clave.toLowerCase()))) {
+      return res
+        .status(400)
+        .json({ error: "Los eventos no pueden llevar datos personales" });
     }
 
     await models.eventos.create({ evento: evento.trim(), props });
