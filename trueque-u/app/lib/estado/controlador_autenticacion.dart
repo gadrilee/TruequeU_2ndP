@@ -122,6 +122,15 @@ class ControladorAutenticacion extends ChangeNotifier {
     debugPrint('[usuario] Contraseña cambiada');
   }
 
+  Future<Map<String, dynamic>> obtenerMisDatos() async {
+    final datos = await _api.get('/usuarios/yo/datos');
+    return datos is Map ? Map<String, dynamic>.from(datos) : {};
+  }
+
+  Future<String> descargarMisDatos(String formato) {
+    return _api.getTexto('/usuarios/yo/datos?formato=$formato');
+  }
+
   /// Crea una nueva publicación de objeto para intercambiar.
   Future<void> crearPublicacion({
     required String titulo,

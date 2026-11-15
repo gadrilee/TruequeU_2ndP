@@ -35,6 +35,30 @@ class ClienteApi {
 
   Future<dynamic> delete(String ruta) => _enviar('DELETE', ruta);
 
+  Future<String> getTexto(String ruta) async {
+    final uri = Uri.parse('${ConfiguracionEntorno.urlBase}$ruta');
+    final cabeceras = <String, String>{};
+    if (token != null) cabeceras['Authorization'] = 'Bearer $token';
+
+    debugPrint('[api] Mandando GET $uri');
+    http.Response respuesta;
+    try {
+      respuesta = await _cliente
+          .get(uri, headers: cabeceras)
+          .timeout(const Duration(seconds: 60));
+    } catch (_) {
+      throw ExcepcionApi(
+        'No se pudo conectar con el servidor. Revisa tu conexión a internet e inténtalo de nuevo en unos segundos.',
+      );
+    }
+    debugPrint('[api] Respondió ${respuesta.statusCode}');
+
+    if (respuesta.statusCode >= 200 && respuesta.statusCode < 300) {
+      return utf8.decode(respuesta.bodyBytes);
+    }
+    throw ExcepcionApi(_explicarCodigo(respuesta.statusCode), respuesta.statusCode);
+  }
+
   Future<dynamic> _enviar(
     String metodo,
     String ruta, [

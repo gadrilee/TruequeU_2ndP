@@ -8,6 +8,7 @@ import 'pantallas/pantalla_historial.dart';
 import 'pantallas/pantalla_iniciar_sesion.dart';
 import 'pantallas/pantalla_inicio.dart';
 import 'pantallas/pantalla_intercambios.dart';
+import 'pantallas/pantalla_mis_datos.dart';
 import 'pantallas/pantalla_mis_publicaciones.dart';
 import 'pantallas/pantalla_ofertas.dart';
 import 'pantallas/pantalla_perfil.dart';
@@ -25,6 +26,7 @@ const _rutasPrivadas = {
   '/intercambios', // Intercambios completados de la persona
   '/ofertas',
   '/historial', // Qué ocurrió con los intercambios de la persona
+  '/mis-datos',
 };
 
 /// Rutas que no tienen sentido si ya hay sesión.
@@ -117,6 +119,10 @@ GoRouter construirRutas(ControladorAutenticacion autenticacion) {
       GoRoute(
         path: '/historial',
         builder: (context, estado) => const PantallaHistorial(),
+      ),
+      GoRoute(
+        path: '/mis-datos',
+        builder: (context, estado) => const PantallaMisDatos(),
       ),
     ],
   );

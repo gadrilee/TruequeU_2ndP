@@ -80,6 +80,8 @@ class PantallaPerfil extends StatelessWidget {
               const Divider(height: 1),
               _opcion(context, Icons.history, 'Historial', '/historial'),
               const Divider(height: 1),
+              _opcion(context, Icons.folder_shared_outlined, 'Mis datos', '/mis-datos'),
+              const Divider(height: 1),
               _opcion(context, Icons.key_outlined, 'Cambiar contraseña', '/cambiar-contrasena'),
             ],
           ),
