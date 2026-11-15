@@ -19,6 +19,7 @@ CREATE TABLE usuarios (
     contrasena_hash  VARCHAR(100) NOT NULL,          -- contraseña cifrada con bcrypt, nunca en texto plano
     creado_en        TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
     telefono         VARCHAR(10),                    -- opcional
+    eliminado_en     TIMESTAMPTZ,
     CONSTRAINT usuarios_correo_en_minusculas CHECK (correo = LOWER(correo))
 );
 
@@ -136,3 +137,13 @@ CREATE TABLE calificaciones (
 );
 
 CREATE INDEX calificaciones_calificado_idx ON calificaciones (id_calificado);
+
+CREATE TABLE notificaciones (
+    id          INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id_usuario  INTEGER     NOT NULL REFERENCES usuarios (id) ON DELETE CASCADE,
+    mensaje     TEXT        NOT NULL,
+    leida       BOOLEAN     NOT NULL DEFAULT FALSE,
+    creado_en   TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX notificaciones_usuario_idx ON notificaciones (id_usuario, creado_en DESC);

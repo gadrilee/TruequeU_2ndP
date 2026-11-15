@@ -32,6 +32,10 @@ module.exports = function (sequelize, DataTypes) {
         type: DataTypes.STRING(10),
         allowNull: true,
       },
+      eliminado_en: {
+        type: DataTypes.DATE,
+        allowNull: true,
+      },
     },
     {
       sequelize,

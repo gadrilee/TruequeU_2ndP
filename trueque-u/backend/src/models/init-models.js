@@ -6,6 +6,7 @@ var _eventos = require("./eventos");
 var _historial = require("./historial");
 var _jwks = require("./jwks");
 var _member = require("./member");
+var _notificaciones = require("./notificaciones");
 var _ofertas = require("./ofertas");
 var _organization = require("./organization");
 var _project_config = require("./project_config");
@@ -25,6 +26,7 @@ function initModels(sequelize) {
   var historial = _historial(sequelize, DataTypes);
   var jwks = _jwks(sequelize, DataTypes);
   var member = _member(sequelize, DataTypes);
+  var notificaciones = _notificaciones(sequelize, DataTypes);
   var ofertas = _ofertas(sequelize, DataTypes);
   var organization = _organization(sequelize, DataTypes);
   var project_config = _project_config(sequelize, DataTypes);
@@ -48,6 +50,8 @@ function initModels(sequelize) {
   user.hasMany(member, { as: "members", foreignKey: "userId"});
   session.belongsTo(user, { as: "user", foreignKey: "userId"});
   user.hasMany(session, { as: "sessions", foreignKey: "userId"});
+  notificaciones.belongsTo(usuarios, { as: "usuario", foreignKey: "id_usuario"});
+  usuarios.hasMany(notificaciones, { as: "notificaciones", foreignKey: "id_usuario"});
   publicaciones.belongsTo(usuarios, { as: "id_usuario_usuario", foreignKey: "id_usuario"});
   usuarios.hasMany(publicaciones, { as: "publicaciones", foreignKey: "id_usuario"});
   publicaciones.belongsTo(usuarios, { as: "id_usuario_reserva_usuario", foreignKey: "id_usuario_reserva"});
@@ -73,6 +77,7 @@ function initModels(sequelize) {
     invitation,
     jwks,
     member,
+    notificaciones,
     ofertas,
     organization,
     project_config,

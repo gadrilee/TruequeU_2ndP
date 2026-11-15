@@ -33,7 +33,8 @@ class ClienteApi {
   Future<dynamic> put(String ruta, Map<String, dynamic> cuerpo) =>
       _enviar('PUT', ruta, cuerpo);
 
-  Future<dynamic> delete(String ruta) => _enviar('DELETE', ruta);
+  Future<dynamic> delete(String ruta, [Map<String, dynamic>? cuerpo]) =>
+      _enviar('DELETE', ruta, cuerpo);
 
   Future<String> getTexto(String ruta) async {
     final uri = Uri.parse('${ConfiguracionEntorno.urlBase}$ruta');
@@ -76,7 +77,11 @@ class ClienteApi {
     try {
       final peticion = switch (metodo) {
         'GET' => _cliente.get(uri, headers: cabeceras),
-        'DELETE' => _cliente.delete(uri, headers: cabeceras),
+        'DELETE' => _cliente.delete(
+          uri,
+          headers: cabeceras,
+          body: cuerpo == null ? null : jsonEncode(cuerpo),
+        ),
         'PUT' => _cliente.put(uri, headers: cabeceras, body: jsonEncode(cuerpo ?? {})),
         _ => _cliente.post(uri, headers: cabeceras, body: jsonEncode(cuerpo ?? {})),
       };

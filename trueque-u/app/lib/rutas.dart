@@ -2,6 +2,7 @@ import 'package:go_router/go_router.dart';
 
 import 'estado/controlador_autenticacion.dart';
 import 'pantallas/Publicacion.dart';
+import 'pantallas/pantalla_avisos.dart';
 import 'pantallas/pantalla_cambiar_contrasena.dart';
 import 'pantallas/pantalla_feed_publicaciones.dart';
 import 'pantallas/pantalla_historial.dart';
@@ -27,6 +28,7 @@ const _rutasPrivadas = {
   '/ofertas',
   '/historial', // Qué ocurrió con los intercambios de la persona
   '/mis-datos',
+  '/avisos',
 };
 
 /// Rutas que no tienen sentido si ya hay sesión.
@@ -123,6 +125,10 @@ GoRouter construirRutas(ControladorAutenticacion autenticacion) {
       GoRoute(
         path: '/mis-datos',
         builder: (context, estado) => const PantallaMisDatos(),
+      ),
+      GoRoute(
+        path: '/avisos',
+        builder: (context, estado) => const PantallaAvisos(),
       ),
     ],
   );

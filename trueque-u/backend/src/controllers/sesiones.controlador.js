@@ -19,7 +19,7 @@ const postSesion = async (req, res) => {
     const usuario = await models.usuarios.findOne({
       where: { correo: correo.trim().toLowerCase() },
     });
-    if (!usuario || !(await coincide(contrasena, usuario.contrasena_hash))) {
+    if (!usuario || usuario.eliminado_en || !(await coincide(contrasena, usuario.contrasena_hash))) {
       // El mismo mensaje en ambos casos, para no revelar si el correo existe
       return res.status(401).json({ error: "Correo o contraseña incorrectos" });
     }

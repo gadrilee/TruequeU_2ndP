@@ -29,10 +29,10 @@ const exigirSesion = async (req, res, next) => {
         expira_en: { [Op.gt]: new Date() },
       },
       include: [
-        { model: models.usuarios, as: "usuario", attributes: ["id", "nombre", "correo"] },
+        { model: models.usuarios, as: "usuario", attributes: ["id", "nombre", "correo", "eliminado_en"] },
       ],
     });
-    if (!sesion) {
+    if (!sesion || sesion.usuario.eliminado_en) {
       return res.status(401).json({ error: "Sesión cerrada o vencida" });
     }
 

@@ -34,6 +34,10 @@ const migracion =
   fs.readFileSync(
     path.join(__dirname, "../../../base_de_datos/migracion_eventos.sql"),
     "utf8"
+  ) +
+  fs.readFileSync(
+    path.join(__dirname, "../../../base_de_datos/migracion_cuenta_eliminada.sql"),
+    "utf8"
   );
 
 const datos = fs.readFileSync(

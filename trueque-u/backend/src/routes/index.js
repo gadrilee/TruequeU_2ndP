@@ -10,6 +10,7 @@ const ofertasRutas = require('./ofertas.rutas');
 const propuestasEntregaRutas = require('./propuestasEntrega.rutas');
 const calificacionesRutas = require('./calificaciones.rutas');
 const eventosRutas = require('./eventos.rutas');
+const notificacionesRutas = require('./notificaciones.rutas');
 
 const rutas = Router();
 
@@ -23,6 +24,7 @@ rutas.use('/historial', historialRutas);
 rutas.use('/ofertas', ofertasRutas);
 rutas.use('/propuestas-entrega', propuestasEntregaRutas);
 rutas.use('/calificaciones', calificacionesRutas);
+rutas.use('/notificaciones', notificacionesRutas);
 rutas.use('/', eventosRutas);
 
 module.exports = rutas;

@@ -3,6 +3,8 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../estado/controlador_autenticacion.dart';
+import '../servicios/analitica.dart';
+import '../widgets/dialogo_eliminar_cuenta.dart';
 import '../widgets/pagina_acceso.dart';
 import '../widgets/resumen_calificaciones.dart';
 
@@ -22,6 +24,25 @@ class PantallaPerfil extends StatelessWidget {
       title: Text(texto),
       trailing: const Icon(Icons.chevron_right),
       onTap: () => context.go(ruta),
+    );
+  }
+
+  Future<void> _eliminarCuenta(BuildContext context) async {
+    final auth = context.read<ControladorAutenticacion>();
+    final mensajes = ScaffoldMessenger.of(context);
+    final navegador = GoRouter.of(context);
+    track('eliminacion_cuenta_iniciada', {}, auth.api);
+    final cancelados = await showDialog<int>(
+      context: context,
+      builder: (_) => const DialogoEliminarCuenta(),
+    );
+    if (cancelados == null) return;
+    navegador.go('/');
+    await auth.olvidarSesion();
+    mensajes.showSnackBar(
+      const SnackBar(
+        content: Text('Tu cuenta fue eliminada. Gracias por haber usado Trueque U.'),
+      ),
     );
   }
 
@@ -80,9 +101,18 @@ class PantallaPerfil extends StatelessWidget {
               const Divider(height: 1),
               _opcion(context, Icons.history, 'Historial', '/historial'),
               const Divider(height: 1),
+              _opcion(context, Icons.notifications_none, 'Avisos', '/avisos'),
+              const Divider(height: 1),
               _opcion(context, Icons.folder_shared_outlined, 'Mis datos', '/mis-datos'),
               const Divider(height: 1),
               _opcion(context, Icons.key_outlined, 'Cambiar contraseña', '/cambiar-contrasena'),
+              const Divider(height: 1),
+              ListTile(
+                leading: Icon(Icons.delete_outline, color: colores.error),
+                title: Text('Eliminar cuenta', style: TextStyle(color: colores.error)),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => _eliminarCuenta(context),
+              ),
             ],
           ),
         ),

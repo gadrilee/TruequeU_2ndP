@@ -131,6 +131,29 @@ class ControladorAutenticacion extends ChangeNotifier {
     return _api.getTexto('/usuarios/yo/datos?formato=$formato');
   }
 
+  Future<int> eliminarCuenta(String contrasena) async {
+    final datos = await _api.delete('/usuarios/yo', {'contrasena': contrasena});
+    final cancelados = datos is Map ? datos['trueques_cancelados'] as num? : null;
+    return cancelados?.toInt() ?? 0;
+  }
+
+  Future<void> olvidarSesion() async {
+    await _borrarSesion();
+    notifyListeners();
+  }
+
+  Future<List<Map<String, dynamic>>> obtenerAvisos() async {
+    final respuesta = await _api.get('/notificaciones');
+    if (respuesta is List) {
+      return respuesta.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+    }
+    return [];
+  }
+
+  Future<void> marcarAvisoLeido(int id) async {
+    await _api.put('/notificaciones/$id/leida', {});
+  }
+
   /// Crea una nueva publicación de objeto para intercambiar.
   Future<void> crearPublicacion({
     required String titulo,
