@@ -232,7 +232,7 @@ void main() {
       await tocar(tester, find.text('Enviadas'));
 
       await tocarBoton(tester, 'Cancelar oferta');
-      await tocarBoton(tester, 'Cancelar oferta');
+      await tocarBoton(tester, 'Sí, cancelar oferta');
       await esperarTexto(tester, 'Cancelaste la oferta');
 
       expect(find.text('Cancelada'), findsOneWidget);
@@ -243,7 +243,7 @@ void main() {
       await abrirOfertas(tester);
       await tocar(tester, find.text('Enviadas'));
       await tocarBoton(tester, 'Cancelar oferta');
-      await tocarBoton(tester, 'Cancelar oferta');
+      await tocarBoton(tester, 'Sí, cancelar oferta');
       await esperarTexto(tester, 'Cancelaste la oferta');
       await abrirPestana(tester, 'Perfil');
 

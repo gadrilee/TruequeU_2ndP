@@ -63,10 +63,21 @@ http
   .createServer((peticion, respuesta) => {
     respuesta.setHeader("Access-Control-Allow-Origin", "*");
     respuesta.setHeader("Access-Control-Allow-Headers", "*");
-    respuesta.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+    respuesta.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
     if (peticion.method === "OPTIONS") {
       respuesta.writeHead(204);
       respuesta.end();
+      return;
+    }
+    if (peticion.method === "GET") {
+      execFile(
+        "docker",
+        ["exec", "trueque_u_bd", "psql", "-U", "postgres", "-d", "trueque_u", "-t", "-A", "-c", "SELECT COALESCE(json_agg(props), '[]') FROM eventos"],
+        (error, salida) => {
+          respuesta.writeHead(error ? 500 : 200, { "Content-Type": "application/json" });
+          respuesta.end(error ? "error" : salida);
+        }
+      );
       return;
     }
     reiniciarBase((error, errores) => {
