@@ -75,6 +75,6 @@ La pantalla muestra el perfil, las publicaciones, las ofertas, las calificacione
 
 Los dos botones tienen el mismo tamaño y no hay pasos extra. Al confirmar:
 
-- Los trueques en curso se cancelan y a la otra persona le llega un aviso sin culpas.
+- Los trueques en curso se cancelan con el motivo "Cuenta del usuario eliminada" y a la otra persona le llega un aviso sin culpas.
 - Las publicaciones dejan de mostrarse y las calificaciones quedan con el nombre "Usuario eliminado".
 - La cuenta ya no puede volver a entrar y no se puede deshacer.

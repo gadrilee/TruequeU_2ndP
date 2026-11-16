@@ -527,7 +527,7 @@ class _TarjetaOferta extends StatelessWidget {
                 nombreOtra: nombreOtra,
               ),
             ],
-            if (estado == 'anulada' && oferta['motivo_cancelacion'] != null) ...[
+            if ((estado == 'anulada' || estado == 'cancelada') && oferta['motivo_cancelacion'] != null) ...[
               const SizedBox(height: 8),
               Text('Motivo: ${oferta['motivo_cancelacion']}'),
             ],

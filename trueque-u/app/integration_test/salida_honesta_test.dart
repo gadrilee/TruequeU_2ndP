@@ -68,6 +68,9 @@ void main() {
 
       await tocarBoton(tester, 'Descargar JSON');
       await esperarTotalEvento(tester, 'datos_descargados', antes + 1);
+
+      await tocarBoton(tester, 'Descargar CSV');
+      await esperarTotalEvento(tester, 'datos_descargados', antes + 2);
     });
   });
 

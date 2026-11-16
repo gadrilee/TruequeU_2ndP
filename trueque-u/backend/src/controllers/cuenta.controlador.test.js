@@ -113,7 +113,14 @@ describe("Eliminar mi cuenta", () => {
 
     const res = await eliminar();
 
-    expect(oferta.update).toHaveBeenCalledWith({ estado: "cancelada" }, expect.anything());
+    expect(oferta.update).toHaveBeenCalledWith(
+      {
+        estado: "cancelada",
+        motivo_cancelacion: "Cuenta del usuario eliminada",
+        id_usuario_cancela: 1,
+      },
+      expect.anything(),
+    );
     expect(pedida.update).not.toHaveBeenCalled();
     expect(models.notificaciones.create).toHaveBeenCalledWith(
       {

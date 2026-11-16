@@ -38,7 +38,7 @@ void main() {
 
     testWidgets('Eudenia acepta la oferta de Carlos, los dos confirman y ve el intercambio completado', (tester) async {
       await abrirAppConSesion(tester, eudenia);
-      await tocarBoton(tester, 'Ofertas de trueque');
+      await abrirOfertas(tester);
       await tocarBoton(tester, 'Aceptar');
       await tocarBoton(tester, 'Aceptar');
       await esperarTexto(tester, mensajeAceptar);

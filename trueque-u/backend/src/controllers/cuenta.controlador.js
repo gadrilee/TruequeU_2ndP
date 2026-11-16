@@ -46,7 +46,14 @@ const cerrarTruequesEnCurso = async (idUsuario, idsPublicaciones, t) => {
       );
       idsAnuladas.push(oferta.id);
     } else {
-      await oferta.update({ estado: "cancelada" }, { transaction: t });
+      await oferta.update(
+        {
+          estado: "cancelada",
+          motivo_cancelacion: MOTIVO_CUENTA_ELIMINADA,
+          id_usuario_cancela: idUsuario,
+        },
+        { transaction: t },
+      );
     }
 
     await models.notificaciones.create(
