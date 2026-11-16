@@ -83,8 +83,13 @@ class _DialogoEliminarCuentaState extends State<DialogoEliminarCuenta> {
                 Expanded(
                   child: OutlinedButton(
                     key: const Key('boton-cancelar-eliminar'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: colores.primary,
+                      side: BorderSide(color: colores.primary, width: 1.5),
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+                    ),
                     onPressed: _enviando ? null : () => Navigator.of(context).pop(),
-                    child: const Text('Cancelar'),
+                    child: const Text('Cancelar', maxLines: 1),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -93,10 +98,11 @@ class _DialogoEliminarCuentaState extends State<DialogoEliminarCuenta> {
                     key: const Key('boton-confirmar-eliminar'),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: colores.error,
-                      side: BorderSide(color: colores.error),
+                      side: BorderSide(color: colores.error, width: 1.5),
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
                     ),
                     onPressed: _enviando ? null : _eliminar,
-                    child: const Text('Eliminar cuenta'),
+                    child: const Text('Eliminar cuenta', maxLines: 1),
                   ),
                 ),
               ],
