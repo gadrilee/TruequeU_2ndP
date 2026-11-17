@@ -1,0 +1,1 @@
+ALTER TABLE publicaciones ADD COLUMN IF NOT EXISTS imagen_url VARCHAR(500);

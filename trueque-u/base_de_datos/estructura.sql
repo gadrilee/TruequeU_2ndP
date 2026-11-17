@@ -41,6 +41,7 @@ CREATE TABLE publicaciones (
     id_usuario           INTEGER      NOT NULL REFERENCES usuarios (id) ON DELETE CASCADE,
     titulo               VARCHAR(150) NOT NULL,
     descripcion          TEXT,
+    imagen_url           VARCHAR(500),
     estado               VARCHAR(10)  NOT NULL CHECK (estado IN ('nuevo', 'usado')),
     estado_publicacion   VARCHAR(15)  NOT NULL DEFAULT 'disponible'
                          CHECK (estado_publicacion IN ('oculto', 'disponible', 'reservado', 'no disponible', 'acordado', 'intercambiado')),

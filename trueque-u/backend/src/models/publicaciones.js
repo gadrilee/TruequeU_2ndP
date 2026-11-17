@@ -24,6 +24,10 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.TEXT,
       allowNull: true
     },
+    imagen_url: {
+      type: DataTypes.STRING(500),
+      allowNull: true
+    },
     estado: {
       type: DataTypes.STRING(10),
       allowNull: false
