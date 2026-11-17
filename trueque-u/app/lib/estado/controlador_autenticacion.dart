@@ -164,6 +164,7 @@ class ControladorAutenticacion extends ChangeNotifier {
     String? descripcion,
     required String estado,
     required String categoria,
+    String? imagen,
   }) async {
     debugPrint('[publicaciones] Creando "$titulo"');
     await _api.post('/publicaciones', {
@@ -172,6 +173,7 @@ class ControladorAutenticacion extends ChangeNotifier {
         'descripcion': descripcion.trim(),
       'estado': estado,
       'categoria': categoria,
+      if (imagen != null) 'imagen': imagen,
     });
     debugPrint('[publicaciones] Publicación creada');
   }
@@ -408,6 +410,8 @@ class ControladorAutenticacion extends ChangeNotifier {
     int id, {
     required String titulo,
     String? descripcion,
+    String? imagen,
+    bool quitarImagen = false,
   }) async {
     debugPrint('[publicaciones] Editando la publicación $id');
     await _api.put('/publicaciones/$id', {
@@ -415,6 +419,8 @@ class ControladorAutenticacion extends ChangeNotifier {
       'descripcion': (descripcion != null && descripcion.trim().isNotEmpty)
           ? descripcion.trim()
           : null,
+      if (quitarImagen) 'quitar_imagen': true,
+      if (imagen != null) 'imagen': imagen,
     });
     debugPrint('[publicaciones] Publicación $id editada');
   }

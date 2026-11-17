@@ -9,6 +9,7 @@ import '../utilidades/etiquetas.dart';
 import '../widgets/banner_error.dart';
 import '../widgets/boton_carga.dart';
 import '../widgets/campo_texto.dart';
+import '../widgets/foto_publicacion.dart';
 import '../widgets/pagina_acceso.dart';
 
 /// Formulario para crear una nueva publicación de trueque.
@@ -27,6 +28,7 @@ class _PantallaPublicacionState extends State<PantallaPublicacion> {
   String _categoria = 'otros'; // libros, electronica, ropa u otros
   bool _cargando = false;
   String? _error;
+  String? _foto;
 
   @override
   void dispose() {
@@ -49,6 +51,7 @@ class _PantallaPublicacionState extends State<PantallaPublicacion> {
             descripcion: _descripcion.text,
             estado: _estado,
             categoria: _categoria,
+            imagen: _foto,
           );
       track('publicacion_creada', {
         'categoria': _categoria,
@@ -73,6 +76,20 @@ class _PantallaPublicacionState extends State<PantallaPublicacion> {
         _error = 'Ocurrió un error al guardar la publicación';
         _cargando = false;
       });
+    }
+  }
+
+  Future<void> _elegirFoto() async {
+    try {
+      final foto = await elegirFoto();
+      if (foto == null || !mounted) return;
+      setState(() {
+        _foto = foto;
+        _error = null;
+      });
+    } on FormatException catch (e) {
+      if (!mounted) return;
+      setState(() => _error = e.message);
     }
   }
 
@@ -140,6 +157,18 @@ class _PantallaPublicacionState extends State<PantallaPublicacion> {
                   }
                 },
               ),
+              const SizedBox(height: 16),
+              FotoPublicacion(url: _foto, alto: 160),
+              const SizedBox(height: 8),
+              OutlinedButton(
+                onPressed: _cargando ? null : _elegirFoto,
+                child: Text(_foto == null ? 'Elegir foto' : 'Cambiar foto'),
+              ),
+              if (_foto != null)
+                TextButton(
+                  onPressed: _cargando ? null : () => setState(() => _foto = null),
+                  child: const Text('Quitar foto'),
+                ),
               const SizedBox(height: 20),
               BannerError(_error),
               BotonCarga(

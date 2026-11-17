@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '../utilidades/etiquetas.dart';
 import 'chip_estado.dart';
+import 'foto_publicacion.dart';
 
 /// =========================================================================
 /// COMPONENTE CARD DEL FEED
@@ -15,6 +16,7 @@ class TarjetaFeed extends StatelessWidget {
     required this.id,
     required this.titulo,
     this.descripcion,
+    this.imagenUrl,
     required this.estadoFisico,
     required this.categoria,
     required this.estadoPublicacion,
@@ -36,6 +38,7 @@ class TarjetaFeed extends StatelessWidget {
   final int id;
   final String titulo;
   final String? descripcion;
+  final String? imagenUrl;
   final String estadoFisico; // 'nuevo' o 'usado'
   final String categoria; // 'libros', 'electronica',....
   final String estadoPublicacion; // 'disponible', 'reservado', etc.
@@ -70,6 +73,8 @@ class TarjetaFeed extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            FotoPublicacion(url: imagenUrl, alto: 120),
+            const SizedBox(height: 10),
             // Fila superior: Título del objeto y Chip de estado de publicación
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,

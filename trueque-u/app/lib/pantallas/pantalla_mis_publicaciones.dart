@@ -221,6 +221,7 @@ class _PantallaMisPublicacionesState extends State<PantallaMisPublicaciones> {
     int id,
     String tituloActual,
     String? descripcionActual,
+    String? imagenActual,
     bool estaReservada,
   ) async {
     // Si la publicación está reservada por alguien, bloqueamos la acción y mostramos el error
@@ -240,6 +241,7 @@ class _PantallaMisPublicacionesState extends State<PantallaMisPublicaciones> {
         id: id,
         tituloInicial: tituloActual,
         descripcionInicial: descripcionActual,
+        imagenInicial: imagenActual,
       ),
     );
 
@@ -300,6 +302,7 @@ class _PantallaMisPublicacionesState extends State<PantallaMisPublicaciones> {
                 id: idPub,
                 titulo: (pub['titulo'] as String?) ?? 'Sin título',
                 descripcion: pub['descripcion'] as String?,
+                imagenUrl: pub['imagen_url'] as String?,
                 estado: (pub['estado'] as String?) ?? 'usado',
                 categoria: (pub['categoria'] as String?) ?? 'otros',
                 estadoPublicacion:
@@ -319,6 +322,7 @@ class _PantallaMisPublicacionesState extends State<PantallaMisPublicaciones> {
                   idPub,
                   (pub['titulo'] as String?) ?? '',
                   pub['descripcion'] as String?,
+                  pub['imagen_url'] as String?,
                   estaReservada,
                 ),
                 alEliminar: () => _eliminar(

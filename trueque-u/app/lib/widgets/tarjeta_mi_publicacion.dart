@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../utilidades/etiquetas.dart';
 import 'etiqueta.dart';
+import 'foto_publicacion.dart';
 
 /// =========================================================================
 /// TARJETA DE PUBLICACIÓN PROPIA
@@ -18,6 +19,7 @@ class TarjetaMiPublicacion extends StatelessWidget {
     required this.id,
     required this.titulo,
     this.descripcion,
+    this.imagenUrl,
     required this.estado,
     required this.categoria,
     required this.estadoPublicacion,
@@ -35,6 +37,7 @@ class TarjetaMiPublicacion extends StatelessWidget {
   final int id;
   final String titulo;
   final String? descripcion;
+  final String? imagenUrl;
   final String estado;
   final String categoria;
   final String estadoPublicacion;
@@ -71,6 +74,8 @@ class TarjetaMiPublicacion extends StatelessWidget {
               const LinearProgressIndicator(minHeight: 3),
               const SizedBox(height: 8),
             ],
+            FotoPublicacion(url: imagenUrl, alto: 160),
+            const SizedBox(height: 12),
             // Encabezado: Título y menú de opciones (editar / cambiar estado / eliminar)
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,

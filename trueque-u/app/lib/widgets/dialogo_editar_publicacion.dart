@@ -5,6 +5,7 @@ import '../estado/controlador_autenticacion.dart';
 import '../servicios/cliente_api.dart';
 import 'banner_error.dart';
 import 'campo_texto.dart';
+import 'foto_publicacion.dart';
 
 /// =========================================================================
 /// DIÁLOGO PARA EDITAR INFORMACIÓN (SOLO NOMBRE Y DESCRIPCIÓN)
@@ -17,11 +18,13 @@ class DialogoEditarPublicacion extends StatefulWidget {
     required this.id,
     required this.tituloInicial,
     this.descripcionInicial,
+    this.imagenInicial,
   });
 
   final int id;
   final String tituloInicial;
   final String? descripcionInicial;
+  final String? imagenInicial;
 
   @override
   State<DialogoEditarPublicacion> createState() =>
@@ -34,6 +37,8 @@ class _DialogoEditarPublicacionState extends State<DialogoEditarPublicacion> {
   late final TextEditingController _descripcionCtrl;
   bool _guardando = false;
   String? _error;
+  String? _fotoNueva;
+  bool _quitarFoto = false;
 
   @override
   void initState() {
@@ -63,6 +68,8 @@ class _DialogoEditarPublicacionState extends State<DialogoEditarPublicacion> {
             widget.id,
             titulo: _tituloCtrl.text,
             descripcion: _descripcionCtrl.text,
+            imagen: _fotoNueva,
+            quitarImagen: _quitarFoto && _fotoNueva == null,
           );
       if (!mounted) return;
       Navigator.of(context).pop(true);
@@ -79,6 +86,27 @@ class _DialogoEditarPublicacionState extends State<DialogoEditarPublicacion> {
         _guardando = false;
       });
     }
+  }
+
+  Future<void> _elegir() async {
+    try {
+      final foto = await elegirFoto();
+      if (foto == null || !mounted) return;
+      setState(() {
+        _fotoNueva = foto;
+        _quitarFoto = false;
+        _error = null;
+      });
+    } on FormatException catch (e) {
+      if (!mounted) return;
+      setState(() => _error = e.message);
+    }
+  }
+
+  String? get _fotoVisible {
+    if (_fotoNueva != null) return _fotoNueva;
+    if (_quitarFoto) return null;
+    return widget.imagenInicial;
   }
 
   @override
@@ -113,6 +141,23 @@ class _DialogoEditarPublicacionState extends State<DialogoEditarPublicacion> {
                   lineas: 3,
                   tipoTeclado: TextInputType.multiline,
                 ),
+                const SizedBox(height: 16),
+                FotoPublicacion(url: _fotoVisible, alto: 140),
+                const SizedBox(height: 8),
+                OutlinedButton(
+                  onPressed: _guardando ? null : _elegir,
+                  child: const Text('Cambiar foto'),
+                ),
+                if (_fotoVisible != null)
+                  TextButton(
+                    onPressed: _guardando
+                        ? null
+                        : () => setState(() {
+                              _fotoNueva = null;
+                              _quitarFoto = true;
+                            }),
+                    child: const Text('Quitar foto'),
+                  ),
                 if (_error != null) ...[
                   const SizedBox(height: 16),
                   BannerError(_error),

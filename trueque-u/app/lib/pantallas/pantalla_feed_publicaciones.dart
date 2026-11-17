@@ -414,7 +414,7 @@ class _PantallaFeedPublicacionesState extends State<PantallaFeedPublicaciones> {
                   crossAxisSpacing: 16,
                   mainAxisSpacing: 16,
                   // Relación de aspecto adaptada para acomodar título, descripción y botones
-                  mainAxisExtent: 420,
+                  mainAxisExtent: 560,
                 ),
                 itemCount: _publicaciones.length,
                 itemBuilder: (context, index) {
@@ -444,6 +444,7 @@ class _PantallaFeedPublicacionesState extends State<PantallaFeedPublicaciones> {
                     id: id,
                     titulo: tituloPub,
                     descripcion: pub['descripcion'] as String?,
+                    imagenUrl: pub['imagen_url'] as String?,
                     estadoFisico: (pub['estado'] as String?) ?? 'usado',
                     categoria: (pub['categoria'] as String?) ?? 'otros',
                     estadoPublicacion:
