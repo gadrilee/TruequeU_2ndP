@@ -1,3 +1,6 @@
+const fs = require("fs");
+const os = require("os");
+const path = require("path");
 const { Op } = require("sequelize");
 
 // Se reemplaza la base de datos por una falsa: así la prueba no necesita conexión
@@ -10,7 +13,8 @@ jest.mock("../database/sequelize", () => ({
 }));
 
 const { models } = require("../database/sequelize");
-const { getPublicaciones, getMisPublicaciones } = require("./publicaciones.controlador");
+const { getPublicaciones, getMisPublicaciones, deletePublicacion } = require("./publicaciones.controlador");
+const { guardarImagen } = require("../services/imagenes");
 
 // Una fila falsa como las que devuelve la base de datos (con toJSON)
 function crearFila(datos) {
@@ -229,5 +233,43 @@ describe("Teléfono del dueño en el catálogo (H7)", () => {
     const pub = await pedirComo(3);
     expect(pub.autor.telefono).toBeUndefined();
     expect(pub.autor.nombre).toBe("Ana");
+  });
+});
+
+describe("Eliminar la foto junto con la publicación", () => {
+  const carpeta = fs.mkdtempSync(path.join(os.tmpdir(), "trueque-fotos-"));
+  const png =
+    "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==";
+
+  beforeAll(() => {
+    process.env.IMAGENES_CARPETA = carpeta;
+    delete process.env.CLOUDINARY_CLOUD_NAME;
+    delete process.env.CLOUDINARY_API_KEY;
+    delete process.env.CLOUDINARY_API_SECRET;
+  });
+
+  afterAll(() => {
+    fs.rmSync(carpeta, { recursive: true, force: true });
+  });
+
+  test("al eliminar la publicación se borra el archivo", async () => {
+    const guardada = await guardarImagen(png);
+    const nombre = path.basename(guardada.url);
+    const fila = {
+      id: 4,
+      id_usuario: 1,
+      estado_publicacion: "disponible",
+      imagen_url: guardada.url,
+      destroy: jest.fn(),
+    };
+    models.publicaciones.findByPk = jest.fn().mockResolvedValue(fila);
+    models.ofertas.count = jest.fn().mockResolvedValue(0);
+
+    const res = crearRespuesta();
+    await deletePublicacion({ usuario: { id: 1 }, params: { id: "4" } }, res);
+
+    expect(res.json).toHaveBeenCalledWith({ mensaje: "Publicación eliminada correctamente" });
+    expect(fila.destroy).toHaveBeenCalled();
+    expect(fs.existsSync(path.join(carpeta, nombre))).toBe(false);
   });
 });

@@ -1,3 +1,4 @@
+const path = require("path");
 const express = require("express");
 const cors = require("cors");
 const rutas = require("./routes");
@@ -9,7 +10,8 @@ const {
 const aplicacion = express();
 
 aplicacion.use(cors());
-aplicacion.use(express.json());
+aplicacion.use(express.json({ limit: "4mb" }));
+aplicacion.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
 aplicacion.use("/api", rutas);
 

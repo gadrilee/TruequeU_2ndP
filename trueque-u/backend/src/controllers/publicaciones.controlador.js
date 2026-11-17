@@ -2,6 +2,7 @@ const { Op } = require("sequelize");
 const { models } = require("../database/sequelize");
 const { estaReservado, estaIntercambiado, estaAcordado } = require("../utils/reglasObjeto");
 const { estaEnOfertaPendiente } = require("../utils/ofertasPendientes");
+const { guardarImagen, borrarImagen } = require("../services/imagenes");
 
 // Condición del objeto: solo puede ser "nuevo" o "usado"
 const ESTADOS = ["nuevo", "usado"];
@@ -214,7 +215,7 @@ const getPublicacion = async (req, res) => {
 const postPublicacion = async (req, res) => {
   try {
     const idUsuario = req.usuario.id;
-    const { titulo, descripcion, estado, categoria } = req.body || {};
+    const { titulo, descripcion, estado, categoria, imagen } = req.body || {};
 
     // Se validan los datos que llegan
     if (typeof titulo !== "string" || titulo.trim().length < 2) {
@@ -240,12 +241,20 @@ const postPublicacion = async (req, res) => {
       });
     }
 
+    let imagenUrl = null;
+    if (typeof imagen === "string" && imagen.trim() !== "") {
+      const guardada = await guardarImagen(imagen);
+      if (guardada.error) return res.status(400).json({ error: guardada.error });
+      imagenUrl = guardada.url;
+    }
+
     const nueva = await models.publicaciones.create({
       id_usuario: idUsuario,
       titulo: titulo.trim(),
       descripcion: typeof descripcion === "string" ? descripcion.trim() : null,
       estado,
       categoria: categoria || "otros",
+      imagen_url: imagenUrl,
     });
 
     // Se vuelve a leer para devolverla con los datos del autor
@@ -307,7 +316,7 @@ const putPublicacion = async (req, res) => {
       });
     }
 
-    const { titulo, descripcion, estado, categoria } = req.body || {};
+    const { titulo, descripcion, estado, categoria, imagen, quitar_imagen } = req.body || {};
     const cambios = {}; // aquí se van juntando solo los datos que llegaron
 
     if (titulo !== undefined) {
@@ -341,6 +350,15 @@ const putPublicacion = async (req, res) => {
         });
       }
       cambios.categoria = categoria;
+    }
+    if (quitar_imagen === true) {
+      await borrarImagen(publicacion.imagen_url);
+      cambios.imagen_url = null;
+    } else if (typeof imagen === "string" && imagen.trim() !== "") {
+      const guardada = await guardarImagen(imagen);
+      if (guardada.error) return res.status(400).json({ error: guardada.error });
+      await borrarImagen(publicacion.imagen_url);
+      cambios.imagen_url = guardada.url;
     }
 
     await publicacion.update(cambios);
@@ -409,6 +427,7 @@ const deletePublicacion = async (req, res) => {
       });
     }
 
+    await borrarImagen(publicacion.imagen_url);
     await publicacion.destroy();
 
     console.log(
