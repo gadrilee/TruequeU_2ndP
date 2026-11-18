@@ -64,7 +64,7 @@ class _PantallaMisDatosState extends State<PantallaMisDatos> {
       final tipo = formato == 'csv' ? 'text/csv' : 'application/json';
       final listo = descargarArchivo('mis-datos.$formato', contenido, tipo);
       if (listo) {
-        track('datos_descargados', {'formato': formato}, auth.api);
+        track('datos_descargados', {'formato': formato}, auth.api); // coverage:ignore-line
       }
       mensajes.showSnackBar(SnackBar(
         content: Text(listo

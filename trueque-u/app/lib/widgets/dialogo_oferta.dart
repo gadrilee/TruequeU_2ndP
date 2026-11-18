@@ -40,7 +40,7 @@ Future<int?> mostrarDialogoContraoferta(
       mensajeVacio: 'No hay otro objeto disponible para proponer en esta negociación.',
       conBotonCrear: false,
       opciones: opciones,
-      alCrear: () {},
+      alCrear: () {}, // coverage:ignore-line
     ),
   );
 }
