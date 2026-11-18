@@ -8,6 +8,12 @@
     "dev": "node --watch src/servidor.js",
     "test": "jest"
   },
+  "jest": {
+    "collectCoverageFrom": [
+      "src/**/*.js",
+      "!src/**/*.test.js"
+    ]
+  },
   "engines": {
     "node": ">=18"
   },
