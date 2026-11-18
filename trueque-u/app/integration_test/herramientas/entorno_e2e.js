@@ -1,66 +1,62 @@
 const http = require("http");
 const path = require("path");
-const { execFile } = require("child_process");
 const fs = require("fs");
+
+const raiz = path.join(__dirname, "../../..");
+const { Pool } = require(path.join(raiz, "backend/node_modules/pg"));
+
+const conexion = {
+  host: process.env.BD_HOST || "localhost",
+  port: Number(process.env.BD_PUERTO || 5433),
+  database: process.env.BD_NOMBRE || "trueque_u",
+  user: process.env.BD_USUARIO || "postgres",
+  password: process.env.BD_CONTRASENA || "postgres",
+};
 
 process.chdir(__dirname);
 process.env.PUERTO = "3000";
-process.env.BD_HOST = "localhost";
-process.env.BD_PUERTO = "5433";
-process.env.BD_NOMBRE = "trueque_u";
-process.env.BD_USUARIO = "postgres";
-process.env.BD_CONTRASENA = "postgres";
+process.env.BD_HOST = conexion.host;
+process.env.BD_PUERTO = String(conexion.port);
+process.env.BD_NOMBRE = conexion.database;
+process.env.BD_USUARIO = conexion.user;
+process.env.BD_CONTRASENA = conexion.password;
 delete process.env.BD_URL;
 
-require(path.join(__dirname, "../../../backend/src/servidor.js"));
+require(path.join(raiz, "backend/src/servidor.js"));
 
-const migracion =
-  fs.readFileSync(
-    path.join(__dirname, "../../../base_de_datos/migracion_contraofertas.sql"),
-    "utf8"
-  ) +
-  fs.readFileSync(
-    path.join(__dirname, "../../../base_de_datos/migracion_intercambio_acordado.sql"),
-    "utf8"
-  ) +
-  fs.readFileSync(
-    path.join(__dirname, "../../../base_de_datos/migracion_propuestas_entrega.sql"),
-    "utf8"
-  ) +
-  fs.readFileSync(
-    path.join(__dirname, "../../../base_de_datos/migracion_calificaciones.sql"),
-    "utf8"
-  ) +
-  fs.readFileSync(
-    path.join(__dirname, "../../../base_de_datos/migracion_eventos.sql"),
-    "utf8"
-  ) +
-  fs.readFileSync(
-    path.join(__dirname, "../../../base_de_datos/migracion_cuenta_eliminada.sql"),
-    "utf8"
-  ) +
-  fs.readFileSync(
-    path.join(__dirname, "../../../base_de_datos/migracion_imagen.sql"),
-    "utf8"
-  );
+const pool = new Pool(conexion);
 
-const datos = fs.readFileSync(
-  path.join(__dirname, "../../../base_de_datos/datos.sql"),
-  "utf8"
-);
+const leerSql = (nombre) =>
+  fs.readFileSync(path.join(raiz, "base_de_datos", nombre), "utf8");
 
-function reiniciarBase(alTerminar) {
+const migracion = [
+  "migracion_contraofertas.sql",
+  "migracion_intercambio_acordado.sql",
+  "migracion_propuestas_entrega.sql",
+  "migracion_calificaciones.sql",
+  "migracion_eventos.sql",
+  "migracion_cuenta_eliminada.sql",
+  "migracion_imagen.sql",
+]
+  .map(leerSql)
+  .join("");
+
+const datos = leerSql("datos.sql");
+
+async function reiniciarBase() {
   const sql =
     "TRUNCATE usuarios, sesiones, publicaciones, historial, ofertas RESTART IDENTITY CASCADE;\n" +
     migracion +
     "\n" +
     datos;
-  const proceso = execFile(
-    "docker",
-    ["exec", "-i", "trueque_u_bd", "psql", "-U", "postgres", "-d", "trueque_u", "-v", "ON_ERROR_STOP=1"],
-    (error, salida, errores) => alTerminar(error, errores)
+  await pool.query(sql);
+}
+
+async function leerEventos() {
+  const resultado = await pool.query(
+    "SELECT COALESCE(json_agg(props), '[]') AS eventos FROM eventos"
   );
-  proceso.stdin.end(sql);
+  return JSON.stringify(resultado.rows[0].eventos);
 }
 
 http
@@ -74,26 +70,30 @@ http
       return;
     }
     if (peticion.method === "GET") {
-      execFile(
-        "docker",
-        ["exec", "trueque_u_bd", "psql", "-U", "postgres", "-d", "trueque_u", "-t", "-A", "-c", "SELECT COALESCE(json_agg(props), '[]') FROM eventos"],
-        (error, salida) => {
-          respuesta.writeHead(error ? 500 : 200, { "Content-Type": "application/json" });
-          respuesta.end(error ? "error" : salida);
+      leerEventos().then(
+        (eventos) => {
+          respuesta.writeHead(200, { "Content-Type": "application/json" });
+          respuesta.end(eventos);
+        },
+        (error) => {
+          console.error("No se pudieron leer los eventos:", error.message);
+          respuesta.writeHead(500, { "Content-Type": "application/json" });
+          respuesta.end("error");
         }
       );
       return;
     }
-    reiniciarBase((error, errores) => {
-      if (error) {
-        console.error("No se pudo reiniciar la base:", errores);
+    reiniciarBase().then(
+      () => {
+        respuesta.writeHead(200);
+        respuesta.end("listo");
+      },
+      (error) => {
+        console.error("No se pudo reiniciar la base:", error.message);
         respuesta.writeHead(500);
         respuesta.end("error");
-        return;
       }
-      respuesta.writeHead(200);
-      respuesta.end("listo");
-    });
+    );
   })
   .listen(3100, () => {
     console.log("Reinicio de la base escuchando en http://localhost:3100");

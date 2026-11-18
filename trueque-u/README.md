@@ -130,11 +130,15 @@ msedgedriver --port=4445
 node app/integration_test/herramientas/puente_edge.js
 ```
 
+El servidor de reinicio se conecta directo a PostgreSQL (sin `docker exec`): usa `localhost:5433`, base `trueque_u`, usuario y contraseña `postgres`. Para otra base, define `BD_HOST`, `BD_PUERTO`, `BD_NOMBRE`, `BD_USUARIO` y `BD_CONTRASENA` antes de arrancarlo.
+
 Después, desde `app`, corre un archivo de pruebas:
 
 ```bash
-flutter drive --driver=test_driver/integration_test.dart --target=integration_test/acceso_test.dart -d web-server --browser-name=chrome --chrome-binary="C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe" --headless
+flutter drive --driver=test_driver/integration_test.dart --target=integration_test/acceso_test.dart -d web-server --browser-name=chrome --chrome-binary="C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe" --headless --browser-dimension=800x1000
 ```
+
+El `--browser-dimension=800x1000` es necesario: con la ventana ancha por defecto (más de 900 px) el feed usa tres columnas y la tarjeta de publicación se desborda 23 px (`lib/widgets/tarjeta_feed.dart`), lo que Flutter reporta como excepción y hace fallar todas las pruebas que llegan al feed.
 
 Al terminar, apaga todo (ojo: cierra todos los procesos de Node):
 
