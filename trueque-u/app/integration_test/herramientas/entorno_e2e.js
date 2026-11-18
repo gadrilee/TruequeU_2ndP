@@ -22,6 +22,14 @@ process.env.BD_USUARIO = conexion.user;
 process.env.BD_CONTRASENA = conexion.password;
 delete process.env.BD_URL;
 
+let ultimaClaveTemporal = "";
+const escribirOriginal = console.log;
+console.log = (...argumentos) => {
+  const clave = /Tu nueva contraseña es: (\S+)/.exec(argumentos.join(" "));
+  if (clave) ultimaClaveTemporal = clave[1];
+  escribirOriginal(...argumentos);
+};
+
 require(path.join(raiz, "backend/src/servidor.js"));
 
 const pool = new Pool(conexion);
@@ -67,6 +75,11 @@ http
     if (peticion.method === "OPTIONS") {
       respuesta.writeHead(204);
       respuesta.end();
+      return;
+    }
+    if (peticion.method === "GET" && peticion.url === "/ultima-clave-temporal") {
+      respuesta.writeHead(200, { "Content-Type": "text/plain" });
+      respuesta.end(ultimaClaveTemporal);
       return;
     }
     if (peticion.method === "GET") {

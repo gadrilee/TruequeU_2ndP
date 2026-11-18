@@ -1,10 +1,13 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
+import 'package:image_picker_platform_interface/image_picker_platform_interface.dart';
+import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:trueque_u/estado/controlador_autenticacion.dart';
 import 'package:trueque_u/main.dart';
@@ -200,4 +203,38 @@ Future<http.Response> pedirApi(
   if (metodo == 'GET') return http.get(direccion, headers: conToken);
   if (metodo == 'PUT') return http.put(direccion, headers: conToken, body: jsonEncode(cuerpo ?? {}));
   return http.post(direccion, headers: conToken, body: jsonEncode(cuerpo ?? {}));
+}
+
+const pngMinimo =
+    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==';
+
+class SelectorFalso extends ImagePickerPlatform with MockPlatformInterfaceMixin {
+  SelectorFalso(this.archivo);
+
+  final XFile archivo;
+
+  @override
+  Future<XFile?> getImageFromSource({
+    required ImageSource source,
+    ImagePickerOptions options = const ImagePickerOptions(),
+  }) async {
+    return archivo;
+  }
+}
+
+void elegirArchivoFalso(Uint8List bytes, String nombre) {
+  ImagePickerPlatform.instance = SelectorFalso(XFile.fromData(bytes, name: nombre, path: nombre));
+}
+
+Future<String> ultimaClaveTemporal() async {
+  final respuesta = await http.get(Uri.parse('http://localhost:3100/ultima-clave-temporal'));
+  return respuesta.body;
+}
+
+Finder fotoDelServidor() {
+  return find.byWidgetPredicate((widget) {
+    if (widget is! Image) return false;
+    final imagen = widget.image;
+    return imagen is NetworkImage && imagen.url.startsWith('http://localhost:3000/uploads/');
+  });
 }
