@@ -117,8 +117,8 @@ Los archivos están en `trueque-u/app/lib/widgets/`. Todos usan auto layout; pad
 | Componente Figma | Archivo Flutter | Variantes y estados |
 | --- | --- | --- |
 | `LogoTruequeU` | `logo_trueque_u.dart` | Variante: icono, conNombre |
-| `BotonCarga` | `boton_carga.dart` | Estado: default, hover, presionado, cargando, deshabilitado. Variante: primario, rojo, tonal, contorno |
-| `CampoTexto` | `campo_texto.dart` | Estado: vacio, enfocado, relleno, error, deshabilitado. Tipo: texto, contrasena |
+| `BotonCarga` | `boton_carga.dart` | Estado: default, hover, presionado, cargando, deshabilitado. Variante: primario, rojo, tonal, contorno, contornoRojo (contorno con color de error), texto (TextButton) |
+| `CampoTexto` | `campo_texto.dart` | Estado: vacio, enfocado, relleno, error, deshabilitado. Tipo: texto, contrasena, multilinea. Icono: no, si |
 | `BannerError` | `banner_error.dart` | Estado: default |
 | `ChipEstado` | `chip_estado.dart` | Estado: disponible, reservado, reservadoPorTi, intercambiado, acordado, noDisponible |
 | `Etiqueta` | `etiqueta.dart` | Tono: primario, secundario, terciario |
@@ -131,6 +131,39 @@ Los archivos están en `trueque-u/app/lib/widgets/`. Todos usan auto layout; pad
 | `TarjetaMiPublicacion` | `tarjeta_mi_publicacion.dart` | Reservada: si, no |
 | `EncabezadoAcceso` | `encabezado_acceso.dart` | ConLogo: si, no |
 | `EstructuraPrincipal` | `estructura_principal.dart` | Activo: explorar, misPublicaciones, ofertas, perfil |
+| `ResumenCalificaciones` | `resumen_calificaciones.dart` | Estado: cargando, vacio, conDatos |
+| `BloqueCalificacion` | `bloque_calificacion.dart` | Estado: sinCalificar, calificado |
+| `BloqueEntrega` | `bloque_entrega.dart` | Estado: sinAcuerdo, acuerdoVigente, propuestaPendiente, reprogramando |
+| `TarjetaIntercambio` | `tarjeta_intercambio.dart` | Rol: entregue, recibi |
+| `SegmentedButton` | Material, usado en `pantalla_ofertas.dart` | Seleccionado: recibidas, enviadas |
+| `ChipEstadoOferta` | `_ChipEstado` en `pantalla_ofertas.dart` | Estado: pendiente, contraofertada, aceptada, completada, anulada, rechazada, cancelada |
+| `TarjetaOferta` | `_TarjetaOferta` en `pantalla_ofertas.dart` | Estado: los 7 de `ChipEstadoOferta`. Lado: recibida, enviada |
+| `FilaLista` | patrón inline: `ListTile` en `pantalla_perfil.dart` | Icono: con, sin. Subtitulo: con, sin. Final: ninguno, chevron. Tono: normal, error |
+| `TarjetaAviso` | patrón inline: `Card` + `ListTile` en `pantalla_avisos.dart` | Estado: noLeida, leida |
+| `TarjetaHistorial` | patrón inline: `Card` en `pantalla_historial.dart` | Tipo: reservo, canceloReserva, completo |
+| `FiltrosHistorial` | patrón inline: `ChoiceChip` en `pantalla_historial.dart` | Seleccionado: todo, reservas, completados |
+| `TarjetaDatos` | patrón inline: `_tarjeta` en `pantalla_mis_datos.dart` | Variante: normal, conAccion |
+| `CabeceraFeed` | patrón inline: saludo y botones de `pantalla_feed_publicaciones.dart` | Estado: default |
+| `PieEnlace` | patrón inline: `pie` de `pantalla_iniciar_sesion.dart` y `pantalla_registro.dart` | Variante: crearCuenta, iniciarSesion |
+| `IconoCaja` | patrón inline: cuadro de ícono de `pantalla_recuperar_contrasena.dart` | Icono: llave |
+| `BannerExito` | patrón inline: aviso verde de `pantalla_recuperar_contrasena.dart` | Estado: default |
+| `TextoPantalla` | patrón inline: `Text` suelto de las pantallas | Estilo: titulo, subtitulo, cuerpo, negrita, suave, ayuda, error, enlace. Alineacion: izquierda, centro, derecha |
+| `AppBar` | Material, configurado en `pagina_acceso.dart` | Volver: no, si. Accion: ninguna, refrescar |
+| `FloatingActionButton` | Material, rojo del tema (`FloatingActionButton.extended`) | Variante: extendido |
+| `SnackBar` | Material, fondo `onSurface` | Estado: default |
+| `DropdownButtonFormField` | Material, usado en `Publicacion.dart` | Estado: default, enfocado |
+| `CircleAvatar` | Material, usado en `pantalla_perfil.dart` y `dialogo_ayuda.dart` | Tamano: grande, chico |
+| `Divider` | Material, usado en `pantalla_perfil.dart` | Estado: default |
+| `CircularProgressIndicator` | Material | Tamano: grande, pequeno |
+| `confirmarAccion` | `dialogo_confirmacion.dart` | Variante: normal, destructivo |
+| `mostrarAyudaTrueque` | `dialogo_ayuda.dart` | Estado: default |
+| `pedirCalificacion` | `dialogo_calificacion.dart` | Estado: sinPuntaje, conPuntaje, error |
+| `pedirMotivoCancelacion` | `dialogo_motivo.dart` | Estado: vacio, conMotivo |
+| `pedirDatosEntrega` | `dialogo_entrega.dart` | Variante: proponer, reprogramar, contraproponer, conErrores |
+| `mostrarDialogoOferta` | `dialogo_oferta.dart` (incluye `mostrarDialogoContraoferta`) | Tipo: ofrecer, contraofertar. Estado: conOpciones, vacio |
+| `DialogoEditarPublicacion` | `dialogo_editar_publicacion.dart` | Estado: normal, guardando, error |
+| `DialogoEliminarCuenta` | `dialogo_eliminar_cuenta.dart` | Estado: normal, error |
+| `DialogoHistorial` | patrón inline: `AlertDialog` de `pantalla_ofertas.dart`, `bloque_entrega.dart` y `pantalla_historial.dart` | Tipo: negociacion, entrega, movimiento |
 
 Los componentes con texto editable exponen una propiedad de texto (`texto`, `mensaje`, `titulo` o `subtitulo`). Las tarjetas, `MensajeVacio` y `ErrorConReintento` están armadas con instancias de los componentes anteriores.
 

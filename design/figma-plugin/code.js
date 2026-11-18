@@ -404,23 +404,27 @@ async function botonCarga(c) {
     rojo: ['ColorScheme/secondary', 'ColorScheme/onSecondary'],
     tonal: ['ColorScheme/secondaryContainer', 'ColorScheme/onSecondaryContainer'],
     contorno: [null, 'ColorScheme/primary'],
+    contornoRojo: [null, 'ColorScheme/error'],
+    texto: [null, 'ColorScheme/primary'],
   };
   const par = pares[c.Variante];
-  const contorno = c.Variante === 'contorno';
+  const contorno = c.Variante === 'contorno' || c.Variante === 'contornoRojo';
+  const sinFondo = contorno || c.Variante === 'texto';
   const apagado = c.Estado === 'deshabilitado' || c.Estado === 'cargando';
   const opacidades = { default: 1, hover: 0.92, presionado: 0.84 };
   let fondo = par[0];
   let opacidad = opacidades[c.Estado];
   let color = par[1];
   let opacidadTexto;
-  let borde = contorno ? 'ColorScheme/outlineVariant' : null;
+  let borde = null;
+  if (contorno) borde = c.Variante === 'contornoRojo' ? 'ColorScheme/error' : 'ColorScheme/outlineVariant';
   let opacidadBorde;
-  if (contorno && (c.Estado === 'hover' || c.Estado === 'presionado')) {
-    fondo = 'ColorScheme/primary';
+  if (sinFondo && (c.Estado === 'hover' || c.Estado === 'presionado')) {
+    fondo = par[1];
     opacidad = c.Estado === 'hover' ? 0.08 : 0.12;
   }
   if (apagado) {
-    fondo = contorno ? null : 'ColorScheme/onSurface';
+    fondo = sinFondo ? null : 'ColorScheme/onSurface';
     opacidad = 0.12;
     color = 'ColorScheme/onSurface';
     opacidadTexto = 0.38;
@@ -430,7 +434,7 @@ async function botonCarga(c) {
     }
   }
   const f = marco({
-    nombre: 'raiz', componente: true, dir: 'H', ancho: 280, alto: contorno ? 48 : 52, pad: [null, 'e16'],
+    nombre: 'raiz', componente: true, dir: 'H', ancho: 280, alto: sinFondo ? 48 : 52, pad: [null, 'e16'],
     radio: 'r28', fondo: fondo, opacidad: opacidad, borde: borde, opacidadBorde: opacidadBorde,
     alinea: 'CENTER', cruz: 'CENTER',
   });
@@ -454,19 +458,22 @@ async function campoTexto(c) {
   const enfocado = c.Estado === 'enfocado';
   const apagado = c.Estado === 'deshabilitado';
   const raiz = marco({ nombre: 'raiz', componente: true, dir: 'V', ancho: 320, gap: 'e4' });
+  const multilinea = c.Tipo === 'multilinea';
   const caja = marco({
-    nombre: 'campo', dir: 'H', alto: 56, pad: [null, 'e16'], gap: 'e12', radio: 'r14',
+    nombre: 'campo', dir: 'H', alto: multilinea ? 96 : 56, pad: multilinea ? ['e12', 'e16'] : [null, 'e16'], gap: 'e12', radio: 'r14',
     fondo: apagado ? 'ColorScheme/surfaceContainerHighest' : 'TemaTruequeU/blanco',
     borde: error ? 'ColorScheme/error' : enfocado ? 'ColorScheme/primary' : 'ColorScheme/outlineVariant',
-    grosor: error || enfocado ? 2 : 1, cruz: 'CENTER',
+    grosor: error || enfocado ? 2 : 1, cruz: multilinea ? 'MIN' : 'CENTER',
   });
   agregar(raiz, caja, { ancho: true });
   const vacio = c.Estado === 'vacio';
-  let contenido = vacio ? 'Correo institucional' : 'ana@universidad.edu';
+  let contenido = vacio ? 'Correo' : 'ana@universidad.edu';
   if (c.Tipo === 'contrasena') contenido = vacio ? 'Contraseña' : '••••••••';
+  if (multilinea) contenido = vacio ? 'Descripción (opcional)' : 'Casi nueva, incluye funda y manual.';
+  if (c.Icono === 'si') caja.appendChild(await glifo('✉', 'ColorScheme/outline', 'cuerpo'));
   const t = await texto(contenido, 'cuerpo', vacio ? 'ColorScheme/onSurfaceVariant' : 'ColorScheme/onSurface', 'texto', apagado ? 0.38 : undefined);
   agregar(caja, t, { ancho: true });
-  if (c.Tipo === 'contrasena') caja.appendChild(await glifo('◉', 'ColorScheme/outline', 'cuerpo'));
+  if (c.Tipo === 'contrasena') caja.appendChild(await texto('◉', 'cuerpo', 'ColorScheme/outline', 'ver'));
   if (error) agregar(raiz, await texto('Revisa este campo', 'ayuda', 'ColorScheme/error', 'ayuda'), { ancho: true });
   return raiz;
 }
@@ -742,17 +749,576 @@ async function estructuraPrincipal(c) {
   return f;
 }
 
+function tp(contenido, estilo, alineacion) {
+  const inst = instancia('TextoPantalla', { Estilo: estilo || 'cuerpo', Alineacion: alineacion || 'izquierda' });
+  return cambiarTexto(inst, contenido);
+}
+
+function ocultar(inst, nombre) {
+  const n = inst.findOne(x => x.name === nombre);
+  if (n) n.visible = false;
+  return inst;
+}
+
+function filaBotones(padre, hijos) {
+  const f = marco({ nombre: 'fila', dir: 'H', gap: 'e8', cruz: 'CENTER' });
+  agregar(padre, f, { ancho: true });
+  hijos.forEach(h => agregar(f, h, { ancho: true }));
+  return f;
+}
+
+const ESTILOS_TEXTO = {
+  titulo: ['titulo', 'ColorScheme/onSurface'],
+  subtitulo: ['subtitulo', 'ColorScheme/onSurface'],
+  cuerpo: ['cuerpo', 'ColorScheme/onSurface'],
+  negrita: ['tituloItem', 'ColorScheme/onSurface'],
+  suave: ['cuerpo', 'ColorScheme/onSurfaceVariant'],
+  ayuda: ['ayuda', 'ColorScheme/onSurfaceVariant'],
+  error: ['ayuda', 'ColorScheme/error'],
+  enlace: ['cuerpo', 'ColorScheme/primary'],
+};
+const ALINEACIONES = { izquierda: 'LEFT', centro: 'CENTER', derecha: 'RIGHT' };
+
+async function textoPantalla(c) {
+  const d = ESTILOS_TEXTO[c.Estilo];
+  const f = marco({ nombre: 'raiz', componente: true, dir: 'H', ancho: 350 });
+  const t = await texto('Texto de la pantalla', d[0], d[1], 'texto');
+  t.textAlignHorizontal = ALINEACIONES[c.Alineacion];
+  agregar(f, t, { ancho: true });
+  return f;
+}
+
+async function divisor() {
+  return marco({ nombre: 'raiz', componente: true, dir: 'H', ancho: 350, alto: 1, fondo: 'ColorScheme/outlineVariant' });
+}
+
+async function appBar(c) {
+  const f = marco({
+    nombre: 'raiz', componente: true, dir: 'H', ancho: 390, alto: 56, pad: [null, 'e16'], gap: 'e16',
+    fondo: 'ColorScheme/surface', cruz: 'CENTER',
+  });
+  if (c.Volver === 'si') f.appendChild(await glifo('←', 'TemaTruequeU/azulOscuro', 'subtitulo'));
+  agregar(f, await texto('Título de la pantalla', 'subtitulo', 'TemaTruequeU/azulOscuro', 'titulo'), { ancho: true });
+  if (c.Accion === 'refrescar') f.appendChild(await glifo('⟳', 'TemaTruequeU/azulOscuro', 'tituloItem'));
+  return f;
+}
+
+async function botonFlotante() {
+  const f = marco({
+    nombre: 'raiz', componente: true, dir: 'H', alto: 56, pad: [null, 'e20'], gap: 'e8', radio: 'r28',
+    fondo: 'ColorScheme/secondary', alinea: 'CENTER', cruz: 'CENTER',
+  });
+  f.appendChild(await glifo('+', 'ColorScheme/onSecondary', 'tituloItem'));
+  f.appendChild(await texto('Publicar', 'cuerpo', 'ColorScheme/onSecondary', 'texto'));
+  return f;
+}
+
+async function snackBar() {
+  const f = marco({ nombre: 'raiz', componente: true, dir: 'H', ancho: 390, pad: 'e16', fondo: 'ColorScheme/onSurface', cruz: 'CENTER' });
+  agregar(f, await texto('Contraseña actualizada.', 'cuerpo', 'ColorScheme/surface', 'texto'), { ancho: true });
+  return f;
+}
+
+async function circleAvatar(c) {
+  const grande = c.Tamano === 'grande';
+  const f = marco({
+    nombre: 'raiz', componente: true, dir: 'H', ancho: grande ? 72 : 22, alto: grande ? 72 : 22, radio: grande ? 'r36' : 'r12',
+    fondo: grande ? 'ColorScheme/primary' : 'ColorScheme/primaryContainer', alinea: 'CENTER', cruz: 'CENTER',
+  });
+  if (grande) f.appendChild(await texto('AP', 'titulo', 'ColorScheme/onPrimary', 'texto'));
+  else f.appendChild(await texto('1', 'ayuda', 'ColorScheme/onPrimaryContainer', 'texto'));
+  return f;
+}
+
+async function indicadorCarga(c) {
+  const grande = c.Tamano === 'grande';
+  const f = marco({ nombre: 'raiz', componente: true, dir: 'H', ancho: 350, pad: grande ? 'e40' : 'e8', alinea: 'CENTER', cruz: 'CENTER' });
+  const giro = figma.createEllipse();
+  giro.name = 'cargando';
+  giro.resize(grande ? 36 : 28, grande ? 36 : 28);
+  giro.fills = [];
+  giro.strokes = [pintura('ColorScheme/primary')];
+  giro.strokeWeight = grande ? 4 : 2;
+  giro.arcData = { startingAngle: 0, endingAngle: Math.PI * 1.5, innerRadius: 0 };
+  f.appendChild(giro);
+  return f;
+}
+
+async function campoSelector(c) {
+  const enfocado = c.Estado === 'enfocado';
+  const f = marco({
+    nombre: 'raiz', componente: true, dir: 'H', ancho: 350, alto: 56, pad: [null, 'e16'], gap: 'e12', radio: 'r14',
+    fondo: 'TemaTruequeU/blanco', borde: enfocado ? 'ColorScheme/primary' : 'ColorScheme/outlineVariant',
+    grosor: enfocado ? 2 : 1, cruz: 'CENTER',
+  });
+  const textos = marco({ nombre: 'textos', dir: 'V', gap: 'e2' });
+  agregar(textos, await texto('Estado del objeto', 'ayuda', 'ColorScheme/onSurfaceVariant', 'etiqueta'), { ancho: true });
+  agregar(textos, await texto('Nuevo', 'cuerpo', 'ColorScheme/onSurface', 'valor'), { ancho: true });
+  agregar(f, textos, { ancho: true });
+  f.appendChild(await glifo('▾', 'ColorScheme/onSurfaceVariant', 'cuerpo'));
+  return f;
+}
+
+async function iconoCaja() {
+  const f = marco({
+    nombre: 'raiz', componente: true, dir: 'H', ancho: 56, alto: 56, radio: 'r16',
+    fondo: 'ColorScheme/primaryContainer', alinea: 'CENTER', cruz: 'CENTER',
+  });
+  f.appendChild(await glifo('⚿', 'ColorScheme/primary', 'tituloItem'));
+  return f;
+}
+
+async function bannerExito() {
+  const f = marco({ nombre: 'raiz', componente: true, dir: 'H', ancho: 350, pad: 'e16', gap: 'e12', radio: 'r14', fondo: 'ColorScheme/tertiaryContainer', cruz: 'CENTER' });
+  f.appendChild(await glifo('✓', 'ColorScheme/onTertiaryContainer', 'tituloItem'));
+  agregar(f, await texto('Listo. Revisa tu correo: ahí está tu contraseña nueva.', 'cuerpo', 'ColorScheme/onTertiaryContainer', 'mensaje'), { ancho: true });
+  return f;
+}
+
+async function pieEnlace(c) {
+  const f = marco({ nombre: 'raiz', componente: true, dir: 'H', ancho: 390, pad: [null, null, 'e16', null], gap: 'e4', alinea: 'CENTER', cruz: 'CENTER' });
+  const crear = c.Variante === 'crearCuenta';
+  f.appendChild(await texto(crear ? '¿No tienes cuenta?' : '¿Ya tienes cuenta?', 'cuerpo', 'ColorScheme/onSurface', 'pregunta'));
+  f.appendChild(await texto(crear ? 'Crear cuenta' : 'Inicia sesión', 'tituloItem', crear ? 'ColorScheme/secondary' : 'ColorScheme/primary', 'enlace'));
+  return f;
+}
+
+async function cabeceraFeed() {
+  const f = marco({ nombre: 'raiz', componente: true, dir: 'H', ancho: 390, pad: ['e16', 'e8', null, 'e20'], gap: 'e8', cruz: 'CENTER' });
+  const columna = marco({ nombre: 'saludo', dir: 'V', gap: 'e2' });
+  agregar(columna, await texto('Hola, Ana', 'cuerpo', 'ColorScheme/onSurface', 'saludo'), { ancho: true });
+  agregar(columna, await texto('¿Qué quieres intercambiar hoy?', 'subtitulo', 'ColorScheme/onSurface', 'pregunta'), { ancho: true });
+  agregar(f, columna, { ancho: true });
+  for (const g of ['?', '⟳']) {
+    const b = marco({ nombre: 'boton', dir: 'H', ancho: 40, alto: 40, alinea: 'CENTER', cruz: 'CENTER' });
+    b.appendChild(await glifo(g, 'ColorScheme/onSurfaceVariant', 'tituloItem'));
+    f.appendChild(b);
+  }
+  return f;
+}
+
+async function segmentado(c) {
+  const f = marco({
+    nombre: 'raiz', componente: true, dir: 'H', ancho: 350, alto: 40, radio: 'r28', fondo: 'TemaTruequeU/blanco',
+    borde: 'ColorScheme/outline', recorta: true,
+  });
+  const segmentos = [['recibidas', '↓', 'Recibidas'], ['enviadas', '↑', 'Enviadas']];
+  for (const s of segmentos) {
+    const activo = s[0] === c.Seleccionado;
+    const color = activo ? 'ColorScheme/onPrimaryContainer' : 'ColorScheme/onSurface';
+    const seg = marco({
+      nombre: 'segmento-' + s[0], dir: 'H', gap: 'e8', fondo: activo ? 'ColorScheme/primaryContainer' : null,
+      alinea: 'CENTER', cruz: 'CENTER',
+    });
+    seg.appendChild(await glifo(activo ? '✓' : s[1], color, 'cuerpo'));
+    seg.appendChild(await texto(s[2], 'cuerpo', color, s[0]));
+    agregar(f, seg, { ancho: true, alto: true });
+  }
+  return f;
+}
+
+async function filaLista(c) {
+  const error = c.Tono === 'error';
+  const f = marco({ nombre: 'raiz', componente: true, dir: 'H', ancho: 350, pad: ['e8', 'e16'], gap: 'e16', cruz: 'CENTER' });
+  if (c.Icono === 'si') f.appendChild(await glifo('◆', error ? 'ColorScheme/error' : 'ColorScheme/primary', 'tituloItem'));
+  const columna = marco({ nombre: 'textos', dir: 'V', gap: 'e2' });
+  agregar(columna, await texto('Intercambios completados', 'cuerpo', error ? 'ColorScheme/error' : 'ColorScheme/onSurface', 'titulo'), { ancho: true });
+  if (c.Subtitulo === 'si') agregar(columna, await texto('Subtítulo', 'detalle', 'ColorScheme/onSurfaceVariant', 'subtitulo'), { ancho: true });
+  agregar(f, columna, { ancho: true });
+  if (c.Final === 'chevron') f.appendChild(await texto('›', 'tituloItem', 'ColorScheme/onSurfaceVariant', 'chevron'));
+  return f;
+}
+
+async function resumenCalificaciones(c) {
+  const f = marco({
+    nombre: 'raiz', componente: true, dir: 'H', ancho: 350, alto: c.Estado === 'cargando' ? 24 : null, gap: 'e6',
+    alinea: 'CENTER', cruz: 'CENTER',
+  });
+  if (c.Estado === 'vacio') {
+    const t = await texto('Aún no tienes calificaciones', 'cuerpo', 'ColorScheme/onSurface', 'texto');
+    t.textAlignHorizontal = 'CENTER';
+    agregar(f, t, { ancho: true });
+  }
+  if (c.Estado === 'conDatos') {
+    f.appendChild(await glifo('☆', 'ColorScheme/secondary', 'tituloItem'));
+    f.appendChild(await texto('4.5 de 5 · 12 calificaciones', 'cuerpo', 'ColorScheme/onSurface', 'texto'));
+  }
+  return f;
+}
+
+function bloqueBase(titulo) {
+  const f = marco({
+    nombre: 'raiz', componente: true, dir: 'V', ancho: 318, pad: 'e12', gap: 'e6', radio: 'r12',
+    fondo: 'ColorScheme/surfaceContainerHighest',
+  });
+  agregar(f, tp(titulo, 'negrita'), { ancho: true });
+  return f;
+}
+
+async function bloqueCalificacion(c) {
+  const f = bloqueBase('Calificación');
+  if (c.Estado === 'sinCalificar') {
+    agregar(f, tp('Todavía no calificas a Luis Gómez'), { ancho: true });
+    agregar(f, boton('Calificar', 'contorno'), { ancho: true });
+  } else {
+    agregar(f, tp('Calificaste a Luis Gómez: 4 de 5', 'negrita'), { ancho: true });
+    f.appendChild(instancia('Estrellas', { Puntaje: '4', Modo: 'lectura' }));
+    agregar(f, tp('"Muy puntual y amable"'), { ancho: true });
+  }
+  return f;
+}
+
+const ENTREGA_ACORDADA = '15/06/2030 a las 15:30 en Biblioteca central';
+const ENTREGA_PROPUESTA = '16/06/2030 a las 10:00 en Cafetería';
+
+async function bloqueEntrega(c) {
+  const f = bloqueBase('Fecha y lugar de entrega');
+  const vigente = c.Estado === 'acuerdoVigente' || c.Estado === 'reprogramando';
+  agregar(f, tp(vigente ? 'Acordado: ' + ENTREGA_ACORDADA : 'Todavía no acordaron fecha ni lugar', vigente ? 'negrita' : 'cuerpo'), { ancho: true });
+  if (c.Estado === 'sinAcuerdo') agregar(f, boton('Proponer fecha y lugar', 'contorno'), { ancho: true });
+  if (c.Estado === 'acuerdoVigente') agregar(f, boton('Reprogramar', 'contorno'), { ancho: true });
+  if (c.Estado === 'propuestaPendiente' || c.Estado === 'reprogramando') {
+    const cambio = c.Estado === 'reprogramando';
+    agregar(f, tp('Luis Gómez ' + (cambio ? 'propone cambiar a' : 'propone') + ': ' + ENTREGA_PROPUESTA), { ancho: true });
+    if (cambio) agregar(f, tp('Mientras tanto sigue vigente el acuerdo anterior.'), { ancho: true });
+    filaBotones(f, [boton('Aceptar propuesta', 'primario'), boton('Contraproponer', 'contorno')]);
+  }
+  if (c.Estado !== 'sinAcuerdo') agregar(f, tp('Historial de entrega', 'enlace', 'derecha'), { ancho: true });
+  return f;
+}
+
+async function chipMaterial(contenido, caracter) {
+  const f = marco({ nombre: 'chip', dir: 'H', pad: ['e4', 'e8'], gap: 'e4', radio: 'r8', borde: 'ColorScheme/outlineVariant', cruz: 'CENTER' });
+  if (caracter) f.appendChild(await glifo(caracter, 'ColorScheme/onSurface', 'chip'));
+  f.appendChild(await texto(contenido, 'etiqueta', 'ColorScheme/onSurface', 'texto'));
+  return f;
+}
+
+function tarjetaBase(gap) {
+  return marco({
+    nombre: 'raiz', componente: true, dir: 'V', ancho: 350, pad: 'e16', gap: gap || 'e8', radio: 'r20',
+    fondo: 'TemaTruequeU/blanco', borde: 'ColorScheme/outlineVariant',
+  });
+}
+
+async function tarjetaIntercambio(c) {
+  const f = tarjetaBase('e6');
+  agregar(f, await texto('Calculadora científica', 'tituloTarjeta', 'ColorScheme/onSurface', 'titulo'), { ancho: true });
+  const entregue = c.Rol === 'entregue';
+  agregar(f, await texto(entregue ? 'Lo entregaste a: Luis Gómez' : 'Lo recibiste de: Ana Pérez', 'cuerpo', 'ColorScheme/onSurfaceVariant', 'quien'), { ancho: true });
+  const chips = marco({ nombre: 'chips', dir: 'H', gap: 'e8' });
+  chips.appendChild(await chipMaterial('Categoría: Electrónica'));
+  chips.appendChild(await chipMaterial('Intercambiado', '✓'));
+  agregar(f, chips);
+  return f;
+}
+
+const ESTADOS_OFERTA = {
+  pendiente: ['ColorScheme/primaryContainer', 'ColorScheme/onPrimaryContainer', 'Pendiente'],
+  contraofertada: ['ColorScheme/secondaryContainer', 'ColorScheme/onSecondaryContainer', 'Contraofertada'],
+  aceptada: ['ColorScheme/tertiaryContainer', 'ColorScheme/onTertiaryContainer', 'Aceptada'],
+  completada: ['ColorScheme/tertiaryContainer', 'ColorScheme/onTertiaryContainer', 'Intercambio completado'],
+  anulada: ['ColorScheme/errorContainer', 'ColorScheme/onErrorContainer', 'Intercambio cancelado'],
+  rechazada: ['ColorScheme/errorContainer', 'ColorScheme/onErrorContainer', 'Rechazada'],
+  cancelada: ['ColorScheme/surfaceContainerHighest', 'ColorScheme/onSurfaceVariant', 'Cancelada'],
+};
+
+async function chipEstadoOferta(c) {
+  const d = ESTADOS_OFERTA[c.Estado];
+  const f = marco({ nombre: 'raiz', componente: true, dir: 'H', pad: ['e4', 'e10'], radio: 'r20', fondo: d[0], cruz: 'CENTER' });
+  f.appendChild(await texto(d[2], 'etiqueta', d[1], 'texto'));
+  return f;
+}
+
+async function tarjetaOferta(c) {
+  const recibida = c.Lado === 'recibida';
+  const f = tarjetaBase('e8');
+  const cabecera = marco({ nombre: 'cabecera', dir: 'H', gap: 'e8', cruz: 'CENTER' });
+  cabecera.appendChild(instancia('ChipEstadoOferta', { Estado: c.Estado }));
+  const quien = await texto(recibida ? 'De: Luis Gómez' : 'Para: Ana Pérez', 'cuerpo', 'ColorScheme/onSurfaceVariant', 'quien');
+  quien.textAlignHorizontal = 'RIGHT';
+  agregar(cabecera, quien, { ancho: true });
+  agregar(f, cabecera, { ancho: true });
+  agregar(f, tp('Ronda 1', 'suave'), { ancho: true });
+  agregar(f, tp('Quiere: Calculadora científica'), { ancho: true });
+  agregar(f, tp('Ofrece: Mochila azul', 'negrita'), { ancho: true });
+  if (c.Estado === 'pendiente') {
+    if (recibida) {
+      filaBotones(f, [boton('Aceptar', 'primario'), boton('Rechazar', 'contorno')]);
+      agregar(f, boton('Contraofertar', 'contorno'), { ancho: true });
+    } else {
+      agregar(f, boton('Cancelar oferta', 'contorno'), { ancho: true });
+    }
+  }
+  if (c.Estado === 'aceptada') {
+    agregar(f, instancia('BloqueEntrega', { Estado: 'acuerdoVigente' }), { ancho: true });
+    agregar(f, tp('Tu entrega: pendiente'), { ancho: true });
+    agregar(f, tp('La otra persona: confirmada'), { ancho: true });
+    agregar(f, boton('Confirmar entrega', 'primario'), { ancho: true });
+    agregar(f, boton('Cancelar intercambio', 'contornoRojo'), { ancho: true });
+  }
+  if (c.Estado === 'completada') {
+    agregar(f, instancia('BloqueCalificacion', { Estado: recibida ? 'sinCalificar' : 'calificado' }), { ancho: true });
+  }
+  if (c.Estado === 'anulada' || c.Estado === 'cancelada') {
+    agregar(f, tp('Motivo: No pude asistir a la cita'), { ancho: true });
+  }
+  agregar(f, tp('Ver historial', 'enlace', 'derecha'), { ancho: true });
+  return f;
+}
+
+async function filtrosHistorial(c) {
+  const f = marco({ nombre: 'raiz', componente: true, dir: 'H', ancho: 350, gap: 'e8' });
+  for (const d of [['todo', 'Todo'], ['reservas', 'Reservas'], ['completados', 'Completados']]) {
+    const activo = d[0] === c.Seleccionado;
+    const chip = marco({
+      nombre: d[0], dir: 'H', pad: ['e6', 'e12'], radio: 'r8', cruz: 'CENTER',
+      fondo: activo ? 'ColorScheme/secondaryContainer' : null, borde: activo ? null : 'ColorScheme/outlineVariant',
+    });
+    chip.appendChild(await texto(d[1], 'cuerpo', activo ? 'ColorScheme/onSecondaryContainer' : 'ColorScheme/onSurface', 'texto'));
+    f.appendChild(chip);
+  }
+  return f;
+}
+
+const MOVIMIENTOS = {
+  reservo: ['⚐', 'Reservaste «Calculadora científica» de Luis Gómez', 'Reservado · 20 oct'],
+  canceloReserva: ['⊘', 'Luis Gómez canceló su reserva de «Calculadora científica»', 'Reserva cancelada · 18 oct'],
+  completo: ['✓', 'Completaste el intercambio de «Calculadora científica» con Luis Gómez', 'Completado · 15 oct'],
+};
+
+async function tarjetaHistorial(c) {
+  const d = MOVIMIENTOS[c.Tipo];
+  const f = marco({
+    nombre: 'raiz', componente: true, dir: 'H', ancho: 350, pad: 'e16', gap: 'e12', radio: 'r20',
+    fondo: 'TemaTruequeU/blanco', borde: 'ColorScheme/outlineVariant', cruz: 'CENTER',
+  });
+  f.appendChild(await glifo(d[0], 'ColorScheme/onSurface', 'titulo'));
+  const columna = marco({ nombre: 'textos', dir: 'V', gap: 'e4' });
+  agregar(columna, await texto(d[1], 'tituloItem', 'ColorScheme/onSurface', 'frase'), { ancho: true });
+  agregar(columna, await texto(d[2], 'cuerpo', 'ColorScheme/onSurfaceVariant', 'estado'), { ancho: true });
+  agregar(f, columna, { ancho: true });
+  f.appendChild(await texto('›', 'tituloItem', 'ColorScheme/onSurfaceVariant', 'chevron'));
+  return f;
+}
+
+async function tarjetaAviso(c) {
+  const f = marco({
+    nombre: 'raiz', componente: true, dir: 'H', ancho: 350, pad: ['e8', 'e16'], gap: 'e16', radio: 'r20',
+    fondo: 'TemaTruequeU/blanco', borde: 'ColorScheme/outlineVariant', cruz: 'CENTER',
+  });
+  f.appendChild(await glifo(c.Estado === 'noLeida' ? '◉' : '○', 'ColorScheme/primary', 'tituloItem'));
+  const columna = marco({ nombre: 'textos', dir: 'V', gap: 'e2' });
+  agregar(columna, await texto('Luis Gómez aceptó tu oferta por «Calculadora científica»', 'cuerpo', 'ColorScheme/onSurface', 'titulo'), { ancho: true });
+  agregar(columna, await texto('12/11/2026', 'detalle', 'ColorScheme/onSurfaceVariant', 'subtitulo'), { ancho: true });
+  agregar(f, columna, { ancho: true });
+  return f;
+}
+
+async function tarjetaDatos(c) {
+  const f = tarjetaBase('e8');
+  agregar(f, await texto('Tu perfil', 'tituloItem', 'ColorScheme/onSurface', 'titulo'), { ancho: true });
+  agregar(f, await texto('Nombre: Ana Pérez\nCorreo: ana@universidad.edu', 'cuerpo', 'ColorScheme/onSurface', 'lineas'), { ancho: true });
+  if (c.Variante === 'conAccion') agregar(f, tp('Quitar mi teléfono', 'enlace'), { ancho: true });
+  return f;
+}
+
+async function dialogoBase(titulo, alto) {
+  const f = marco({
+    nombre: 'raiz', componente: true, dir: 'V', ancho: 310, alto: alto, pad: 'e24', gap: 'e16', radio: 'r28',
+    fondo: 'ColorScheme/surface', recorta: !!alto,
+  });
+  agregar(f, await texto(titulo, 'titulo', 'ColorScheme/onSurface', 'titulo'), { ancho: true });
+  return f;
+}
+
+async function dialogoConfirmar(c) {
+  const destructivo = c.Variante === 'destructivo';
+  const f = await dialogoBase(destructivo ? 'Rechazar oferta' : 'Aceptar trueque');
+  agregar(f, tp(destructivo
+    ? '¿Rechazas esta oferta? Quien la envió verá que fue rechazada.'
+    : '¿Aceptas cambiar «Mochila azul» por «Calculadora científica»? Las dos publicaciones quedarán acordadas, cada uno confirmará la entrega y las otras ofertas pendientes de esos objetos se cancelarán.', 'suave'), { ancho: true });
+  filaBotones(f, [boton('Cancelar', 'texto'), boton(destructivo ? 'Rechazar' : 'Aceptar', destructivo ? 'rojo' : 'primario')]);
+  return f;
+}
+
+async function dialogoAyuda() {
+  const f = await dialogoBase('¿Cómo funciona?', 700);
+  const cuerpo = marco({ nombre: 'contenido', dir: 'V', gap: 'e8', recorta: true });
+  agregar(f, cuerpo, { ancho: true, alto: true });
+  const pasos = [
+    ['1', 'Reservar: toca "Reservar" en un objeto disponible. Quedará apartado para ti.'],
+    ['2', 'Coordinar: el teléfono del dueño aparece cuando los dos aceptan el trueque. Entonces puedes escribirle por WhatsApp para acordar lugar y hora.'],
+    ['3', 'Entregar: encuéntrense y hagan el intercambio.'],
+    ['4', 'Completar: toca "Completar intercambio" cuando ya se realizó.'],
+  ];
+  for (const p of pasos) {
+    const paso = marco({ nombre: 'paso', dir: 'H', gap: 'e8' });
+    paso.appendChild(cambiarTexto(instancia('CircleAvatar', { Tamano: 'chico' }), p[0]));
+    agregar(paso, tp(p[1], 'suave'), { ancho: true });
+    agregar(cuerpo, paso, { ancho: true });
+  }
+  agregar(cuerpo, tp('¿Te equivocaste? Usa "Cancelar reserva" y el objeto vuelve a estar disponible.', 'suave'), { ancho: true });
+  agregar(cuerpo, tp('También puedes ofrecer uno de tus objetos: en una publicación disponible toca "Ofrecer un objeto". El dueño la acepta, la rechaza o responde con una contraoferta en Ofertas de trueque. Ofrecer cambia un objeto tuyo por el suyo; Reservar solo lo aparta. Cuando el intercambio se completa, cada parte puede calificar a la otra de 1 a 5 estrellas en Ofertas de trueque.', 'suave'), { ancho: true });
+  agregar(cuerpo, tp('Estados', 'negrita'), { ancho: true });
+  agregar(cuerpo, tp('• Disponible: se puede reservar.\n• Reservado: alguien lo apartó.\n• Intercambio acordado: se aceptó una oferta; acuerdan fecha y lugar, cada parte confirma la entrega y, si algo falla, cualquiera puede cancelar con un motivo.\n• No disponible: se ve, pero nadie puede reservarlo.\n• Oculta: solo la ve su dueño.\n• Intercambiado: el trueque ya se completó.', 'suave'), { ancho: true });
+  agregar(f, boton('Entendido', 'primario'), { ancho: true });
+  return f;
+}
+
+function campoDialogo(padre, contenidoCampo, estado, tipo, error) {
+  const inst = instancia('CampoTexto', { Estado: estado, Tipo: tipo || 'texto', Icono: 'no' });
+  cambiarTexto(inst, contenidoCampo);
+  if (error) cambiarTexto(inst, error, 'ayuda');
+  agregar(padre, inst, { ancho: true });
+  return inst;
+}
+
+async function dialogoCalificacion(c) {
+  const f = await dialogoBase('Calificar a Luis Gómez');
+  const estrellasFila = marco({ nombre: 'estrellas', dir: 'H', alinea: 'CENTER' });
+  estrellasFila.appendChild(instancia('Estrellas', { Puntaje: c.Estado === 'conPuntaje' ? '4' : '0', Modo: 'interactivo' }));
+  agregar(f, estrellasFila, { ancho: true });
+  if (c.Estado === 'error') agregar(f, tp('Elige de 1 a 5 estrellas', 'error', 'centro'), { ancho: true });
+  campoDialogo(f, c.Estado === 'conPuntaje' ? 'Muy puntual y amable' : 'Comentario (opcional)', c.Estado === 'conPuntaje' ? 'relleno' : 'vacio', 'multilinea');
+  agregar(f, tp(c.Estado === 'conPuntaje' ? '20/200' : '0/200', 'ayuda', 'derecha'), { ancho: true });
+  filaBotones(f, [boton('Volver', 'texto'), boton('Enviar calificación', 'primario')]);
+  return f;
+}
+
+async function dialogoMotivo(c) {
+  const conMotivo = c.Estado === 'conMotivo';
+  const f = await dialogoBase('Cancelar intercambio');
+  agregar(f, tp('Las dos publicaciones volverán a estar disponibles. El motivo queda guardado en el historial.', 'suave'), { ancho: true });
+  campoDialogo(f, conMotivo ? 'No pude asistir a la cita' : 'Motivo', conMotivo ? 'relleno' : 'vacio');
+  agregar(f, tp(conMotivo ? '25/200' : '0/200', 'ayuda', 'derecha'), { ancho: true });
+  filaBotones(f, [boton('Volver', 'texto'), boton('Sí, cancelar', 'primario', conMotivo ? 'default' : 'deshabilitado')]);
+  return f;
+}
+
+const DIALOGOS_ENTREGA = {
+  proponer: ['Proponer fecha y lugar', 'Enviar propuesta'],
+  reprogramar: ['Reprogramar la entrega', 'Enviar reprogramación'],
+  contraproponer: ['Contraproponer', 'Enviar contrapropuesta'],
+  conErrores: ['Proponer fecha y lugar', 'Enviar propuesta'],
+};
+
+async function dialogoEntrega(c) {
+  const d = DIALOGOS_ENTREGA[c.Variante];
+  const conDatos = c.Variante === 'reprogramar' || c.Variante === 'contraproponer';
+  const conErrores = c.Variante === 'conErrores';
+  const f = await dialogoBase(d[0]);
+  const campos = marco({ nombre: 'campos', dir: 'V', gap: 'e8' });
+  agregar(f, campos, { ancho: true });
+  const datos = [
+    ['Fecha (dd/mm/aaaa)', '15/06/2030', 'Escribe una fecha válida, por ejemplo 15/06/2030'],
+    ['Hora (hh:mm)', '15:30', 'Escribe una hora válida, por ejemplo 15:30'],
+    ['Lugar', 'Biblioteca central', 'Escribe el lugar de la entrega'],
+  ];
+  for (const k of datos) {
+    campoDialogo(campos, conDatos ? k[1] : k[0], conErrores ? 'error' : conDatos ? 'relleno' : 'vacio', 'texto', conErrores ? k[2] : null);
+  }
+  filaBotones(f, [boton('Volver', 'texto'), boton(d[1], 'primario')]);
+  return f;
+}
+
+async function filaRadio(titulo, subtitulo, marcada) {
+  const f = marco({ nombre: 'opcion', dir: 'H', gap: 'e12', cruz: 'CENTER' });
+  f.appendChild(await glifo(marcada ? '◉' : '○', marcada ? 'ColorScheme/primary' : 'ColorScheme/onSurfaceVariant', 'tituloItem'));
+  const columna = marco({ nombre: 'textos', dir: 'V', gap: 'e2' });
+  agregar(columna, await texto(titulo, 'cuerpo', 'ColorScheme/onSurface', 'titulo'), { ancho: true });
+  agregar(columna, await texto(subtitulo, 'detalle', 'ColorScheme/onSurfaceVariant', 'subtitulo'), { ancho: true });
+  agregar(f, columna, { ancho: true });
+  return f;
+}
+
+async function dialogoOferta(c) {
+  const ofrecer = c.Tipo === 'ofrecer';
+  const vacio = c.Estado === 'vacio';
+  const f = await dialogoBase(ofrecer ? 'Ofrecer un objeto' : 'Contraofertar');
+  if (vacio) {
+    agregar(f, tp(ofrecer
+      ? 'No tienes publicaciones disponibles para ofrecer. Crea una y déjala en estado disponible.'
+      : 'No hay otro objeto disponible para proponer en esta negociación.', 'suave'), { ancho: true });
+  } else {
+    agregar(f, tp(ofrecer
+      ? '¿Qué objeto tuyo ofreces por «Calculadora científica»?'
+      : '¿Qué otro objeto propones por «Calculadora científica»?', 'suave'), { ancho: true });
+    const opciones = marco({ nombre: 'opciones', dir: 'V', gap: 'e8' });
+    agregar(f, opciones, { ancho: true });
+    agregar(opciones, await filaRadio('Mochila azul', 'Otros', true), { ancho: true });
+    agregar(opciones, await filaRadio('Libro de cálculo', 'Libros', false), { ancho: true });
+    agregar(opciones, await filaRadio('Chaqueta de lana', 'Ropa', false), { ancho: true });
+  }
+  const botones = [boton('Cancelar', 'texto')];
+  if (vacio && ofrecer) botones.push(boton('Crear publicación', 'primario'));
+  if (!vacio) botones.push(boton(ofrecer ? 'Enviar oferta' : 'Enviar contraoferta', 'primario'));
+  filaBotones(f, botones);
+  return f;
+}
+
+async function dialogoEditar(c) {
+  const guardando = c.Estado === 'guardando';
+  const f = await dialogoBase('Editar información');
+  campoDialogo(f, 'Calculadora científica', 'relleno');
+  campoDialogo(f, 'Casi nueva, incluye funda y manual.', 'relleno', 'multilinea');
+  agregar(f, instancia('FotoPublicacion', { Estado: 'imagen', Forma: 'ancha' }), { ancho: true });
+  agregar(f, boton('Cambiar foto', 'contorno', guardando ? 'deshabilitado' : 'default'), { ancho: true });
+  agregar(f, boton('Quitar foto', 'texto', guardando ? 'deshabilitado' : 'default'), { ancho: true });
+  if (c.Estado === 'error') {
+    agregar(f, cambiarTexto(instancia('BannerError', { Estado: 'default' }), 'Ocurrió un error al actualizar la publicación', 'mensaje'), { ancho: true });
+  }
+  filaBotones(f, [boton('Cancelar', 'texto', guardando ? 'deshabilitado' : 'default'), boton('Guardar', 'primario', guardando ? 'cargando' : 'default')]);
+  return f;
+}
+
+async function dialogoEliminarCuenta(c) {
+  const error = c.Estado === 'error';
+  const f = await dialogoBase('Eliminar cuenta');
+  agregar(f, tp('Esto es lo que va a pasar:', 'suave'), { ancho: true });
+  agregar(f, tp('• Tus trueques en curso se cancelan y se avisa a la otra persona.\n• Tus publicaciones dejan de mostrarse.\n• Tus calificaciones quedan sin tu nombre.\n• No se puede deshacer.', 'suave'), { ancho: true });
+  campoDialogo(f, error ? '••••••••' : 'Tu contraseña', error ? 'error' : 'vacio', 'contrasena', error ? 'Contraseña incorrecta' : null);
+  filaBotones(f, [boton('Cancelar', 'contorno'), boton('Eliminar cuenta', 'contornoRojo')]);
+  return f;
+}
+
+async function dialogoHistorial(c) {
+  const titulos = { negociacion: 'Historial de la negociación', entrega: 'Historial de entrega', movimiento: 'Calculadora científica' };
+  const f = await dialogoBase(titulos[c.Tipo]);
+  const lineas = {
+    negociacion: [
+      ['Se negocia: Calculadora científica', 'suave'],
+      ['Ronda 1: Luis Gómez propone Mochila azul', 'negrita'], ['Contraofertada · 12/11 10:30', 'suave'],
+      ['Ronda 2: Luis Gómez propone Libro de cálculo', 'negrita'], ['Aceptada · 12/11 18:05', 'suave'],
+    ],
+    entrega: [
+      ['Luis Gómez propone: ' + ENTREGA_PROPUESTA, 'negrita'], ['Se respondió con otra propuesta', 'suave'],
+      ['Ana Pérez propone: ' + ENTREGA_ACORDADA, 'negrita'], ['Acuerdo vigente', 'suave'],
+    ],
+    movimiento: [
+      ['Reservaste «Calculadora científica» de Luis Gómez', 'suave'],
+      ['◔ Estado: Reservado', 'suave'], ['Categoría: Electrónica', 'suave'], ['Con: Luis Gómez', 'suave'],
+      ['Fecha: 20 oct 2026, 16:24', 'suave'],
+    ],
+  };
+  const cuerpo = marco({ nombre: 'contenido', dir: 'V', gap: 'e8' });
+  agregar(f, cuerpo, { ancho: true });
+  lineas[c.Tipo].forEach(l => agregar(cuerpo, tp(l[0], l[1]), { ancho: true }));
+  agregar(f, boton('Cerrar', 'primario'), { ancho: true });
+  return f;
+}
+
 const DEFINICIONES = [
   { nombre: 'LogoTruequeU', props: { Variante: ['icono', 'conNombre'] }, construir: logo, textos: [] },
   {
     nombre: 'BotonCarga',
-    props: { Estado: ['default', 'hover', 'presionado', 'cargando', 'deshabilitado'], Variante: ['primario', 'rojo', 'tonal', 'contorno'] },
+    props: { Estado: ['default', 'hover', 'presionado', 'cargando', 'deshabilitado'], Variante: ['primario', 'rojo', 'tonal', 'contorno', 'contornoRojo', 'texto'] },
     construir: botonCarga, textos: [['texto', 'texto', 'Continuar']], columnas: 5,
   },
   {
     nombre: 'CampoTexto',
-    props: { Estado: ['vacio', 'enfocado', 'relleno', 'error', 'deshabilitado'], Tipo: ['texto', 'contrasena'] },
-    construir: campoTexto, textos: [['texto', 'texto', 'Correo institucional']], columnas: 5,
+    props: { Estado: ['vacio', 'enfocado', 'relleno', 'error', 'deshabilitado'], Tipo: ['texto', 'contrasena', 'multilinea'], Icono: ['no', 'si'] },
+    construir: campoTexto, textos: [['texto', 'texto', 'Correo']], columnas: 5,
   },
   { nombre: 'BannerError', props: { Estado: ['default'] }, construir: bannerError, textos: [['mensaje', 'mensaje', 'Mensaje de error']] },
   {
@@ -794,6 +1360,90 @@ const DEFINICIONES = [
     nombre: 'EstructuraPrincipal', props: { Activo: ['explorar', 'misPublicaciones', 'ofertas', 'perfil'] },
     construir: estructuraPrincipal, textos: [], columnas: 2,
   },
+  {
+    nombre: 'TextoPantalla',
+    props: { Estilo: ['titulo', 'subtitulo', 'cuerpo', 'negrita', 'suave', 'ayuda', 'error', 'enlace'], Alineacion: ['izquierda', 'centro', 'derecha'] },
+    construir: textoPantalla, textos: [['texto', 'texto', 'Texto de la pantalla']], columnas: 3,
+  },
+  { nombre: 'Divider', props: { Estado: ['default'] }, construir: divisor, textos: [] },
+  {
+    nombre: 'AppBar', props: { Volver: ['no', 'si'], Accion: ['ninguna', 'refrescar'] }, construir: appBar,
+    textos: [['titulo', 'titulo', 'Título de la pantalla']],
+  },
+  {
+    nombre: 'FloatingActionButton', props: { Variante: ['extendido'] }, construir: botonFlotante,
+    textos: [['texto', 'texto', 'Publicar']],
+  },
+  { nombre: 'SnackBar', props: { Estado: ['default'] }, construir: snackBar, textos: [['texto', 'texto', 'Contraseña actualizada.']] },
+  { nombre: 'CircleAvatar', props: { Tamano: ['grande', 'chico'] }, construir: circleAvatar, textos: [] },
+  { nombre: 'CircularProgressIndicator', props: { Tamano: ['grande', 'pequeno'] }, construir: indicadorCarga, textos: [] },
+  {
+    nombre: 'DropdownButtonFormField', props: { Estado: ['default', 'enfocado'] }, construir: campoSelector,
+    textos: [['etiqueta', 'etiqueta', 'Estado del objeto'], ['valor', 'valor', 'Nuevo']],
+  },
+  { nombre: 'IconoCaja', props: { Icono: ['llave'] }, construir: iconoCaja, textos: [] },
+  {
+    nombre: 'BannerExito', props: { Estado: ['default'] }, construir: bannerExito,
+    textos: [['mensaje', 'mensaje', 'Listo. Revisa tu correo: ahí está tu contraseña nueva.']],
+  },
+  { nombre: 'PieEnlace', props: { Variante: ['crearCuenta', 'iniciarSesion'] }, construir: pieEnlace, textos: [] },
+  { nombre: 'CabeceraFeed', props: { Estado: ['default'] }, construir: cabeceraFeed, textos: [['saludo', 'saludo', 'Hola, Ana']] },
+  {
+    nombre: 'SegmentedButton', props: { Seleccionado: ['recibidas', 'enviadas'] }, construir: segmentado,
+    textos: [['recibidas', 'recibidas', 'Recibidas'], ['enviadas', 'enviadas', 'Enviadas']],
+  },
+  {
+    nombre: 'FilaLista',
+    props: { Icono: ['con', 'sin'], Subtitulo: ['con', 'sin'], Final: ['ninguno', 'chevron'], Tono: ['normal', 'error'] },
+    construir: filaLista, textos: [['titulo', 'titulo', 'Intercambios completados'], ['subtitulo', 'subtitulo', 'Subtítulo']], columnas: 4,
+  },
+  { nombre: 'ResumenCalificaciones', props: { Estado: ['cargando', 'vacio', 'conDatos'] }, construir: resumenCalificaciones, textos: [] },
+  { nombre: 'BloqueCalificacion', props: { Estado: ['sinCalificar', 'calificado'] }, construir: bloqueCalificacion, textos: [] },
+  {
+    nombre: 'BloqueEntrega', props: { Estado: ['sinAcuerdo', 'acuerdoVigente', 'propuestaPendiente', 'reprogramando'] },
+    construir: bloqueEntrega, textos: [], columnas: 4,
+  },
+  { nombre: 'TarjetaIntercambio', props: { Rol: ['entregue', 'recibi'] }, construir: tarjetaIntercambio, textos: [['titulo', 'titulo', 'Calculadora científica']] },
+  {
+    nombre: 'ChipEstadoOferta',
+    props: { Estado: ['pendiente', 'contraofertada', 'aceptada', 'completada', 'anulada', 'rechazada', 'cancelada'] },
+    construir: chipEstadoOferta, textos: [], columnas: 4,
+  },
+  {
+    nombre: 'TarjetaOferta',
+    props: {
+      Estado: ['pendiente', 'contraofertada', 'aceptada', 'completada', 'anulada', 'rechazada', 'cancelada'],
+      Lado: ['recibida', 'enviada'],
+    },
+    construir: tarjetaOferta, textos: [], columnas: 4,
+  },
+  {
+    nombre: 'FiltrosHistorial', props: { Seleccionado: ['todo', 'reservas', 'completados'] }, construir: filtrosHistorial, textos: [],
+  },
+  { nombre: 'TarjetaHistorial', props: { Tipo: ['reservo', 'canceloReserva', 'completo'] }, construir: tarjetaHistorial, textos: [] },
+  {
+    nombre: 'TarjetaAviso', props: { Estado: ['noLeida', 'leida'] }, construir: tarjetaAviso,
+    textos: [['titulo', 'titulo', 'Luis Gómez aceptó tu oferta por «Calculadora científica»'], ['subtitulo', 'subtitulo', '12/11/2026']],
+  },
+  {
+    nombre: 'TarjetaDatos', props: { Variante: ['normal', 'conAccion'] }, construir: tarjetaDatos,
+    textos: [['titulo', 'titulo', 'Tu perfil'], ['lineas', 'lineas', 'Nombre: Ana Pérez\nCorreo: ana@universidad.edu']],
+  },
+  { nombre: 'confirmarAccion', props: { Variante: ['normal', 'destructivo'] }, construir: dialogoConfirmar, textos: [] },
+  { nombre: 'mostrarAyudaTrueque', props: { Estado: ['default'] }, construir: dialogoAyuda, textos: [] },
+  { nombre: 'pedirCalificacion', props: { Estado: ['sinPuntaje', 'conPuntaje', 'error'] }, construir: dialogoCalificacion, textos: [] },
+  { nombre: 'pedirMotivoCancelacion', props: { Estado: ['vacio', 'conMotivo'] }, construir: dialogoMotivo, textos: [] },
+  {
+    nombre: 'pedirDatosEntrega', props: { Variante: ['proponer', 'reprogramar', 'contraproponer', 'conErrores'] },
+    construir: dialogoEntrega, textos: [], columnas: 4,
+  },
+  {
+    nombre: 'mostrarDialogoOferta', props: { Tipo: ['ofrecer', 'contraofertar'], Estado: ['conOpciones', 'vacio'] },
+    construir: dialogoOferta, textos: [], columnas: 4,
+  },
+  { nombre: 'DialogoEditarPublicacion', props: { Estado: ['normal', 'guardando', 'error'] }, construir: dialogoEditar, textos: [] },
+  { nombre: 'DialogoEliminarCuenta', props: { Estado: ['normal', 'error'] }, construir: dialogoEliminarCuenta, textos: [] },
+  { nombre: 'DialogoHistorial', props: { Tipo: ['negociacion', 'entrega', 'movimiento'] }, construir: dialogoHistorial, textos: [] },
 ];
 
 async function construirComponentes() {
@@ -929,7 +1579,7 @@ function encabezado(padre, conLogo, titulo, subtitulo) {
 }
 
 function campo(padre, contenidoCampo, tipo) {
-  const inst = instancia('CampoTexto', { Estado: 'vacio', Tipo: tipo || 'texto' });
+  const inst = instancia('CampoTexto', { Estado: 'vacio', Tipo: tipo || 'texto', Icono: 'no' });
   agregar(padre, cambiarTexto(inst, contenidoCampo), { ancho: true });
 }
 

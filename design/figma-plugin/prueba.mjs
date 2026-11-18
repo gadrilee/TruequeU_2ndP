@@ -388,6 +388,12 @@ function revisar(mundo, contexto) {
   const esperados = [
     'LogoTruequeU', 'BotonCarga', 'CampoTexto', 'BannerError', 'ChipEstado', 'Etiqueta', 'Estrellas', 'FotoPublicacion',
     'MensajeVacio', 'ErrorConReintento', 'FiltrosFeed', 'TarjetaFeed', 'TarjetaMiPublicacion', 'EncabezadoAcceso', 'EstructuraPrincipal',
+    'TextoPantalla', 'Divider', 'AppBar', 'FloatingActionButton', 'SnackBar', 'CircleAvatar', 'CircularProgressIndicator',
+    'DropdownButtonFormField', 'IconoCaja', 'BannerExito', 'PieEnlace', 'CabeceraFeed', 'SegmentedButton', 'FilaLista',
+    'ResumenCalificaciones', 'BloqueCalificacion', 'BloqueEntrega', 'TarjetaIntercambio', 'ChipEstadoOferta', 'TarjetaOferta',
+    'FiltrosHistorial', 'TarjetaHistorial', 'TarjetaAviso', 'TarjetaDatos', 'confirmarAccion', 'mostrarAyudaTrueque',
+    'pedirCalificacion', 'pedirMotivoCancelacion', 'pedirDatosEntrega', 'mostrarDialogoOferta', 'DialogoEditarPublicacion',
+    'DialogoEliminarCuenta', 'DialogoHistorial',
   ];
   assert.deepEqual(conjuntos.map(c => c.name), esperados);
   const detalle = conjuntos.map(c => `${c.name}(${c.children.length})`).join(', ');
