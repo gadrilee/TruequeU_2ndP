@@ -1,0 +1,102 @@
+name: E2E
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  e2e:
+    name: E2E (${{ matrix.archivo }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        archivo:
+          - acceso
+          - analitica_calificaciones
+          - calificar_intercambio
+          - contraofertas
+          - coordinar_entrega
+          - feed
+          - intercambio_acordado
+          - intercambios_historial
+          - ofertas
+          - publicaciones
+          - salida_honesta
+          - whatsapp
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: trueque_u
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5433:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PGPASSWORD: postgres
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: trueque-u/backend/package-lock.json
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: 3.47.1
+          cache: true
+
+      - name: Create database schema
+        run: psql -h localhost -p 5433 -U postgres -d trueque_u -v ON_ERROR_STOP=1 -f trueque-u/base_de_datos/estructura.sql
+
+      - name: Install backend dependencies
+        working-directory: trueque-u/backend
+        run: npm ci
+
+      - name: Start reset server and backend
+        run: |
+          node trueque-u/app/integration_test/herramientas/entorno_e2e.js > entorno_e2e.log 2>&1 &
+          for i in $(seq 1 60); do
+            if curl -s -o /dev/null http://localhost:3100 && curl -s -o /dev/null http://localhost:3000/api; then
+              echo "reset server and backend are up"; exit 0
+            fi
+            sleep 1
+          done
+          cat entorno_e2e.log; exit 1
+
+      - name: Start chromedriver
+        run: |
+          "$CHROMEWEBDRIVER/chromedriver" --port=4444 > chromedriver.log 2>&1 &
+          sleep 2
+
+      - name: Prepare app
+        working-directory: trueque-u/app
+        run: |
+          cp .env.example .env
+          flutter pub get
+
+      - name: Run E2E tests
+        working-directory: trueque-u/app
+        run: >-
+          flutter drive
+          --driver=test_driver/integration_test.dart
+          --target=integration_test/${{ matrix.archivo }}_test.dart
+          -d web-server
+          --browser-name=chrome
+          --headless
+
+      - name: Show service logs
+        if: failure()
+        run: |
+          echo "== entorno_e2e.log"; cat entorno_e2e.log || true
+          echo "== chromedriver.log"; tail -n 100 chromedriver.log || true
