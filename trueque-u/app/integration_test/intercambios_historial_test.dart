@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+import 'dart:convert';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 
@@ -183,6 +184,22 @@ void main() {
       await tocarBoton(tester, 'Volver al perfil');
 
       expect(find.text('Eudenia Flores Veizaga'), findsOneWidget);
+    });
+  });
+
+  group('Historial que el servidor rechaza', () {
+    testWidgets('Job pide un tipo de historial que no existe y el servidor lo rechaza', (tester) async {
+      await abrirApp(tester);
+
+      final invalido = await pedirApi('GET', '/historial?tipo=devoluciones', job);
+      expect(invalido.statusCode, 400);
+      expect(jsonDecode(invalido.body)['error'], 'El tipo debe ser reservas o completados');
+
+      final vacio = await pedirApi('GET', '/historial?tipo=', job);
+      expect(vacio.statusCode, 400);
+
+      final reservas = await pedirApi('GET', '/historial?tipo=reservas', job);
+      expect(reservas.statusCode, 200);
     });
   });
 }

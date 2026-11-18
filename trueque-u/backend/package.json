@@ -8,6 +8,20 @@
     "dev": "node --watch src/servidor.js",
     "test": "jest"
   },
+  "jest": {
+    "collectCoverageFrom": [
+      "src/**/*.js",
+      "!src/**/*.test.js"
+    ],
+    "coverageThreshold": {
+      "global": {
+        "statements": 100,
+        "branches": 100,
+        "functions": 100,
+        "lines": 100
+      }
+    }
+  },
   "engines": {
     "node": ">=18"
   },

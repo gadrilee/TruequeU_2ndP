@@ -53,15 +53,11 @@ class FotoPublicacion extends StatelessWidget {
       return Image.memory(
         base64Decode(url!.substring(coma + 1)),
         fit: BoxFit.cover,
-        width: double.infinity,
-        height: double.infinity,
       );
     }
     return Image.network(
       url!,
       fit: BoxFit.cover,
-      width: double.infinity,
-      height: double.infinity,
       errorBuilder: (_, __, ___) => const Center(child: Icon(Icons.broken_image_outlined)),
     );
   }

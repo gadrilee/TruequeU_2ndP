@@ -130,6 +130,8 @@ msedgedriver --port=4445
 node app/integration_test/herramientas/puente_edge.js
 ```
 
+El servidor de reinicio se conecta directo a PostgreSQL (sin `docker exec`): usa `localhost:5433`, base `trueque_u`, usuario y contraseña `postgres`. Para otra base, define `BD_HOST`, `BD_PUERTO`, `BD_NOMBRE`, `BD_USUARIO` y `BD_CONTRASENA` antes de arrancarlo.
+
 Después, desde `app`, corre un archivo de pruebas:
 
 ```bash

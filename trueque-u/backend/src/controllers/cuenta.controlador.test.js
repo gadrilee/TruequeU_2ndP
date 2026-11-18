@@ -185,3 +185,22 @@ describe("Eliminar mi cuenta", () => {
     expect(res.status).toHaveBeenCalledWith(500);
   });
 });
+
+describe("Eliminar mi cuenta: cuenta inexistente", () => {
+  test("sin cuerpo responde 401", async () => {
+    const res = crearRespuesta();
+
+    await deleteCuenta({ usuario: { id: 1 } }, res);
+
+    expect(res.status).toHaveBeenCalledWith(401);
+  });
+
+  test("si la cuenta ya no existe responde 401", async () => {
+    models.usuarios.findByPk.mockResolvedValue(null);
+    const res = crearRespuesta();
+
+    await deleteCuenta({ usuario: { id: 1 }, body: { contrasena: "eude1234" } }, res);
+
+    expect(res.status).toHaveBeenCalledWith(401);
+  });
+});

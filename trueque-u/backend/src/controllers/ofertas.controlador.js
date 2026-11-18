@@ -197,8 +197,14 @@ const putOfertaAceptada = async (req, res) => {
       }
 
       await oferta.update({ estado: "aceptada" }, { transaction: t });
-      await pedida.update({ estado_publicacion: "acordado" }, { transaction: t });
-      await ofrecida.update({ estado_publicacion: "acordado" }, { transaction: t });
+      await pedida.update(
+        { estado_publicacion: "acordado", id_usuario_reserva: ofrecida.id_usuario },
+        { transaction: t },
+      );
+      await ofrecida.update(
+        { estado_publicacion: "acordado", id_usuario_reserva: pedida.id_usuario },
+        { transaction: t },
+      );
 
       await models.ofertas.update(
         { estado: "cancelada" },

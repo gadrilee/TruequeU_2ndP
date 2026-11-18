@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
@@ -270,6 +272,29 @@ void main() {
       await abrirPestana(tester, 'Perfil');
 
       expect(find.text('Carlos Mamani'), findsOneWidget);
+    });
+  });
+
+  group('Ofertas que el servidor rechaza', () {
+    testWidgets('Job no puede ofertar por su propia publicación ni ofrecer un objeto ajeno', (tester) async {
+      await abrirApp(tester);
+
+      final propia = await pedirApi('POST', '/ofertas', job, {
+        'id_publicacion_pedida': 4,
+        'id_publicacion_ofrecida': 6,
+      });
+      expect(propia.statusCode, 403);
+      expect(jsonDecode(propia.body)['error'], 'No puedes hacer una oferta por tu propia publicación');
+
+      final ajeno = await pedirApi('POST', '/ofertas', job, {
+        'id_publicacion_pedida': 3,
+        'id_publicacion_ofrecida': 1,
+      });
+      expect(ajeno.statusCode, 403);
+      expect(jsonDecode(ajeno.body)['error'], 'Solo puedes ofrecer un objeto de tus publicaciones');
+
+      final enviadas = jsonDecode((await pedirApi('GET', '/ofertas/enviadas', job)).body) as List;
+      expect(enviadas, isEmpty);
     });
   });
 }

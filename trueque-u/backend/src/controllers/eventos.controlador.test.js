@@ -77,3 +77,53 @@ describe("Eventos y analitica", () => {
     ]);
   });
 });
+
+describe("Eventos: casos limite", () => {
+  let consolaError;
+
+  beforeEach(() => {
+    models.eventos.create.mockReset();
+    models.eventos.findAll.mockReset();
+    consolaError = jest.spyOn(console, "error").mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    consolaError.mockRestore();
+  });
+
+  test("un evento sin props se guarda", async () => {
+    models.eventos.create.mockResolvedValue({});
+    const res = crearRespuesta();
+
+    await postEvento({ body: { evento: "app_abierta" } }, res);
+
+    expect(res.status).toHaveBeenCalledWith(201);
+  });
+
+  test("props que no son un objeto se aceptan", async () => {
+    models.eventos.create.mockResolvedValue({});
+    const res = crearRespuesta();
+
+    await postEvento({ body: { evento: "app_abierta", props: "texto" } }, res);
+
+    expect(res.status).toHaveBeenCalledWith(201);
+  });
+
+  test("guardar con un fallo responde 500", async () => {
+    models.eventos.create.mockRejectedValue(new Error("caida"));
+    const res = crearRespuesta();
+
+    await postEvento({ body: { evento: "app_abierta" } }, res);
+
+    expect(res.status).toHaveBeenCalledWith(500);
+  });
+
+  test("la analitica con un fallo responde 500", async () => {
+    models.eventos.findAll.mockRejectedValue(new Error("caida"));
+    const res = crearRespuesta();
+
+    await getAnalitica({}, res);
+
+    expect(res.status).toHaveBeenCalledWith(500);
+  });
+});

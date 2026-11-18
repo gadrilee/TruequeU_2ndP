@@ -6,6 +6,7 @@ on:
 
 jobs:
   backend:
+    name: Backend (Jest)
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -14,11 +15,14 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: "22"
-      - run: npm install
-      - run: npm test
+          node-version: 22
+          cache: npm
+          cache-dependency-path: trueque-u/backend/package-lock.json
+      - run: npm ci
+      - run: npx jest --coverage --ci
 
   app:
+    name: App (Flutter)
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -28,6 +32,9 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
+          flutter-version: 3.47.1
+          cache: true
       - run: cp .env.example .env
       - run: flutter pub get
-      - run: flutter test
+      - run: flutter test --coverage
+      - run: dart run tool/cobertura.dart 100

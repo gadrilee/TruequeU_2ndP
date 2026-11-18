@@ -170,3 +170,49 @@ describe("Resumen de calificaciones de una persona", () => {
     expect(res.status).toHaveBeenCalledWith(400);
   });
 });
+
+describe("Calificaciones: errores inesperados", () => {
+  let consolaError;
+
+  beforeEach(() => {
+    consolaError = jest.spyOn(console, "error").mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    consolaError.mockRestore();
+  });
+
+  test("ver mi calificacion con un fallo responde 500", async () => {
+    models.calificaciones.findOne.mockRejectedValue(new Error("caida"));
+
+    const res = await llamar(getMiCalificacion, 1, { query: { id_oferta: "1" } });
+
+    expect(res.status).toHaveBeenCalledWith(500);
+  });
+
+  test("calificar con un fallo responde 500", async () => {
+    models.ofertas.findByPk.mockRejectedValue(new Error("caida"));
+
+    const res = await llamar(postCalificacion, 1, { body: { id_oferta: 1 } });
+
+    expect(res.status).toHaveBeenCalledWith(500);
+  });
+
+  test("calificar dos veces a la vez responde 409", async () => {
+    models.calificaciones.create.mockRejectedValue(
+      Object.assign(new Error("duplicado"), { name: "SequelizeUniqueConstraintError" }),
+    );
+
+    const res = await llamar(postCalificacion, 1, { body: { id_oferta: 1, puntaje: 5 } });
+
+    expect(res.status).toHaveBeenCalledWith(409);
+  });
+
+  test("el resumen con un fallo responde 500", async () => {
+    models.calificaciones.findOne.mockRejectedValue(new Error("caida"));
+
+    const res = await llamar(getResumenCalificaciones, 1, { query: { id_usuario: "3" } });
+
+    expect(res.status).toHaveBeenCalledWith(500);
+  });
+});

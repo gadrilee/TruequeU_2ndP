@@ -1,3 +1,4 @@
 .env
 .firebase/
 firebase-debug.log
+coverage/

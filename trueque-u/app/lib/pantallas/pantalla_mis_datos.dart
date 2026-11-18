@@ -10,7 +10,9 @@ import '../widgets/error_con_reintento.dart';
 import '../widgets/pagina_acceso.dart';
 
 class PantallaMisDatos extends StatefulWidget {
-  const PantallaMisDatos({super.key});
+  const PantallaMisDatos({super.key, this.descargar = descargarArchivo});
+
+  final bool Function(String nombre, String contenido, String tipo) descargar;
 
   @override
   State<PantallaMisDatos> createState() => _PantallaMisDatosState();
@@ -62,10 +64,9 @@ class _PantallaMisDatosState extends State<PantallaMisDatos> {
     try {
       final contenido = await auth.descargarMisDatos(formato);
       final tipo = formato == 'csv' ? 'text/csv' : 'application/json';
-      final listo = descargarArchivo('mis-datos.$formato', contenido, tipo);
+      final listo = widget.descargar('mis-datos.$formato', contenido, tipo);
       if (listo) {
-        track('datos_descargados', {'formato': formato}, auth.api);
-      }
+        track('datos_descargados', {'formato': formato}, auth.api);      }
       mensajes.showSnackBar(SnackBar(
         content: Text(listo
             ? 'Tus datos se descargaron'
