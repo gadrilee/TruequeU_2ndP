@@ -1,1 +1,1 @@
-genhtml coverage/lcov.unix.info -o /app/reporte_tmp --title 'Trueque U app' --quiet
+genhtml coverage/lcov.unix.info -o /app/reporte_tmp --prefix /app --title 'Trueque U app' --quiet
