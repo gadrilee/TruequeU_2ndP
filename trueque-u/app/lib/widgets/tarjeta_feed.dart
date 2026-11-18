@@ -73,7 +73,7 @@ class TarjetaFeed extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            FotoPublicacion(url: imagenUrl, alto: 120),
+            FotoPublicacion(url: imagenUrl, cuadrada: true),
             const SizedBox(height: 10),
             // Fila superior: Título del objeto y Chip de estado de publicación
             Row(
@@ -117,20 +117,17 @@ class TarjetaFeed extends StatelessWidget {
             ),
             const SizedBox(height: 8),
 
-            // Descripción del objeto
-            Expanded(
-              child: Text(
-                (descripcion != null && descripcion!.trim().isNotEmpty)
-                    ? descripcion!
-                    : 'Sin descripción detallada',
-                maxLines: 3,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 13,
-                  color: (descripcion != null && descripcion!.trim().isNotEmpty)
-                      ? colores.onSurfaceVariant
-                      : colores.outline,
-                ),
+            Text(
+              (descripcion != null && descripcion!.trim().isNotEmpty)
+                  ? descripcion!
+                  : 'Sin descripción detallada',
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 13,
+                color: (descripcion != null && descripcion!.trim().isNotEmpty)
+                    ? colores.onSurfaceVariant
+                    : colores.outline,
               ),
             ),
             const SizedBox(height: 8),

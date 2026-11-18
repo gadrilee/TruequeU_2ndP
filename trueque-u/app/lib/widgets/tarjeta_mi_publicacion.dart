@@ -74,7 +74,7 @@ class TarjetaMiPublicacion extends StatelessWidget {
               const LinearProgressIndicator(minHeight: 3),
               const SizedBox(height: 8),
             ],
-            FotoPublicacion(url: imagenUrl, alto: 160),
+            FotoPublicacion(url: imagenUrl, cuadrada: true),
             const SizedBox(height: 12),
             // Encabezado: Título y menú de opciones (editar / cambiar estado / eliminar)
             Row(

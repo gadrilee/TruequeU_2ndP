@@ -413,8 +413,7 @@ class _PantallaFeedPublicacionesState extends State<PantallaFeedPublicaciones> {
                   crossAxisCount: columnas,
                   crossAxisSpacing: 16,
                   mainAxisSpacing: 16,
-                  // Relación de aspecto adaptada para acomodar título, descripción y botones
-                  mainAxisExtent: 560,
+                  mainAxisExtent: columnas == 3 ? 540 : columnas == 2 ? 720 : 600,
                 ),
                 itemCount: _publicaciones.length,
                 itemBuilder: (context, index) {

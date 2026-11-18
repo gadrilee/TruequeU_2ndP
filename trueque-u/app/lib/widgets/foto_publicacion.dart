@@ -23,38 +23,45 @@ Future<String?> elegirFoto() async {
 }
 
 class FotoPublicacion extends StatelessWidget {
-  const FotoPublicacion({super.key, this.url, this.alto = 140});
+  const FotoPublicacion({super.key, this.url, this.alto = 140, this.cuadrada = false});
 
   final String? url;
   final double alto;
+  final bool cuadrada;
 
   @override
   Widget build(BuildContext context) {
     final colores = Theme.of(context).colorScheme;
     final vacia = url == null || url!.trim().isEmpty;
+    final hijo = vacia
+        ? ColoredBox(
+            color: colores.surfaceContainerHighest,
+            child: Icon(Icons.image_outlined, color: colores.outline),
+          )
+        : _imagen();
     return ClipRRect(
       borderRadius: BorderRadius.circular(12),
-      child: SizedBox(
-        height: alto,
-        width: double.infinity,
-        child: vacia
-            ? ColoredBox(
-                color: colores.surfaceContainerHighest,
-                child: Icon(Icons.image_outlined, color: colores.outline),
-              )
-            : _imagen(),
-      ),
+      child: cuadrada
+          ? AspectRatio(aspectRatio: 1, child: hijo)
+          : SizedBox(height: alto, width: double.infinity, child: hijo),
     );
   }
 
   Widget _imagen() {
     if (url!.startsWith('data:image')) {
       final coma = url!.indexOf(',');
-      return Image.memory(base64Decode(url!.substring(coma + 1)), fit: BoxFit.cover);
+      return Image.memory(
+        base64Decode(url!.substring(coma + 1)),
+        fit: BoxFit.cover,
+        width: double.infinity,
+        height: double.infinity,
+      );
     }
     return Image.network(
       url!,
       fit: BoxFit.cover,
+      width: double.infinity,
+      height: double.infinity,
       errorBuilder: (_, __, ___) => const Center(child: Icon(Icons.broken_image_outlined)),
     );
   }
