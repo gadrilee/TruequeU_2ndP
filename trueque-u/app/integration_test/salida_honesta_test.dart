@@ -219,4 +219,46 @@ void main() {
       }
     });
   });
+
+  group('Avisos', () {
+    testWidgets('Carlos abre sus avisos y el aviso queda marcado como leído', (tester) async {
+      await abrirApp(tester);
+      expect((await pedirApi('PUT', '/ofertas/1/aceptada', eudenia)).statusCode, 200);
+      expect((await eliminarCuentaPorApi(eudenia, eudenia[1])).statusCode, 200);
+      final antes = jsonDecode((await pedirApi('GET', '/notificaciones', carlos)).body) as List;
+      expect(antes.length, 1);
+      expect(antes.first['leida'], false);
+
+      await iniciarSesion(tester, carlos);
+      await tocar(tester, find.text('Avisos'));
+      await esperarTexto(
+        tester,
+        'Tu trueque por "Calculo I - Stewart" se canceló porque la otra persona eliminó su cuenta.',
+      );
+      expect(find.byIcon(Icons.notifications_active), findsOneWidget);
+
+      await tocarBoton(tester, 'Volver al perfil');
+      await tocar(tester, find.text('Avisos'));
+      await esperarTexto(
+        tester,
+        'Tu trueque por "Calculo I - Stewart" se canceló porque la otra persona eliminó su cuenta.',
+      );
+
+      expect(find.byIcon(Icons.notifications_none), findsOneWidget);
+      expect(find.byIcon(Icons.notifications_active), findsNothing);
+      final despues = jsonDecode((await pedirApi('GET', '/notificaciones', carlos)).body) as List;
+      expect(despues.first['leida'], true);
+    });
+
+    testWidgets('El servidor rechaza marcar como leído un aviso ajeno o inválido', (tester) async {
+      await abrirApp(tester);
+      expect((await pedirApi('PUT', '/ofertas/1/aceptada', eudenia)).statusCode, 200);
+      expect((await eliminarCuentaPorApi(eudenia, eudenia[1])).statusCode, 200);
+      final aviso = (jsonDecode((await pedirApi('GET', '/notificaciones', carlos)).body) as List).first['id'];
+
+      expect((await pedirApi('PUT', '/notificaciones/$aviso/leida', job)).statusCode, 404);
+      expect((await pedirApi('PUT', '/notificaciones/abc/leida', carlos)).statusCode, 400);
+      expect((await pedirApi('PUT', '/notificaciones/$aviso/leida', carlos)).statusCode, 200);
+    });
+  });
 }

@@ -300,4 +300,29 @@ void main() {
       expect(find.text('Eudenia Flores Veizaga'), findsOneWidget);
     });
   });
+
+  group('Sesión iniciada', () {
+    testWidgets('Eudenia con sesión iniciada no vuelve a ver iniciar sesión ni crear cuenta', (tester) async {
+      await abrirAppConSesion(tester, eudenia);
+
+      await irARuta(tester, '/iniciar-sesion');
+      await esperarTexto(tester, '¿Qué quieres intercambiar hoy?');
+      expect(find.text('Inicia sesión'), findsNothing);
+
+      await irARuta(tester, '/registro');
+      await esperarTexto(tester, '¿Qué quieres intercambiar hoy?');
+      expect(find.text('Crear cuenta'), findsNothing);
+    });
+
+    testWidgets('Eudenia recarga la app y conserva su sesión', (tester) async {
+      await abrirAppConSesion(tester, eudenia);
+
+      await recargarApp(tester);
+      await irARuta(tester, '/perfil');
+
+      expect(find.text('Mi perfil'), findsOneWidget);
+      expect(find.text('Eudenia Flores Veizaga'), findsOneWidget);
+      expect(find.text('Inicia sesión'), findsNothing);
+    });
+  });
 }

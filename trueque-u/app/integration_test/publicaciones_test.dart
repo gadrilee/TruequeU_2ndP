@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:integration_test/integration_test.dart';
@@ -391,6 +390,48 @@ void main() {
       await abrirPestana(tester, 'Perfil');
 
       expect(find.text('Eudenia Flores Veizaga'), findsOneWidget);
+    });
+  });
+
+  group('Consultar una publicación por id', () {
+    testWidgets('Eudenia consulta una publicación por su id y el servidor responde con sus datos', (tester) async {
+      await abrirApp(tester);
+
+      final propia = await pedirApi('GET', '/publicaciones/1', eudenia);
+      expect(propia.statusCode, 200);
+      expect(jsonDecode(propia.body)['titulo'], 'Calculo I - Stewart');
+
+      final ajena = await pedirApi('GET', '/publicaciones/4', eudenia);
+      expect(ajena.statusCode, 200);
+      expect(jsonDecode(ajena.body)['titulo'], 'Fisica General - Serway');
+    });
+
+    testWidgets('Eudenia consulta un id inválido o inexistente y el servidor lo rechaza', (tester) async {
+      await abrirApp(tester);
+
+      expect((await pedirApi('GET', '/publicaciones/abc', eudenia)).statusCode, 400);
+      expect((await pedirApi('GET', '/publicaciones/0', eudenia)).statusCode, 400);
+
+      final inexistente = await pedirApi('GET', '/publicaciones/999', eudenia);
+      expect(inexistente.statusCode, 404);
+      expect(jsonDecode(inexistente.body)['error'], 'Publicación no encontrada');
+    });
+
+    testWidgets('Una publicación oculta solo la consulta su dueño', (tester) async {
+      await abrirApp(tester);
+
+      expect((await pedirApi('GET', '/publicaciones/9', eudenia)).statusCode, 404);
+      expect((await pedirApi('GET', '/publicaciones/9', carlos)).statusCode, 200);
+    });
+
+    testWidgets('Carlos no ve quién reservó la calculadora de Eudenia pero ella sí', (tester) async {
+      await abrirApp(tester);
+
+      final deCarlos = jsonDecode((await pedirApi('GET', '/publicaciones/2', carlos)).body);
+      expect(deCarlos['usuario_reserva'], isNull);
+
+      final deEudenia = jsonDecode((await pedirApi('GET', '/publicaciones/2', eudenia)).body);
+      expect(deEudenia['usuario_reserva']['nombre'], 'Job Contreras');
     });
   });
 }
