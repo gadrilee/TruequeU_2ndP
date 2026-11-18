@@ -11,7 +11,13 @@ import 'ayudantes/publicaciones.dart';
 Future<void> montarTarjeta(WidgetTester tester, Widget tarjeta) async {
   usarAncho(tester, 600);
   await tester.pumpWidget(
-    MaterialApp(home: Scaffold(body: SingleChildScrollView(child: tarjeta))),
+    MaterialApp(
+      home: Scaffold(
+        body: tarjeta is TarjetaFeed
+            ? SizedBox(height: 720, child: tarjeta)
+            : SingleChildScrollView(child: tarjeta),
+      ),
+    ),
   );
 }
 
@@ -87,6 +93,30 @@ TarjetaMiPublicacion tarjetaPropia({
 
 void main() {
   group('TarjetaFeed', () {
+    testWidgets('con foto cabe en la celda de tres columnas sin desbordarse', (tester) async {
+      usarAncho(tester, 1280);
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Center(
+              child: SizedBox(
+                width: 342,
+                height: 540,
+                child: tarjetaFeed(
+                  imagenUrl: 'https://ejemplo.com/foto.png',
+                  descripcion: 'Una descripcion larga que ocupa dos lineas en la tarjeta del feed',
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+
+      expect(tester.takeException(), isNull);
+      expect(find.text('Reservar'), findsOneWidget);
+    });
+
     testWidgets('una publicacion disponible ofrece ofrecer y reservar', (tester) async {
       final llamadas = <String>[];
       await montarTarjeta(tester, tarjetaFeed(llamadas: llamadas));

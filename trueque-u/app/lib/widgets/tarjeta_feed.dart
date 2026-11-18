@@ -73,7 +73,7 @@ class TarjetaFeed extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            FotoPublicacion(url: imagenUrl, cuadrada: true),
+            Expanded(child: FotoPublicacion(url: imagenUrl)),
             const SizedBox(height: 10),
             // Fila superior: Título del objeto y Chip de estado de publicación
             Row(
