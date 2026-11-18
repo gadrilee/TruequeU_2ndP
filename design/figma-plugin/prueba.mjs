@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import vm from 'node:vm';
@@ -7,6 +7,16 @@ import assert from 'node:assert/strict';
 const aqui = dirname(fileURLToPath(import.meta.url));
 const tokens = JSON.parse(readFileSync(join(aqui, 'tokens.json'), 'utf8'));
 const codigo = readFileSync(join(aqui, 'code.js'), 'utf8');
+const carpetaPantallas = join(aqui, '..', '..', 'trueque-u', 'app', 'lib', 'pantallas');
+
+function clasesDePantallas() {
+  const clases = [];
+  for (const archivo of readdirSync(carpetaPantallas).filter(a => a.endsWith('.dart'))) {
+    const dart = readFileSync(join(carpetaPantallas, archivo), 'utf8');
+    for (const m of dart.matchAll(/^class (Pantalla\w+)\s+extends\s+(StatelessWidget|StatefulWidget)/gm)) clases.push(m[1]);
+  }
+  return clases.sort();
+}
 
 const CAMPOS_NUMERICOS = [
   'width', 'height', 'itemSpacing', 'paddingLeft', 'paddingRight', 'paddingTop', 'paddingBottom',
@@ -445,6 +455,9 @@ function revisar(mundo, contexto) {
     'PantallaFeedPublicaciones', 'PantallaMisPublicaciones', 'PantallaOfertas', 'PantallaPerfil',
     'PantallaPublicacion', 'PantallaIntercambios', 'PantallaHistorial', 'PantallaAvisos', 'PantallaMisDatos', 'PantallaCambiarContrasena',
   ];
+  const clases = clasesDePantallas();
+  assert(clases.includes('PantallaPublicacion'), 'no se encontro la pantalla de Publicacion.dart');
+  assert.deepEqual([...bases].sort(), clases, 'las pantallas de Figma y las de lib/pantallas no coinciden');
   const requeridos = [
     'PantallaFeedPublicaciones · vacío', 'PantallaOfertas · enviadas', 'PantallaAvisos · vacío',
   ];
@@ -473,13 +486,14 @@ function revisar(mundo, contexto) {
 
   const pantallas = revisarPagina('📱 Pantallas');
   const nombresPantallas = pantallas.lista.map(p => p.name);
+  for (const clase of clases) assert(nombresPantallas.includes(clase), 'la pantalla Flutter ' + clase + ' no tiene marco con ese nombre en Figma');
   assert.deepEqual(nombresPantallas.slice(0, bases.length), bases);
   for (const extra of nombresPantallas.slice(bases.length)) {
     assert(bases.some(b => extra.startsWith(b + ' · ')), 'marco de estado sin pantalla base: ' + extra);
   }
   for (const nombre of requeridos) assert(nombresPantallas.includes(nombre), 'falta el marco ' + nombre);
   assert.equal(new Set(nombresPantallas).size, nombresPantallas.length, 'nombres de pantalla repetidos');
-  ok(`pantallas: ${bases.length} base y ${nombresPantallas.length - bases.length} de estado, todas de 390x844, solo FRAME e INSTANCE (${pantallas.instancias} instancias)`);
+  ok(`pantallas: las ${clases.length} clases Pantalla* de lib/pantallas tienen marco; ${bases.length} base y ${nombresPantallas.length - bases.length} de estado, todas de 390x844, solo FRAME e INSTANCE (${pantallas.instancias} instancias)`);
 
   const dialogos = revisarPagina('💬 Diálogos');
   const nombresDialogos = [

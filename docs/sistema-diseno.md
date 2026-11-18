@@ -14,9 +14,9 @@ Los valores de diseño (colores, espacios, radios, tamaños y estilos de texto) 
 2. En Figma Desktop, abrir el archivo de destino y elegir Plugins, Development, Import plugin from manifest, y seleccionar `design/figma-plugin/manifest.json`.
 3. Ejecutar Plugins, Development, TruequeU Sistema de diseño.
 
-El plugin es idempotente: al volver a ejecutarlo actualiza por nombre las colecciones, variables y estilos existentes, y recrea todo el contenido de las tres páginas (Fundamentos, Componentes, Pantallas). No debe editarse a mano el contenido de esas páginas, porque se reemplaza.
+El plugin es idempotente: al volver a ejecutarlo actualiza por nombre las colecciones, variables y estilos existentes, y recrea todo el contenido de las cuatro páginas (Fundamentos, Componentes, Pantallas, Diálogos). No debe editarse a mano el contenido de esas páginas, porque se reemplaza.
 
-Para comprobar el código del plugin sin Figma, `node design/figma-plugin/prueba.mjs` lo ejecuta contra una simulación mínima de la API. Verifica variables, estilos, conjuntos de componentes, pantallas y que ningún relleno quede sin variable, pero no demuestra cómo se ve en Figma real.
+Para comprobar el código del plugin sin Figma, `node design/figma-plugin/prueba.mjs` lo ejecuta contra una simulación mínima de la API. Verifica variables, estilos, conjuntos de componentes, pantallas, diálogos, que cada clase `Pantalla*` de `lib/pantallas` tenga su marco y que ningún relleno quede sin variable, pero no demuestra cómo se ve en Figma real.
 
 ## Regla de nombres
 
@@ -112,7 +112,7 @@ Tabla generada desde `tokens.json` por `generar.mjs`; no se edita a mano.
 
 ## Componente Figma, archivo Flutter y variantes
 
-Los archivos están en `trueque-u/app/lib/widgets/`. Todos usan auto layout; padding y separación están enlazados a `Espacios`, radios a `Radios`, y rellenos y bordes a variables de `ColorScheme` (o `TemaTruequeU/blanco` y `TemaTruequeU/rojo` donde el código usa esos colores directamente).
+Los archivos están en `trueque-u/app/lib/widgets/` salvo los marcados como Material, patrón inline o clase privada de una pantalla (no existen como widget propio). Todos usan auto layout; padding y separación están enlazados a `Espacios`, radios a `Radios`, y rellenos y bordes a variables de `ColorScheme` (o `TemaTruequeU/blanco` y `TemaTruequeU/rojo` donde el código usa esos colores directamente).
 
 | Componente Figma | Archivo Flutter | Variantes y estados |
 | --- | --- | --- |
@@ -165,7 +165,7 @@ Los archivos están en `trueque-u/app/lib/widgets/`. Todos usan auto layout; pad
 | `DialogoEliminarCuenta` | `dialogo_eliminar_cuenta.dart` | Estado: normal, error |
 | `DialogoHistorial` | patrón inline: `AlertDialog` de `pantalla_ofertas.dart`, `bloque_entrega.dart` y `pantalla_historial.dart` | Tipo: negociacion, entrega, movimiento |
 
-Los componentes con texto editable exponen una propiedad de texto (`texto`, `mensaje`, `titulo` o `subtitulo`). Las tarjetas, `MensajeVacio` y `ErrorConReintento` están armadas con instancias de los componentes anteriores.
+Los componentes con texto editable exponen una propiedad de texto (`texto`, `mensaje`, `titulo`, `subtitulo`, etc.). Las tarjetas, los bloques, los diálogos, `MensajeVacio` y `ErrorConReintento` están armados con instancias de los componentes anteriores. Las variantes cuyo texto cambia según el estado (por ejemplo `PieEnlace` o `TarjetaHistorial`) no tienen propiedad de texto: el texto se cambia en la instancia.
 
 Limitaciones conocidas:
 
@@ -177,18 +177,81 @@ Limitaciones conocidas:
 
 ## Pantalla Figma y archivo Flutter
 
-Los archivos están en `trueque-u/app/lib/pantallas/`. Cada pantalla es un marco de 390 x 844 con auto layout vertical, armado solo con instancias de los componentes y marcos de disposición enlazados a variables.
+Los archivos están en `trueque-u/app/lib/pantallas/`. Cada pantalla es un marco de 390 x 844 con auto layout vertical, armado solo con instancias de los componentes y marcos de disposición enlazados a variables (ningún texto ni figura suelta). Los textos, el orden de las secciones, las barras de aplicación, el botón flotante y la barra de navegación reflejan lo que dibuja el código Flutter.
 
-| Pantalla Figma | Archivo Flutter |
+Están en la página `📱 Pantallas`, ordenadas por flujo: acceso, pestañas de la barra de navegación y pantallas secundarias. El nombre de cada marco es exactamente el nombre de la clase Flutter.
+
+| Pantalla Figma | Archivo Flutter | Ruta | Contenido |
+| --- | --- | --- | --- |
+| `PantallaInicio` | `pantalla_inicio.dart` | `/` | Encabezado con logo, botones Iniciar sesión y Crear cuenta |
+| `PantallaIniciarSesion` | `pantalla_iniciar_sesion.dart` | `/iniciar-sesion` | Encabezado con logo, campos Correo y Contraseña, enlace de contraseña olvidada, pie Crear cuenta |
+| `PantallaRegistro` | `pantalla_registro.dart` | `/registro` | Cinco campos (con ayuda del teléfono), botón rojo, pie Inicia sesión |
+| `PantallaRecuperarContrasena` | `pantalla_recuperar_contrasena.dart` | `/recuperar-contrasena` | Ícono de llave, texto, campo Correo, botón, pie para volver |
+| `PantallaFeedPublicaciones` | `pantalla_feed_publicaciones.dart` | `/feed` | Cabecera con saludo, filtros, tarjetas, botón flotante Publicar, navegación (Explorar) |
+| `PantallaMisPublicaciones` | `pantalla_mis_publicaciones.dart` | `/mis-publicaciones` | AppBar con actualizar, total, tarjetas, botón flotante, navegación |
+| `PantallaOfertas` | `pantalla_ofertas.dart` | `/ofertas` | AppBar, `SegmentedButton`, tarjetas de oferta, navegación |
+| `PantallaPerfil` | `pantalla_perfil.dart` | `/perfil` | Avatar, nombre, correo, calificaciones, lista de opciones, Cerrar sesión, navegación |
+| `PantallaPublicacion` | `Publicacion.dart` | `/publicacion` | AppBar con volver, campos, dos selectores, foto, Guardar y Cancelar |
+| `PantallaIntercambios` | `pantalla_intercambios.dart` | `/intercambios` | AppBar con volver y actualizar, tarjetas de intercambio |
+| `PantallaHistorial` | `pantalla_historial.dart` | `/historial` | AppBar, filtros Todo, Reservas y Completados, tarjetas de movimiento |
+| `PantallaAvisos` | `pantalla_avisos.dart` | `/avisos` | AppBar con volver, avisos leídos y no leídos |
+| `PantallaMisDatos` | `pantalla_mis_datos.dart` | `/mis-datos` | Botones de descarga y siete tarjetas de datos |
+| `PantallaCambiarContrasena` | `pantalla_cambiar_contrasena.dart` | `/cambiar-contrasena` | AppBar, tres campos, Guardar y Cancelar |
+
+Marcos de estado, con el nombre `<Clase> · <estado>`, en la misma página:
+
+| Marco | Qué muestra |
 | --- | --- |
-| `PantallaInicio` | `pantalla_inicio.dart` |
-| `PantallaIniciarSesion` | `pantalla_iniciar_sesion.dart` |
-| `PantallaRegistro` | `pantalla_registro.dart` |
-| `PantallaFeedPublicaciones` | `pantalla_feed_publicaciones.dart` |
-| `PantallaMisPublicaciones` | `pantalla_mis_publicaciones.dart` |
-| `PantallaPerfil` | `pantalla_perfil.dart` |
+| `PantallaIniciarSesion · error` | Banner de error de credenciales |
+| `PantallaRecuperarContrasena · enviado` | Aviso verde de envío |
+| `PantallaFeedPublicaciones · vacío` | No hay publicaciones disponibles |
+| `PantallaFeedPublicaciones · sin resultados` | Filtros activos sin coincidencias |
+| `PantallaFeedPublicaciones · error` | Error con reintento |
+| `PantallaFeedPublicaciones · cargando` | Indicador de carga |
+| `PantallaMisPublicaciones · vacío` | Aún no tienes publicaciones |
+| `PantallaMisPublicaciones · publicación guardada` | `SnackBar` de confirmación |
+| `PantallaOfertas · enviadas` | Segmento Enviadas con oferta pendiente y rechazada |
+| `PantallaOfertas · entrega y calificación` | Oferta aceptada (entrega) y completada (calificación) |
+| `PantallaOfertas · vacío` | Nadie te ha ofrecido un trueque |
+| `PantallaPublicacion · con foto` | Foto elegida, Cambiar foto y Quitar foto |
+| `PantallaIntercambios · vacío` | Aún no tienes intercambios completados |
+| `PantallaHistorial · vacío` | Aún no tienes movimientos |
+| `PantallaHistorial · filtro sin resultados` | Filtro Reservas sin elementos |
+| `PantallaAvisos · vacío` | No tienes avisos |
+| `PantallaMisDatos · cargando` | Indicador de carga |
+| `PantallaMisDatos · descarga` | `SnackBar` de descarga |
+| `PantallaCambiarContrasena · error` | Campo de confirmación con error |
 
-Las pantallas de Figma son composiciones representativas, no una copia exacta de cada estado de la pantalla en Flutter.
+### Diálogos
+
+La página `💬 Diálogos` muestra cada diálogo sobre la pantalla desde la que se abre. Cada marco es de 390 x 844 e incluye la pantalla, un velo (`ColorScheme/onSurface` con opacidad 0.32, posición absoluta) y la instancia del diálogo centrada.
+
+| Marco | Pantalla de fondo |
+| --- | --- |
+| `confirmarAccion · normal`, `confirmarAccion · destructivo` | `PantallaOfertas` |
+| `confirmarAccion · cancelar oferta` | `PantallaOfertas · enviadas` |
+| `mostrarAyudaTrueque` | `PantallaFeedPublicaciones` |
+| `pedirCalificacion · sinPuntaje`, `· conPuntaje`, `· error` | `PantallaOfertas · entrega y calificación` |
+| `pedirMotivoCancelacion · vacío`, `· con motivo` | `PantallaOfertas · entrega y calificación` |
+| `pedirDatosEntrega · proponer`, `· reprogramar`, `· contraproponer`, `· con errores` | `PantallaOfertas · entrega y calificación` |
+| `mostrarDialogoOferta · ofrecer`, `· ofrecer sin opciones` | `PantallaFeedPublicaciones` |
+| `mostrarDialogoOferta · contraofertar`, `· contraofertar sin opciones` | `PantallaOfertas` |
+| `DialogoEditarPublicacion · normal`, `· guardando`, `· error` | `PantallaMisPublicaciones` |
+| `DialogoEliminarCuenta · normal`, `· contraseña incorrecta` | `PantallaPerfil` |
+| `DialogoHistorial · negociación` | `PantallaOfertas` |
+| `DialogoHistorial · entrega` | `PantallaOfertas · entrega y calificación` |
+| `DialogoHistorial · movimiento` | `PantallaHistorial` |
+
+Las pantallas de Figma son composiciones representativas con datos de ejemplo (Ana Pérez, Luis Gómez, Calculadora científica), no una copia exacta de cada estado posible de la pantalla en Flutter. La referencia visual para espacios y jerarquía fue `docs/propuesta-visual-campus-fresco.op`; no se copió ningún color de ella, todo está enlazado a variables.
+
+Cómo se verifica que no falte ninguna pantalla: `prueba.mjs` lee `trueque-u/app/lib/pantallas/*.dart`, busca las clases `class Pantalla... extends StatelessWidget/StatefulWidget` (incluida `PantallaPublicacion` de `Publicacion.dart`) y falla si alguna no tiene un marco con ese nombre exacto, o si la lista de pantallas de Figma no coincide con la del código.
+
+Limitaciones de las pantallas:
+
+- Los textos de varios estilos de Material sin token equivalente (por ejemplo el título de `ListTile` de 16 px regular, el título de `AppBar` de 22 px o `headlineSmall`) se aproximan con el estilo `TextosTruequeU` más cercano.
+- Las sombras y la elevación de `Card`, `SnackBar`, diálogos y botón flotante no se dibujan (no son variables de color).
+- El teclado, el desplazamiento y las animaciones no existen en Figma: el contenido largo se recorta al alto de la pantalla.
+- Los diálogos se muestran con ancho fijo de 310 y sus botones de acción se reparten el ancho, mientras que Flutter los alinea a la derecha.
 
 ## Cómo el test de paridad protege los nombres
 
