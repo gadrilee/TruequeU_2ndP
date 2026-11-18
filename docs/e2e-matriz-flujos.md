@@ -1,8 +1,8 @@
 # Matriz de flujos E2E
 
-Cada fila es un flujo de usuario o un error que la persona puede provocar. Una fila está `cubierto` cuando una prueba de `trueque-u/app/integration_test/` la ejecuta contra el backend y la base reales. Las filas `pendiente` llevan el número de brecha (1 a 14) del mapeo de la tarea `e2e-flow-coverage`.
+Cada fila es un flujo de usuario o un error que la persona puede provocar. Una fila está `cubierto` cuando una prueba de `trueque-u/app/integration_test/` la ejecuta contra el backend y la base reales. Las filas `pendiente` indican un flujo que hoy no se puede ejecutar de punta a punta.
 
-Esta matriz es el criterio de aceptación: al cerrar la tarea, todas las filas deben estar en `cubierto`.
+Esta matriz es el criterio de aceptación: todas las filas deben estar en `cubierto`.
 
 Columnas: **ID** (identificador estable), **Flujo o caso**, **Endpoint** (o pantalla), **Archivo** (en `integration_test/`), **Prueba** (nombre exacto), **Estado**.
 
@@ -29,8 +29,8 @@ Columnas: **ID** (identificador estable), **Flujo o caso**, **Endpoint** (o pant
 | ACC-17 | Cambiar contraseña con la actual incorrecta (400) | `PUT /usuarios/contrasena` | `acceso_test.dart` | Eudenia se equivoca con su contraseña actual y ve el error | cubierto |
 | ACC-18 | Cambiar contraseña con una nueva muy corta (validación) | `PUT /usuarios/contrasena` | `acceso_test.dart` | Eudenia usa una contraseña nueva muy corta y la app se lo avisa | cubierto |
 | ACC-19 | Cancelar el cambio de contraseña | `UI /cambiar-contrasena` | `acceso_test.dart` | Eudenia se arrepiente y cancela el cambio de contraseña | cubierto |
-| ACC-20 | Con sesión iniciada, /iniciar-sesion y /registro redirigen a /feed | `UI /iniciar-sesion, /registro` | - | - | pendiente (brecha 9) |
-| ACC-21 | Restaurar la sesión al recargar la app | `GET /sesiones/actual` | - | - | pendiente (brecha 10) |
+| ACC-20 | Con sesión iniciada, /iniciar-sesion y /registro redirigen a /feed | `UI /iniciar-sesion, /registro` | `acceso_test.dart` | Eudenia con sesión iniciada no vuelve a ver iniciar sesión ni crear cuenta | cubierto |
+| ACC-21 | Restaurar la sesión al recargar la app | `GET /sesiones/actual` | `acceso_test.dart` | Eudenia recarga la app y conserva su sesión | cubierto |
 
 ## Publicaciones
 
@@ -59,7 +59,7 @@ Columnas: **ID** (identificador estable), **Flujo o caso**, **Endpoint** (o pant
 | PUB-21 | Eliminar bloqueado por reserva (la app oculta la acción) | `DELETE /publicaciones/:id` | `publicaciones_test.dart` | Eudenia no puede editar la calculadora porque Job la reservó | cubierto |
 | PUB-22 | Completar el intercambio de una publicación reservada | `PUT /publicaciones/:id/intercambiado` | `publicaciones_test.dart` | Eudenia completa el intercambio de su calculadora reservada | cubierto |
 | PUB-23 | Salir de mis publicaciones con la barra inferior | `UI /mis-publicaciones` | `publicaciones_test.dart` | Eudenia sale de sus publicaciones con la barra inferior | cubierto |
-| PUB-24 | Consultar una publicación por id (solo API, sin pantalla) | `GET /publicaciones/:id` | - | - | pendiente (brecha 14) |
+| PUB-24 | Consultar una publicación por id (solo API, sin pantalla): datos, 400 por id inválido, 404 inexistente u oculta ajena, y reserva visible solo para el dueño | `GET /publicaciones/:id` | `publicaciones_test.dart` | Eudenia consulta una publicación por su id y el servidor responde con sus datos; Eudenia consulta un id inválido o inexistente y el servidor lo rechaza; Una publicación oculta solo la consulta su dueño; Carlos no ve quién reservó la calculadora de Eudenia pero ella sí | cubierto |
 | PUB-25 | Quitar la foto elegida antes de publicar | `UI /publicacion` | `publicaciones_test.dart` | Eudenia elige una foto, se arrepiente y publica sin ella | cubierto |
 | PUB-26 | Elegir una foto que no es jpg ni png (validación) | `UI /publicacion` | `publicaciones_test.dart` | Eudenia elige una foto que no es jpg ni png y la app se lo avisa | cubierto |
 | PUB-27 | Elegir una foto de más de 2 MB al publicar (validación) | `UI /publicacion` | `publicaciones_test.dart` | Eudenia elige una foto de más de 2 MB y la app se lo avisa | cubierto |
@@ -89,7 +89,7 @@ Columnas: **ID** (identificador estable), **Flujo o caso**, **Endpoint** (o pant
 | FEE-17 | Ver la publicación propia y saltar a Mis publicaciones | `GET /publicaciones` | `feed_test.dart` | Eudenia ve su propia publicación y salta a Mis publicaciones | cubierto |
 | FEE-18 | Cancelar la reserva de otra persona (403, solo API: la app no ofrece el botón) | `PUT /publicaciones/:id/disponible` | `feed_test.dart` | Carlos no puede cancelar la reserva que hizo Job | cubierto |
 | FEE-19 | Reservar una publicación ya intercambiada o no disponible (409, solo API: la app no ofrece el botón) | `PUT /publicaciones/:id/reservado` | `feed_test.dart` | Eudenia no puede reservar los audífonos que ya fueron intercambiados; Job no puede reservar una publicación que su dueña marcó como no disponible | cubierto |
-| FEE-20 | Botón de WhatsApp para contactar a la otra persona | `UI /feed` | - | - | pendiente (brecha 12) |
+| FEE-20 | Botón de WhatsApp para contactar a la otra persona (inalcanzable hoy: al aceptar una oferta el servidor deja las publicaciones en `acordado` sin guardar `id_usuario_reserva`, así que nunca entrega el teléfono; ver nota abajo) | `UI /mis-publicaciones, /feed` | - | - | pendiente (bloqueado por fallo del producto) |
 
 ## Ofertas y contraofertas
 
@@ -102,7 +102,7 @@ Columnas: **ID** (identificador estable), **Flujo o caso**, **Endpoint** (o pant
 | OFE-05 | No enviar sin elegir uno de sus objetos (validación) | `POST /ofertas` | `ofertas_test.dart` | Job no puede enviar la oferta hasta elegir uno de sus objetos | cubierto |
 | OFE-06 | Usar el mismo objeto en dos ofertas (409) | `POST /ofertas` | `ofertas_test.dart` | Job usa el mismo libro en dos ofertas y la app le avisa | cubierto |
 | OFE-07 | Sin objetos para ofrecer, la app propone crear uno | `GET /publicaciones/mias` | `ofertas_test.dart` | Ana no tiene objetos para ofrecer y la app le propone crear uno | cubierto |
-| OFE-08 | Ofertar por una publicación propia o con un objeto ajeno (403) | `POST /ofertas` | - | - | pendiente (brecha 8) |
+| OFE-08 | Ofertar por una publicación propia o con un objeto ajeno (403, solo API: la app no ofrece esas opciones) | `POST /ofertas` | `ofertas_test.dart` | Job no puede ofertar por su propia publicación ni ofrecer un objeto ajeno | cubierto |
 | OFE-09 | Ver la oferta recibida | `GET /ofertas/recibidas` | `ofertas_test.dart` | Eudenia ve la oferta de Carlos por su libro de Cálculo | cubierto |
 | OFE-10 | Aceptar una oferta | `PUT /ofertas/:id/aceptada` | `ofertas_test.dart` | Eudenia acepta la oferta de Carlos | cubierto |
 | OFE-11 | Rechazar una oferta | `PUT /ofertas/:id/rechazada` | `ofertas_test.dart` | Eudenia rechaza la oferta de Carlos | cubierto |
@@ -178,7 +178,7 @@ Columnas: **ID** (identificador estable), **Flujo o caso**, **Endpoint** (o pant
 | HIS-07 | Una reserva nueva aparece en el historial | `GET /historial` | `intercambios_historial_test.dart` | Eudenia reserva el libro de Física y lo ve en su historial | cubierto |
 | HIS-08 | Cancelar una reserva queda registrado en el historial | `GET /historial` | `intercambios_historial_test.dart` | Eudenia cancela su reserva y el historial lo registra | cubierto |
 | HIS-09 | Volver al perfil desde el historial | `UI /historial` | `intercambios_historial_test.dart` | Eudenia vuelve al perfil desde su historial | cubierto |
-| HIS-10 | Historial con un tipo inválido (400, solo API) | `GET /historial?tipo=` | - | - | pendiente (brecha 13) |
+| HIS-10 | Historial con un tipo inválido (400, solo API) | `GET /historial?tipo=` | `intercambios_historial_test.dart` | Job pide un tipo de historial que no existe y el servidor lo rechaza | cubierto |
 
 ## Avisos, Mis datos y cuenta
 
@@ -190,7 +190,7 @@ Columnas: **ID** (identificador estable), **Flujo o caso**, **Endpoint** (o pant
 | AVI-04 | Eliminar la cuenta con un trueque acordado y avisar a la otra parte | `DELETE /usuarios/yo, GET /notificaciones` | `salida_honesta_test.dart` | Eudenia elimina su cuenta con un trueque acordado y Carlos recibe el aviso | cubierto |
 | AVI-05 | Ver el aviso en la pantalla de avisos | `GET /notificaciones` | `salida_honesta_test.dart` | Eudenia elimina su cuenta con un trueque acordado y Carlos recibe el aviso | cubierto |
 | AVI-06 | Una cuenta eliminada ya no inicia sesión (401) | `POST /sesiones` | `salida_honesta_test.dart` | Quien eliminó su cuenta ya no puede iniciar sesión | cubierto |
-| AVI-07 | Marcar un aviso como leído | `PUT /notificaciones/:id/leida` | - | - | pendiente (brecha 11) |
+| AVI-07 | Marcar un aviso como leído (la app lo hace al abrir Avisos; el servidor rechaza avisos ajenos o ids inválidos) | `PUT /notificaciones/:id/leida` | `salida_honesta_test.dart` | Carlos abre sus avisos y el aviso queda marcado como leído; El servidor rechaza marcar como leído un aviso ajeno o inválido | cubierto |
 | AVI-08 | Sin teléfono guardado no aparece el botón para quitarlo | `UI /mis-datos` | `salida_honesta_test.dart` | Eudenia no tiene teléfono guardado y no ve el botón para quitarlo | cubierto |
 
 ## Eventos y analítica
@@ -207,15 +207,17 @@ Columnas: **ID** (identificador estable), **Flujo o caso**, **Endpoint** (o pant
 
 | Área | Cubiertos | Total | % |
 |---|---|---|---|
-| Acceso y cuenta | 19 | 21 | 90.5% |
-| Publicaciones | 28 | 29 | 96.6% |
+| Acceso y cuenta | 21 | 21 | 100.0% |
+| Publicaciones | 29 | 29 | 100.0% |
 | Feed y reservas | 19 | 20 | 95.0% |
-| Ofertas y contraofertas | 34 | 35 | 97.1% |
+| Ofertas y contraofertas | 35 | 35 | 100.0% |
 | Intercambios y entrega | 17 | 17 | 100.0% |
 | Calificaciones | 7 | 7 | 100.0% |
-| Historial | 9 | 10 | 90.0% |
-| Avisos, Mis datos y cuenta | 7 | 8 | 87.5% |
+| Historial | 10 | 10 | 100.0% |
+| Avisos, Mis datos y cuenta | 8 | 8 | 100.0% |
 | Eventos y analítica | 5 | 5 | 100.0% |
-| **Total** | **145** | **152** | **95.4%** |
+| **Total** | **151** | **152** | **99.3%** |
 
-Flujos cubiertos: 145 de 152 (95.4%). Pendientes: 7 (brechas 8 a 14).
+Flujos cubiertos: 151 de 152 (99.3%). Pendientes: 1 (FEE-20).
+
+Nota sobre FEE-20: ni el botón de WhatsApp del feed (para quien reservó) ni el de Mis publicaciones (para el dueño, `Escribir por WhatsApp`) se pueden mostrar. El teléfono solo se entrega cuando la publicación está `acordado`, pero `PUT /ofertas/:id/aceptada` pasa las dos publicaciones a `acordado` sin llenar `id_usuario_reserva`. Así `usuario_reserva` (Mis publicaciones) y la reserva propia (feed) quedan vacíos y la app nunca ve el teléfono. Con una reserva normal el teléfono se oculta porque el estado es `reservado`. Hace falta una decisión sobre el producto antes de poder probarlo de punta a punta.
