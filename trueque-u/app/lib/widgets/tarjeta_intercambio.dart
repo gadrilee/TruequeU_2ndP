@@ -16,7 +16,6 @@ class TarjetaIntercambio extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colores = Theme.of(context).colorScheme;
     final autor = pub['autor'] as Map<String, dynamic>?;
     final reserva = pub['usuario_reserva'] as Map<String, dynamic>?;
     final fueDueno = (pub['id_usuario'] as num?)?.toInt() == idYo;
@@ -42,7 +41,7 @@ class TarjetaIntercambio extends StatelessWidget {
               fueDueno
                   ? 'Lo entregaste a: $nombreOtra'
                   : 'Lo recibiste de: $nombreOtra',
-              style: TextStyle(color: colores.onSurfaceVariant),
+              style: const TextStyle(color: TemaTruequeU.textoSuave),
             ),
             const SizedBox(height: Espacios.e8),
             Wrap(
@@ -52,10 +51,10 @@ class TarjetaIntercambio extends StatelessWidget {
                   visualDensity: VisualDensity.compact,
                   label: Text('Categoría: $categoria'),
                 ),
-                Chip(
+                const Chip(
                   visualDensity: VisualDensity.compact,
-                  avatar: const Icon(Icons.check_circle_outline, size: 16),
-                  label: const Text('Intercambiado'),
+                  avatar: Icon(Icons.check_circle_outline, size: 16),
+                  label: Text('Intercambiado'),
                 ),
               ],
             ),

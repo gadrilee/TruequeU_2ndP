@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../tema.dart';
+
 /// Botón principal que muestra un indicador mientras carga.
 class BotonCarga extends StatelessWidget {
   const BotonCarga({
@@ -20,7 +22,7 @@ class BotonCarga extends StatelessWidget {
     return FilledButton(
       style: rojo
           ? FilledButton.styleFrom(
-              backgroundColor: Theme.of(context).colorScheme.secondary,
+              backgroundColor: TemaTruequeU.rojo,
             )
           : null,
       onPressed: cargando ? null : alPresionar,

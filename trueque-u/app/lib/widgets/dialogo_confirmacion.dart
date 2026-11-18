@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../tema.dart';
+
 /// Pregunta "¿seguro?" antes de una acción. Devuelve true si la persona acepta.
 Future<bool> confirmarAccion(
   BuildContext context, {
@@ -22,8 +24,8 @@ Future<bool> confirmarAccion(
         FilledButton(
           style: destructivo
               ? FilledButton.styleFrom(
-                  backgroundColor: Theme.of(ctx).colorScheme.error,
-                  foregroundColor: Theme.of(ctx).colorScheme.onError,
+                  backgroundColor: TemaTruequeU.rojo,
+                  foregroundColor: TemaTruequeU.blanco,
                 )
               : null,
           onPressed: () => Navigator.of(ctx).pop(true),

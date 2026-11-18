@@ -32,12 +32,11 @@ class FotoPublicacion extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colores = Theme.of(context).colorScheme;
     final vacia = url == null || url!.trim().isEmpty;
     final hijo = vacia
-        ? ColoredBox(
-            color: colores.surfaceContainerHighest,
-            child: Icon(Icons.image_outlined, color: colores.outline),
+        ? const ColoredBox(
+            color: TemaTruequeU.superficieAlta,
+            child: Icon(Icons.image_outlined, color: TemaTruequeU.contorno),
           )
         : _imagen();
     return ClipRRect(

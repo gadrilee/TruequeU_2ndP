@@ -59,13 +59,12 @@ class TarjetaFeed extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colores = Theme.of(context).colorScheme;
 
     return Card(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(Radios.r20),
         side: BorderSide(
-          color: loReserveYo ? colores.primary : colores.outlineVariant,
+          color: loReserveYo ? TemaTruequeU.azul : TemaTruequeU.borde,
           width: loReserveYo ? 1.5 : 1,
         ),
       ),
@@ -100,7 +99,7 @@ class TarjetaFeed extends StatelessWidget {
             // Autor de la publicación
             Row(
               children: [
-                Icon(Icons.person_outline, size: 14, color: colores.outline),
+                const Icon(Icons.person_outline, size: 14, color: TemaTruequeU.contorno),
                 const SizedBox(width: Espacios.e4),
                 Text(
                   esMiPublicacion ? 'Publicado por ti' : 'Por: $nombreAutor',
@@ -108,7 +107,7 @@ class TarjetaFeed extends StatelessWidget {
                     fontSize: Tipos.t12,
                     fontWeight:
                         esMiPublicacion ? FontWeight.bold : FontWeight.normal,
-                    color: esMiPublicacion ? colores.primary : colores.outline,
+                    color: esMiPublicacion ? TemaTruequeU.azul : TemaTruequeU.contorno,
                   ),
                 ),
               ],
@@ -122,8 +121,8 @@ class TarjetaFeed extends StatelessWidget {
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: TextosTruequeU.detalle.copyWith(color: (descripcion != null && descripcion!.trim().isNotEmpty)
-                    ? colores.onSurfaceVariant
-                    : colores.outline),
+                    ? TemaTruequeU.textoSuave
+                    : TemaTruequeU.contorno),
             ),
             const SizedBox(height: Espacios.e8),
 
@@ -136,26 +135,26 @@ class TarjetaFeed extends StatelessWidget {
                   padding:
                       const EdgeInsets.symmetric(horizontal: Espacios.e8, vertical: 3),
                   decoration: BoxDecoration(
-                    color: colores.primaryContainer,
+                    color: TemaTruequeU.azulClaro,
                     borderRadius: BorderRadius.circular(Radios.r8),
                   ),
                   child: Text(
                     estadoFisico == 'nuevo'
                         ? 'Condición: Nuevo'
                         : 'Condición: Usado',
-                    style: TextosTruequeU.chip.copyWith(color: colores.onPrimaryContainer),
+                    style: TextosTruequeU.chip.copyWith(color: TemaTruequeU.azulOscuro),
                   ),
                 ),
                 Container(
                   padding:
                       const EdgeInsets.symmetric(horizontal: Espacios.e8, vertical: 3),
                   decoration: BoxDecoration(
-                    color: colores.primaryContainer,
+                    color: TemaTruequeU.azulClaro,
                     borderRadius: BorderRadius.circular(Radios.r8),
                   ),
                   child: Text(
                     'Categoría: ${etiquetasCategoria[categoria] ?? 'Otros'}',
-                    style: TextosTruequeU.chip.copyWith(color: colores.onPrimaryContainer),
+                    style: TextosTruequeU.chip.copyWith(color: TemaTruequeU.azulOscuro),
                   ),
                 ),
                 // Quién reservó: solo si fue otra persona (si fui yo, ya lo dice el chip superior)
@@ -164,15 +163,15 @@ class TarjetaFeed extends StatelessWidget {
                     padding:
                         const EdgeInsets.symmetric(horizontal: Espacios.e8, vertical: 3),
                     decoration: BoxDecoration(
-                      color: colores.secondaryContainer,
+                      color: TemaTruequeU.rojoClaro,
                       borderRadius: BorderRadius.circular(Radios.r8),
                     ),
                     child: Text(
                       'Reservado por: $nombreReserva',
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: Tipos.t11,
                         fontWeight: FontWeight.w600,
-                        color: colores.onSecondaryContainer,
+                        color: TemaTruequeU.rojoOscuro,
                       ),
                     ),
                   ),
@@ -193,7 +192,6 @@ class TarjetaFeed extends StatelessWidget {
 
   /// Construye el botón interactivo según el estado de la reserva y el usuario
   Widget _construirBotonAccion(BuildContext context) {
-    final colores = Theme.of(context).colorScheme;
 
     // Si hay una operación asíncrona en curso en esta card
     if (enProgreso) {
@@ -256,8 +254,8 @@ class TarjetaFeed extends StatelessWidget {
                   icon: const Icon(Icons.close, size: 18),
                   label: const Text('Cancelar reserva'),
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: colores.error,
-                    side: BorderSide(color: colores.error),
+                    foregroundColor: TemaTruequeU.rojo,
+                    side: const BorderSide(color: TemaTruequeU.rojo),
                   ),
                   onPressed: alDescartar,
                 ),
@@ -269,7 +267,7 @@ class TarjetaFeed extends StatelessWidget {
             Text(
               'El contacto se ve cuando los dos aceptan',
               textAlign: TextAlign.center,
-              style: TextosTruequeU.pie.copyWith(color: colores.outline),
+              style: TextosTruequeU.pie.copyWith(color: TemaTruequeU.contorno),
             ),
           ],
         ],
@@ -339,7 +337,7 @@ class TarjetaFeed extends StatelessWidget {
         Text(
           'Ofrecer: cambias un objeto tuyo. Reservar: solo lo apartas.',
           textAlign: TextAlign.center,
-          style: TextosTruequeU.pie.copyWith(color: Theme.of(context).colorScheme.outline),
+          style: TextosTruequeU.pie.copyWith(color: TemaTruequeU.contorno),
         ),
       ],
     );

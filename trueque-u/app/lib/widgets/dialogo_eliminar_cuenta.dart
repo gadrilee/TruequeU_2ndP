@@ -52,7 +52,6 @@ class _DialogoEliminarCuentaState extends State<DialogoEliminarCuenta> {
 
   @override
   Widget build(BuildContext context) {
-    final colores = Theme.of(context).colorScheme;
 
     return AlertDialog(
       title: const Text('Eliminar cuenta'),
@@ -85,8 +84,8 @@ class _DialogoEliminarCuentaState extends State<DialogoEliminarCuenta> {
                   child: OutlinedButton(
                     key: const Key('boton-cancelar-eliminar'),
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: colores.primary,
-                      side: BorderSide(color: colores.primary, width: 1.5),
+                      foregroundColor: TemaTruequeU.azul,
+                      side: const BorderSide(color: TemaTruequeU.azul, width: 1.5),
                       padding: const EdgeInsets.symmetric(horizontal: Espacios.e8, vertical: Espacios.e12),
                     ),
                     onPressed: _enviando ? null : () => Navigator.of(context).pop(),
@@ -98,8 +97,8 @@ class _DialogoEliminarCuentaState extends State<DialogoEliminarCuenta> {
                   child: OutlinedButton(
                     key: const Key('boton-confirmar-eliminar'),
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: colores.error,
-                      side: BorderSide(color: colores.error, width: 1.5),
+                      foregroundColor: TemaTruequeU.rojo,
+                      side: const BorderSide(color: TemaTruequeU.rojo, width: 1.5),
                       padding: const EdgeInsets.symmetric(horizontal: Espacios.e8, vertical: Espacios.e12),
                     ),
                     onPressed: _enviando ? null : _eliminar,
