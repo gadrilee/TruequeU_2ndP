@@ -114,7 +114,7 @@ function crearMundo(opciones) {
       const copia = (origen, padre) => {
         const n = new Nodo(origen.type === 'COMPONENT' ? 'INSTANCE' : origen.type);
         for (const k of Object.keys(origen)) {
-          if (['id', 'children', 'parent', 'type'].includes(k)) continue;
+          if (['id', 'children', 'parent', 'type', 'mainComponent'].includes(k)) continue;
           n[k] = JSON.parse(JSON.stringify(origen[k] === undefined ? null : origen[k]));
         }
         n.layoutMode = origen.layoutMode;
@@ -330,8 +330,9 @@ function pagina(mundo, nombre) {
 
 const plano = valor => JSON.parse(JSON.stringify(valor));
 const reporte = [];
+let registrando = true;
 function ok(texto) {
-  reporte.push(texto);
+  if (registrando) reporte.push(texto);
 }
 
 function revisar(mundo, contexto) {
@@ -432,12 +433,34 @@ function revisar(mundo, contexto) {
   assert.throws(() => contexto.pintura('#FF0000'), /no es un token/);
   assert.throws(() => contexto.pintura('ColorScheme/noExiste'), /Token inexistente/);
   ok('pintura() rechaza colores que no son tokens');
+
+  const pantallas = pagina(mundo, '📱 Pantallas').children;
+  assert.deepEqual(pantallas.map(p => p.name), [
+    'PantallaInicio', 'PantallaIniciarSesion', 'PantallaRegistro', 'PantallaFeedPublicaciones', 'PantallaMisPublicaciones', 'PantallaPerfil',
+  ]);
+  let instancias = 0;
+  for (const pantalla of pantallas) {
+    assert.equal(pantalla.width, 390);
+    assert.equal(pantalla.height, 844);
+    assert.equal(pantalla.layoutMode, 'VERTICAL');
+    const propios = [];
+    const recorrer = n => {
+      for (const h of n.children) {
+        propios.push(h);
+        if (h.type !== 'INSTANCE') recorrer(h);
+      }
+    };
+    recorrer(pantalla);
+    assert(propios.every(h => ['FRAME', 'INSTANCE'].includes(h.type)), 'pantalla con nodos ajenos: ' + pantalla.name);
+    instancias += propios.filter(h => h.type === 'INSTANCE').length;
+  }
+  ok(`pantallas: ${pantallas.length} de 390x844, solo FRAME e INSTANCE (${instancias} instancias)`);
 }
 
 const mundo = crearMundo({});
 const contexto = await ejecutar(mundo);
 revisar(mundo, contexto);
-const base = reporte.splice(0);
+registrando = false;
 
 const cantidades = () => [mundo.colecciones.length, mundo.variables.length, mundo.estilos.length, mundo.paginas.length];
 const antes = cantidades();
@@ -446,17 +469,18 @@ mundo.paginas.forEach(p => {
 });
 const contexto2 = await ejecutar(mundo);
 revisar(mundo, contexto2);
-reporte.length = 0;
 assert.deepEqual(cantidades(), antes);
+registrando = true;
 ok('idempotencia: segunda ejecucion sin duplicar colecciones, variables, estilos ni paginas');
+registrando = false;
 
 const sinGradiente = crearMundo({ sinGradiente: true });
 const contexto3 = await ejecutar(sinGradiente);
 revisar(sinGradiente, contexto3);
-reporte.length = 0;
 const encabezados = pagina(sinGradiente, '🧩 Componentes').children.find(c => c.name === 'EncabezadoAcceso');
 assert(encabezados.children.every(c => c.fills.every(p => p.type === 'SOLID')));
+registrando = true;
 ok('si la API descarta el enlace del degradado, el encabezado cae a relleno solido enlazado');
 
-console.log(base.concat(reporte).map(l => '- ' + l).join('\n'));
+console.log(reporte.map(l => '- ' + l).join('\n'));
 console.log('prueba.mjs: OK (no demuestra el render en Figma real)');

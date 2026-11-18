@@ -909,7 +909,87 @@ async function construirFundamentos() {
   radios.appendChild(filaRadios);
 }
 
+function pantalla(nombre, indice) {
+  const f = marco({ nombre: nombre, dir: 'V', ancho: 390, alto: 844, fondo: 'ColorScheme/surface', recorta: true });
+  f.x = indice * 430;
+  return f;
+}
+
+function contenido(padre, pad, gap) {
+  const c = marco({ nombre: 'contenido', dir: 'V', pad: pad, gap: gap, recorta: true });
+  agregar(padre, c, { ancho: true, alto: true });
+  return c;
+}
+
+function encabezado(padre, conLogo, titulo, subtitulo) {
+  const inst = instancia('EncabezadoAcceso', { ConLogo: conLogo ? 'si' : 'no' });
+  cambiarTexto(inst, titulo, 'titulo');
+  cambiarTexto(inst, subtitulo, 'subtitulo');
+  agregar(padre, inst, { ancho: true });
+}
+
+function campo(padre, contenidoCampo, tipo) {
+  const inst = instancia('CampoTexto', { Estado: 'vacio', Tipo: tipo || 'texto' });
+  agregar(padre, cambiarTexto(inst, contenidoCampo), { ancho: true });
+}
+
+function accion(padre, contenidoBoton, variante) {
+  agregar(padre, boton(contenidoBoton, variante), { ancho: true });
+}
+
+function navegacion(padre, activo) {
+  agregar(padre, instancia('EstructuraPrincipal', { Activo: activo }), { ancho: true });
+}
+
 async function construirPantallas() {
+  const inicio = pantalla('PantallaInicio', 0);
+  encabezado(inicio, true, 'TruequeU', 'Intercambia lo que ya no usas');
+  const accionesInicio = contenido(inicio, 'e24', 'e12');
+  accion(accionesInicio, 'Iniciar sesión', 'primario');
+  accion(accionesInicio, 'Crear cuenta', 'contorno');
+
+  const acceso = pantalla('PantallaIniciarSesion', 1);
+  encabezado(acceso, false, 'Iniciar sesión', 'Ingresa con tu correo institucional');
+  const formularioAcceso = contenido(acceso, 'e24', 'e16');
+  campo(formularioAcceso, 'Correo institucional');
+  campo(formularioAcceso, 'Contraseña', 'contrasena');
+  agregar(formularioAcceso, instancia('BannerError', { Estado: 'default' }), { ancho: true });
+  accion(formularioAcceso, 'Entrar', 'primario');
+
+  const registro = pantalla('PantallaRegistro', 2);
+  encabezado(registro, false, 'Crear cuenta', 'Regístrate para intercambiar');
+  const formularioRegistro = contenido(registro, 'e24', 'e16');
+  campo(formularioRegistro, 'Nombre completo');
+  campo(formularioRegistro, 'Correo institucional');
+  campo(formularioRegistro, 'Contraseña', 'contrasena');
+  campo(formularioRegistro, 'Confirmar contraseña', 'contrasena');
+  accion(formularioRegistro, 'Registrarme', 'primario');
+
+  const feed = pantalla('PantallaFeedPublicaciones', 3);
+  const listaFeed = contenido(feed, 'e16', 'e12');
+  agregar(listaFeed, instancia('FiltrosFeed', { Estado: 'conFiltros' }), { ancho: true });
+  agregar(listaFeed, instancia('TarjetaFeed', { Estado: 'disponible' }), { ancho: true });
+  agregar(listaFeed, instancia('TarjetaFeed', { Estado: 'reservadoPorOtro' }), { ancho: true });
+  navegacion(feed, 'explorar');
+
+  const mias = pantalla('PantallaMisPublicaciones', 4);
+  const listaMias = contenido(mias, 'e16', 'e12');
+  agregar(listaMias, instancia('TarjetaMiPublicacion', { Reservada: 'no' }), { ancho: true });
+  agregar(listaMias, instancia('TarjetaMiPublicacion', { Reservada: 'si' }), { ancho: true });
+  navegacion(mias, 'misPublicaciones');
+
+  const perfil = pantalla('PantallaPerfil', 5);
+  encabezado(perfil, false, 'Perfil', 'ana@universidad.edu');
+  const datosPerfil = contenido(perfil, 'e24', 'e12');
+  datosPerfil.appendChild(instancia('Estrellas', { Puntaje: '4', Modo: 'lectura' }));
+  const etiquetas = marco({ nombre: 'etiquetas', dir: 'H', gap: 'e8' });
+  etiquetas.appendChild(cambiarTexto(instancia('Etiqueta', { Tono: 'primario' }), '12 intercambios'));
+  etiquetas.appendChild(cambiarTexto(instancia('Etiqueta', { Tono: 'terciario' }), 'Cuenta verificada'));
+  datosPerfil.appendChild(etiquetas);
+  accion(datosPerfil, 'Mis datos', 'contorno');
+  accion(datosPerfil, 'Cambiar contraseña', 'contorno');
+  accion(datosPerfil, 'Cerrar sesión', 'rojo');
+  navegacion(perfil, 'perfil');
 }
 
 async function pagina(nombre) {
