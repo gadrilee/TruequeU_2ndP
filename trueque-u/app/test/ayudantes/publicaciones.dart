@@ -184,6 +184,7 @@ Future<GoRouter> montarPantallaEnRuta(
   Widget pantalla,
   ControladorAutenticacion controlador, {
   double ancho = 900,
+  List<String> rutasExtra = const [],
 }) {
   usarAncho(tester, ancho);
   return montarConRuteador(
@@ -194,6 +195,7 @@ Future<GoRouter> montarPantallaEnRuta(
       rutaMarcada('/publicacion'),
       rutaMarcada('/mis-publicaciones'),
       rutaMarcada('/ofertas'),
+      for (final ruta in rutasExtra) rutaMarcada(ruta),
     ],
   );
 }
