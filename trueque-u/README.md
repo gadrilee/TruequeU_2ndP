@@ -145,6 +145,38 @@ taskkill /IM node.exe /F
 taskkill /IM msedgedriver.exe /F
 ```
 
+### Reporte de cobertura
+
+Resumen en la terminal (el backend y la app exigen el 100%):
+
+```bash
+cd backend
+npx jest --coverage
+cd ../app
+flutter test --coverage
+dart run tool/cobertura.dart 100
+```
+
+Reporte HTML del backend en `docs/reportes/backend/index.html` (desde `trueque-u`):
+
+```bash
+cd backend
+npx jest --ci --coverage --coverageReporters=html --coverageReporters=text-summary --coverageReporters=json-summary --coverageDirectory="$(cd ../../docs/reportes && pwd)/backend"
+```
+
+Reporte HTML de la app en `docs/reportes/app/index.html` (desde `trueque-u`, con Git Bash y Docker abierto):
+
+```bash
+cd app
+flutter test --coverage
+node -e "const f=require('fs'),b=String.fromCharCode(92);f.writeFileSync('coverage/lcov.unix.info',f.readFileSync('coverage/lcov.info','utf8').split('\n').map(l=>l.startsWith('SF:')?'SF:/app/'+l.slice(3).split(b).join('/'):l).join('\n'))"
+MSYS_NO_PATHCONV=1 docker run --rm -v "$(pwd -W):/app" -w /app ubuntu:24.04 bash -c "apt-get update -qq && apt-get install -y -qq lcov >/dev/null 2>&1 && genhtml coverage/lcov.unix.info -o /app/reporte_tmp --prefix /app --title 'Trueque U app' --quiet"
+rm -rf ../../docs/reportes/app && mv reporte_tmp ../../docs/reportes/app
+rm coverage/lcov.unix.info
+```
+
+E2E: la cobertura se mide por flujos de usuario en `docs/e2e-matriz-flujos.md`, y el resultado de cada archivo está en `docs/reportes/e2e.md`. El resumen de todos los reportes está en `docs/reportes/README.md`.
+
 ## Estructura
 
 ```
