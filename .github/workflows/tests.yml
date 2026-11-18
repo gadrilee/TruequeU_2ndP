@@ -38,4 +38,4 @@ jobs:
       - run: cp .env.example .env
       - run: flutter pub get
       - run: flutter test --coverage
-      - run: dart run tool/cobertura.dart 0
+      - run: dart run tool/cobertura.dart 100
