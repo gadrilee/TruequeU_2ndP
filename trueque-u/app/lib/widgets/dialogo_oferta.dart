@@ -40,7 +40,6 @@ Future<int?> mostrarDialogoContraoferta(
       mensajeVacio: 'No hay otro objeto disponible para proponer en esta negociación.',
       conBotonCrear: false,
       opciones: opciones,
-      alCrear: () {}, // coverage:ignore-line
     ),
   );
 }
@@ -53,7 +52,7 @@ class _DialogoOferta extends StatefulWidget {
     required this.mensajeVacio,
     required this.conBotonCrear,
     required this.opciones,
-    required this.alCrear,
+    this.alCrear,
   });
 
   final String titulo;
@@ -62,7 +61,7 @@ class _DialogoOferta extends StatefulWidget {
   final String mensajeVacio;
   final bool conBotonCrear;
   final List<Map<String, dynamic>> opciones;
-  final VoidCallback alCrear;
+  final VoidCallback? alCrear;
 
   @override
   State<_DialogoOferta> createState() => _DialogoOfertaState();

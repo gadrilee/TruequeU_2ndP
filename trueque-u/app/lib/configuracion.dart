@@ -2,8 +2,6 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 /// Datos de configuración que salen del archivo .env
 class ConfiguracionEntorno {
-  ConfiguracionEntorno._(); // coverage:ignore-line
-
   /// Dirección del servidor (sin /api). Si el .env no la trae, usa la local.
   static String get _servidor {
     // Se acepta API_URL y también api_url, por si se escribe en minúsculas

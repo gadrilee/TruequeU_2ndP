@@ -1,4 +1,3 @@
-// coverage:ignore-file
 import 'dart:js_interop';
 
 import 'package:web/web.dart' as web;

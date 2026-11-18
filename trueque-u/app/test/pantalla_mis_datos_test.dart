@@ -38,8 +38,13 @@ Map<String, dynamic> datosCompletos({String? telefono = '70000000'}) {
   };
 }
 
-Future<void> montarMisDatos(WidgetTester tester, ControladorAutenticacion controlador) {
-  return montarPerfilYDestinos(tester, PantallaMisDatos(), controlador);
+Future<void> montarMisDatos(
+  WidgetTester tester,
+  ControladorAutenticacion controlador, {
+  bool Function(String, String, String)? descargar,
+}) {
+  final pantalla = descargar == null ? PantallaMisDatos() : PantallaMisDatos(descargar: descargar);
+  return montarPerfilYDestinos(tester, pantalla, controlador);
 }
 
 void main() {
@@ -113,6 +118,30 @@ void main() {
         .map((p) => p.url.queryParameters['formato'])
         .toList();
     expect(formatos, ['json', 'csv']);
+  });
+
+  testWidgets('una descarga lograda avisa y registra el evento', (tester) async {
+    final registro = <http.Request>[];
+    final descargas = <String>[];
+    final controlador = await controladorConSesion({
+      'GET /api/usuarios/yo/datos': (peticion) {
+        if (peticion.url.queryParameters['formato'] == null) return respuestaJson(datosCompletos());
+        return http.Response('a,b', 200);
+      },
+      'POST /api/eventos': (_) => respuestaJson({}, 201),
+    }, registro: registro);
+    await montarMisDatos(tester, controlador, descargar: (nombre, contenido, tipo) {
+      descargas.add('$nombre|$contenido|$tipo');
+      return true;
+    });
+
+    await tocar(tester, find.text('Descargar CSV'));
+
+    expect(descargas, ['mis-datos.csv|a,b|text/csv']);
+    expect(find.text('Tus datos se descargaron'), findsOneWidget);
+    final evento = registro.firstWhere((p) => p.url.path == '/api/eventos');
+    expect(evento.body, contains('datos_descargados'));
+    expect(evento.body, contains('"formato":"csv"'));
   });
 
   testWidgets('un error al descargar se muestra en un aviso', (tester) async {

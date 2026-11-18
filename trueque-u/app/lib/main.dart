@@ -10,7 +10,6 @@ import 'rutas.dart';
 import 'servicios/cliente_api.dart';
 import 'tema.dart';
 
-// coverage:ignore-start
 Future<void> main() async {
   debugPrint('[inicio] Arrancando Trueque U...');
   WidgetsFlutterBinding.ensureInitialized();
@@ -32,7 +31,6 @@ Future<void> main() async {
   debugPrint('[inicio] Todo listo, se muestra la primera pantalla');
   runApp(AplicacionTruequeU(autenticacion: autenticacion));
 }
-// coverage:ignore-end
 
 class AplicacionTruequeU extends StatefulWidget {
   const AplicacionTruequeU({super.key, required this.autenticacion});
