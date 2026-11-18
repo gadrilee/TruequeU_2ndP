@@ -79,3 +79,16 @@ Future<GoRouter> montarConRuteador(
   await tester.pumpAndSettle();
   return ruteador;
 }
+
+void usarPantallaGrande(WidgetTester tester) {
+  tester.view.physicalSize = const Size(900, 2000);
+  tester.view.devicePixelRatio = 1;
+  addTearDown(tester.view.reset);
+}
+
+GoRoute rutaMarcada(String ruta) {
+  return GoRoute(
+    path: ruta,
+    builder: (context, estado) => Scaffold(body: Text('Destino $ruta')),
+  );
+}
