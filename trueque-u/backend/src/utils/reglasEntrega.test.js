@@ -111,3 +111,35 @@ describe("Regla: responder una propuesta", () => {
     expect(resultado.codigo).toBe(409);
   });
 });
+
+describe("Regla: contraproponer una entrega", () => {
+  const propuesta = { id: 5, id_usuario: 1, estado: "pendiente", fecha: "2030-06-15", hora: "15:00:00", lugar: "Biblioteca" };
+  const base = { oferta: aceptada, pedida, ofrecida, idUsuario: 3, propuesta, ahora };
+
+  test("quien propuso no puede contraproponer su propia propuesta", () => {
+    const resultado = puedeContraproponerEntrega({ ...base, idUsuario: 1, cuerpo });
+    expect(resultado.codigo).toBe(403);
+  });
+
+  test("una contrapropuesta con datos incompletos da 400", () => {
+    const resultado = puedeContraproponerEntrega({ ...base, cuerpo: { fecha: "2030-06-15" } });
+    expect(resultado).toEqual({ permitido: false, codigo: 400, motivo: "Escribe una hora válida" });
+  });
+});
+
+describe("Regla: validar sin fecha de referencia", () => {
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  test("usa la fecha de hoy cuando no se envia ahora", () => {
+    jest.useFakeTimers().setSystemTime(new Date("2030-06-10T12:00:00Z"));
+
+    expect(validarPropuesta(cuerpo).valido).toBe(true);
+    expect(validarPropuesta({ ...cuerpo, fecha: "2030-06-01" }).valido).toBe(false);
+  });
+
+  test("sin cuerpo pide una fecha valida", () => {
+    expect(validarPropuesta(undefined, ahora)).toEqual({ valido: false, motivo: "Escribe una fecha válida" });
+  });
+});
