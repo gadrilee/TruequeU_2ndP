@@ -1,5 +1,3 @@
-// ignore_for_file: avoid_print
-
 import 'dart:io';
 
 void main(List<String> argumentos) {
@@ -33,11 +31,11 @@ void main(List<String> argumentos) {
   }
 
   for (final entrada in incompletos.entries) {
-    print('${entrada.key}: faltan ${entrada.value.length} lineas (${entrada.value.join(', ')})');
+    stdout.writeln('${entrada.key}: faltan ${entrada.value.length} lineas (${entrada.value.join(', ')})');
   }
 
   final porcentaje = totalLineas == 0 ? 100.0 : totalCubiertas * 100 / totalLineas;
-  print('Cobertura total: ${porcentaje.toStringAsFixed(2)}% ($totalCubiertas/$totalLineas lineas)');
+  stdout.writeln('Cobertura total: ${porcentaje.toStringAsFixed(2)}% ($totalCubiertas/$totalLineas lineas)');
 
   if (porcentaje < minimo) {
     stderr.writeln('La cobertura ${porcentaje.toStringAsFixed(2)}% es menor que el minimo $minimo%.');

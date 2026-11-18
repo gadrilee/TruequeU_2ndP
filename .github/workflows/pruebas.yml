@@ -19,7 +19,6 @@ jobs:
           cache: npm
           cache-dependency-path: trueque-u/backend/package-lock.json
       - run: npm ci
-      # Jest fails if coverage drops below 100% (coverageThreshold in package.json).
       - run: npx jest --coverage --ci
 
   app:
@@ -35,9 +34,7 @@ jobs:
           channel: stable
           flutter-version: 3.47.1
           cache: true
-      # The .env asset is declared in pubspec.yaml and is git-ignored.
       - run: cp .env.example .env
       - run: flutter pub get
       - run: flutter test --coverage
-      # Fails if line coverage of lib/ drops below 100%.
       - run: dart run tool/cobertura.dart 100

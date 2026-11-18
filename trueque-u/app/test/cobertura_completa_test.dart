@@ -1,5 +1,3 @@
-// ignore_for_file: unused_import
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:trueque_u/configuracion.dart';
 import 'package:trueque_u/estado/controlador_autenticacion.dart';
