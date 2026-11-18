@@ -115,7 +115,17 @@ void main() {
   test('el JSON tiene exactamente las secciones esperadas', () {
     expect(
       json.keys.toSet(),
-      {'TemaTruequeU', 'ColorScheme', 'Espacios', 'Radios', 'Tipos', 'TextosTruequeU'},
+      {
+        'TemaTruequeU',
+        'ColorScheme',
+        'Espacios',
+        'Radios',
+        'Tipos',
+        'TextosTruequeU',
+        'TextTheme',
+        'TextoDerivado',
+        'Contextos',
+      },
     );
   });
 
