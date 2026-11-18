@@ -1,29 +1,37 @@
 # Sistema de diseño TruequeU
 
-Los valores de diseño (colores, espacios, radios, tamaños y estilos de texto) viven en un solo archivo, `design/figma-plugin/tokens.json`. Un plugin local de Figma lee ese archivo y construye el sistema de diseño en el archivo abierto: variables, estilos de texto, logo, componentes y pantallas.
+Los valores de diseño (colores, espacios, radios, tamaños y estilos de texto) viven en un solo archivo, `design/figma-plugin/tokens.json`, y los íconos en `design/figma-plugin/iconos.json`. Un plugin local de Figma lee esos archivos y construye el sistema de diseño en el archivo abierto: variables, estilos de texto, íconos, logo, componentes y pantallas.
 
 ## Cómo ejecutarlo
 
-1. Generar el código del plugin desde los tokens:
+1. Solo si cambian los `Icons.*` que usa la app, descargar los SVG oficiales (necesita red; el plugin no la tiene):
+
+   ```
+   node design/figma-plugin/iconos.mjs
+   ```
+
+   Lee los `Icons.*` de `trueque-u/app/lib`, descarga cada SVG y escribe `iconos.json` e `iconos-marco.json`. Falla con la lista completa si alguno no existe.
+2. Generar el código del plugin:
 
    ```
    node design/figma-plugin/generar.mjs
    ```
 
-   Esto escribe `design/figma-plugin/code.js` (los tokens van incrustados al inicio) y actualiza la tabla de tokens de este documento.
-2. En Figma Desktop, abrir el archivo de destino y elegir Plugins, Development, Import plugin from manifest, y seleccionar `design/figma-plugin/manifest.json`.
-3. Ejecutar Plugins, Development, TruequeU Sistema de diseño.
+   Esto escribe `design/figma-plugin/code.js` (tokens e íconos van incrustados al inicio) y actualiza las tablas generadas de este documento.
+3. En Figma Desktop, abrir el archivo de destino y elegir Plugins, Development, Import plugin from manifest, y seleccionar `design/figma-plugin/manifest.json`.
+4. Ejecutar Plugins, Development, TruequeU Sistema de diseño.
 
 El plugin es idempotente: al volver a ejecutarlo actualiza por nombre las colecciones, variables y estilos existentes, y recrea todo el contenido de las cuatro páginas (Fundamentos, Componentes, Pantallas, Diálogos). No debe editarse a mano el contenido de esas páginas, porque se reemplaza.
 
-Para comprobar el código del plugin sin Figma, `node design/figma-plugin/prueba.mjs` lo ejecuta contra una simulación mínima de la API. Verifica variables, estilos, conjuntos de componentes, pantallas, diálogos, que cada clase `Pantalla*` de `lib/pantallas` tenga su marco y que ningún relleno quede sin variable, pero no demuestra cómo se ve en Figma real.
+Para comprobar el código del plugin sin Figma, `node design/figma-plugin/prueba.mjs` lo ejecuta contra una simulación mínima de la API. Verifica variables, estilos de texto, conjuntos de componentes, pantallas, diálogos, que cada clase `Pantalla*` de `lib/pantallas` tenga su marco, que los `Icons.*` de `lib` sean exactamente los íconos de `iconos.json` y las variantes de `Icono`, que ningún texto use glifos de símbolo y que ningún relleno quede sin variable, pero no demuestra cómo se ve en Figma real.
 
 ## Regla de nombres
 
 - Dart `Clase.campo` se llama en Figma `Clase/campo`. La barra reemplaza el punto porque Figma no admite puntos en los nombres de variables.
 - Las colecciones de variables son `TemaTruequeU`, `ColorScheme`, `Espacios`, `Radios` y `Tipos`. El nombre de cada variable es el nombre del campo Dart; su descripción guarda el identificador Dart (por ejemplo `TemaTruequeU.azul`).
 - `ColorScheme` contiene los roles del tema; cada uno es un alias a una variable de `TemaTruequeU`.
-- Los estilos de texto se llaman `TextosTruequeU/<campo>` y su tamaño está enlazado a la variable de `Tipos` correspondiente.
+- Los estilos de texto se llaman `TextTheme/<rol>` (los 15 roles de Material 3 resueltos del tema), `TextosTruequeU/<campo>` (el estilo efectivo en Flutter, ver la sección de tipografía) y `TextoDerivado/<nombre>` (estilos que Flutter produce al combinar un rol con un cambio de peso o tamaño). El tamaño se enlaza a la variable de `Tipos` cuando existe una con ese valor; los tamaños que solo existen en Material (57, 45, 36, 32, 28, 24, 22) son constantes del framework y quedan como valor.
+- El ícono `Icons.foo` es la variante `nombre=foo` del componente `Icono`.
 - Cada componente de Figma se llama igual que la clase del widget Flutter, y cada pantalla igual que la clase de la pantalla.
 - Las propiedades de variante usan el vocabulario del código (`Estado`, `Variante`, `Tipo`, `Tono`, etc.) y los valores de estado coinciden con los del widget cuando existen (`disponible`, `reservado`, `intercambiado`...).
 
@@ -97,18 +105,205 @@ Tabla generada desde `tokens.json` por `generar.mjs`; no se edita a mano.
 | `Tipos.t17` | `Tipos/t17` | 17 |
 | `Tipos.t18` | `Tipos/t18` | 18 |
 | `Tipos.t26` | `Tipos/t26` | 26 |
-| `TextosTruequeU.titulo` | Estilo de texto `TextosTruequeU/titulo` | 26 px, peso 700 |
-| `TextosTruequeU.subtitulo` | Estilo de texto `TextosTruequeU/subtitulo` | 18 px, peso 700 |
-| `TextosTruequeU.tituloTarjeta` | Estilo de texto `TextosTruequeU/tituloTarjeta` | 17 px, peso 700 |
-| `TextosTruequeU.tituloItem` | Estilo de texto `TextosTruequeU/tituloItem` | 16 px, peso 700 |
-| `TextosTruequeU.cuerpo` | Estilo de texto `TextosTruequeU/cuerpo` | 14 px, peso 400 |
-| `TextosTruequeU.detalle` | Estilo de texto `TextosTruequeU/detalle` | 13 px, peso 400 |
-| `TextosTruequeU.etiqueta` | Estilo de texto `TextosTruequeU/etiqueta` | 12 px, peso 500 |
-| `TextosTruequeU.ayuda` | Estilo de texto `TextosTruequeU/ayuda` | 12 px, peso 400 |
-| `TextosTruequeU.chip` | Estilo de texto `TextosTruequeU/chip` | 11 px, peso 500 |
-| `TextosTruequeU.chipDestacado` | Estilo de texto `TextosTruequeU/chipDestacado` | 11 px, peso 700 |
-| `TextosTruequeU.pie` | Estilo de texto `TextosTruequeU/pie` | 11 px, peso 400 |
+| `TextosTruequeU.titulo` | Estilo de texto `TextosTruequeU/titulo` | 26 px, altura 1.43 (37.18 px), espaciado 0.25, peso 700 |
+| `TextosTruequeU.subtitulo` | Estilo de texto `TextosTruequeU/subtitulo` | 18 px, altura 1.43 (25.74 px), espaciado 0.25, peso 700 |
+| `TextosTruequeU.tituloTarjeta` | Estilo de texto `TextosTruequeU/tituloTarjeta` | 17 px, altura 1.43 (24.31 px), espaciado 0.25, peso 700 |
+| `TextosTruequeU.tituloItem` | Estilo de texto `TextosTruequeU/tituloItem` | 16 px, altura 1.43 (22.88 px), espaciado 0.25, peso 700 |
+| `TextosTruequeU.cuerpo` | Estilo de texto `TextosTruequeU/cuerpo` | 14 px, altura 1.43 (20.02 px), espaciado 0.25, peso 400 |
+| `TextosTruequeU.detalle` | Estilo de texto `TextosTruequeU/detalle` | 13 px, altura 1.43 (18.59 px), espaciado 0.25, peso 400 |
+| `TextosTruequeU.etiqueta` | Estilo de texto `TextosTruequeU/etiqueta` | 12 px, altura 1.43 (17.16 px), espaciado 0.25, peso 500 |
+| `TextosTruequeU.ayuda` | Estilo de texto `TextosTruequeU/ayuda` | 12 px, altura 1.43 (17.16 px), espaciado 0.25, peso 400 |
+| `TextosTruequeU.chip` | Estilo de texto `TextosTruequeU/chip` | 11 px, altura 1.43 (15.73 px), espaciado 0.25, peso 500 |
+| `TextosTruequeU.chipDestacado` | Estilo de texto `TextosTruequeU/chipDestacado` | 11 px, altura 1.43 (15.73 px), espaciado 0.25, peso 700 |
+| `TextosTruequeU.pie` | Estilo de texto `TextosTruequeU/pie` | 11 px, altura 1.43 (15.73 px), espaciado 0.25, peso 400 |
+| `TextTheme.displayLarge` | Estilo de texto `TextTheme/displayLarge` | 57 px, altura 1.12 (63.84 px), espaciado -0.25, peso 400 |
+| `TextTheme.displayMedium` | Estilo de texto `TextTheme/displayMedium` | 45 px, altura 1.16 (52.2 px), espaciado 0, peso 400 |
+| `TextTheme.displaySmall` | Estilo de texto `TextTheme/displaySmall` | 36 px, altura 1.22 (43.92 px), espaciado 0, peso 400 |
+| `TextTheme.headlineLarge` | Estilo de texto `TextTheme/headlineLarge` | 32 px, altura 1.25 (40 px), espaciado 0, peso 400 |
+| `TextTheme.headlineMedium` | Estilo de texto `TextTheme/headlineMedium` | 28 px, altura 1.29 (36.12 px), espaciado 0, peso 400 |
+| `TextTheme.headlineSmall` | Estilo de texto `TextTheme/headlineSmall` | 24 px, altura 1.33 (31.92 px), espaciado 0, peso 400 |
+| `TextTheme.titleLarge` | Estilo de texto `TextTheme/titleLarge` | 22 px, altura 1.27 (27.94 px), espaciado 0, peso 400 |
+| `TextTheme.titleMedium` | Estilo de texto `TextTheme/titleMedium` | 16 px, altura 1.5 (24 px), espaciado 0.15, peso 500 |
+| `TextTheme.titleSmall` | Estilo de texto `TextTheme/titleSmall` | 14 px, altura 1.43 (20.02 px), espaciado 0.1, peso 500 |
+| `TextTheme.bodyLarge` | Estilo de texto `TextTheme/bodyLarge` | 16 px, altura 1.5 (24 px), espaciado 0.5, peso 400 |
+| `TextTheme.bodyMedium` | Estilo de texto `TextTheme/bodyMedium` | 14 px, altura 1.43 (20.02 px), espaciado 0.25, peso 400 |
+| `TextTheme.bodySmall` | Estilo de texto `TextTheme/bodySmall` | 12 px, altura 1.33 (15.96 px), espaciado 0.4, peso 400 |
+| `TextTheme.labelLarge` | Estilo de texto `TextTheme/labelLarge` | 14 px, altura 1.43 (20.02 px), espaciado 0.1, peso 500 |
+| `TextTheme.labelMedium` | Estilo de texto `TextTheme/labelMedium` | 12 px, altura 1.33 (15.96 px), espaciado 0.5, peso 500 |
+| `TextTheme.labelSmall` | Estilo de texto `TextTheme/labelSmall` | 11 px, altura 1.45 (15.95 px), espaciado 0.5, peso 500 |
 <!-- tokens:fin -->
+
+## Tipografía: contexto Flutter a estilo Figma
+
+La app no define familia: Material 3 usa Roboto. Las alturas y el espaciado de letras no están en `tema.dart`; los pone Flutter.
+
+- `ThemeData.textTheme` sin localizar tiene los tamaños en `null`; los valores reales salen de `Theme.of(context).textTheme` dentro de un `MaterialApp`. Por eso el test los lee de ahí.
+- El cuerpo de cualquier `Scaffold`, `Card` o diálogo hereda `DefaultTextStyle` igual a `bodyMedium` (14 px, altura 1.43, espaciado 0.25). Un `Text(style: TextosTruequeU.x)` se mezcla encima, así que el estilo efectivo de `TextosTruequeU.x` es su tamaño y peso con la altura 1.43 y el espaciado 0.25 de `bodyMedium`.
+- Los widgets de Material no usan el estilo del cuerpo: cada uno aplica el suyo (botones `labelLarge`, campos `bodyLarge`, `AppBar` `titleLarge`, diálogos `headlineSmall`...).
+- La altura de línea en Figma es `tamaño x altura` en píxeles con dos decimales (Flutter multiplica sin redondear a entero). `TextoDerivado/botonTextoNegrita` no tiene altura (`AUTO`) ni espaciado: `TextButton.styleFrom(textStyle: ...)` reemplaza por completo el estilo del botón.
+- El peso 600 de Flutter (`FontWeight.w600`) usa `Roboto SemiBold` en Figma; si la fuente no lo tiene, el plugin cae a `Bold` y lo informa el test.
+- La etiqueta flotante de un campo es la etiqueta de 16 px reducida a 0.75 (`_kFinalLabelScale` de Flutter): 12 px, altura 1, espaciado 0.375.
+
+Estilos derivados (tabla generada desde `tokens.json`):
+
+<!-- derivados:inicio -->
+| Estilo Figma | Valor |
+| --- | --- |
+| `TextoDerivado/campoEtiqueta` | 16 px, altura 1 (16 px), espaciado 0.5, peso 400 |
+| `TextoDerivado/campoEtiquetaFlotante` | 12 px, altura 1 (12 px), espaciado 0.375, peso 400 |
+| `TextoDerivado/headlineMediumNegrita` | 28 px, altura 1.29 (36.12 px), espaciado 0, peso 700 |
+| `TextoDerivado/headlineSmallNegrita` | 24 px, altura 1.33 (31.92 px), espaciado 0, peso 700 |
+| `TextoDerivado/titleLargeNegrita` | 22 px, altura 1.27 (27.94 px), espaciado 0, peso 700 |
+| `TextoDerivado/titleMediumNegrita` | 16 px, altura 1.5 (24 px), espaciado 0.15, peso 700 |
+| `TextoDerivado/bodyMediumNegrita` | 14 px, altura 1.43 (20.02 px), espaciado 0.25, peso 700 |
+| `TextoDerivado/bodyMediumSemibold` | 14 px, altura 1.43 (20.02 px), espaciado 0.25, peso 600 |
+| `TextoDerivado/chipSemibold` | 11 px, altura 1.43 (15.73 px), espaciado 0.25, peso 600 |
+| `TextoDerivado/autorPropio` | 12 px, altura 1.43 (17.16 px), espaciado 0.25, peso 700 |
+| `TextoDerivado/botonTextoNegrita` | 14 px, altura auto, espaciado 0, peso 700 |
+| `TextoDerivado/avatarGrande` | 26 px, altura 1.5 (39 px), espaciado 0.15, peso 700 |
+| `TextoDerivado/avatarChico` | 12 px, altura 1.5 (18 px), espaciado 0.15, peso 500 |
+<!-- derivados:fin -->
+
+Contexto Flutter a estilo Figma (tabla generada; cada fila la verifica `tipografia_figma_test.dart` montando el widget real de Material o de la app):
+
+<!-- contextos:inicio -->
+| Contexto Flutter | Estilo Figma | Valor |
+| --- | --- | --- |
+| `Scaffold.texto` | `TextTheme/bodyMedium` | 14 px, altura 1.43 (20.02 px), espaciado 0.25, peso 400 |
+| `FilledButton` | `TextTheme/labelLarge` | 14 px, altura 1.43 (20.02 px), espaciado 0.1, peso 500 |
+| `FilledButton.tonal` | `TextTheme/labelLarge` | 14 px, altura 1.43 (20.02 px), espaciado 0.1, peso 500 |
+| `OutlinedButton` | `TextTheme/labelLarge` | 14 px, altura 1.43 (20.02 px), espaciado 0.1, peso 500 |
+| `TextButton` | `TextTheme/labelLarge` | 14 px, altura 1.43 (20.02 px), espaciado 0.1, peso 500 |
+| `TextButton.negrita` | `TextoDerivado/botonTextoNegrita` | 14 px, altura auto, espaciado 0, peso 700 |
+| `FloatingActionButton.extended` | `TextTheme/labelLarge` | 14 px, altura 1.43 (20.02 px), espaciado 0.1, peso 500 |
+| `AppBar.titulo` | `TextTheme/titleLarge` | 22 px, altura 1.27 (27.94 px), espaciado 0, peso 400 |
+| `TextField.entrada` | `TextTheme/bodyLarge` | 16 px, altura 1.5 (24 px), espaciado 0.5, peso 400 |
+| `TextField.hint` | `TextTheme/bodyLarge` | 16 px, altura 1.5 (24 px), espaciado 0.5, peso 400 |
+| `TextField.etiqueta` | `TextoDerivado/campoEtiqueta` | 16 px, altura 1 (16 px), espaciado 0.5, peso 400 |
+| `TextField.etiquetaFlotante` | `TextoDerivado/campoEtiquetaFlotante` | 12 px, altura 1 (12 px), espaciado 0.375, peso 400 |
+| `TextField.ayuda` | `TextTheme/bodySmall` | 12 px, altura 1.33 (15.96 px), espaciado 0.4, peso 400 |
+| `TextField.error` | `TextTheme/bodySmall` | 12 px, altura 1.33 (15.96 px), espaciado 0.4, peso 400 |
+| `TextField.contador` | `TextTheme/bodySmall` | 12 px, altura 1.33 (15.96 px), espaciado 0.4, peso 400 |
+| `DropdownButtonFormField.valor` | `TextTheme/titleMedium` | 16 px, altura 1.5 (24 px), espaciado 0.15, peso 500 |
+| `ListTile.titulo` | `TextTheme/bodyLarge` | 16 px, altura 1.5 (24 px), espaciado 0.5, peso 400 |
+| `ListTile.subtitulo` | `TextTheme/bodyMedium` | 14 px, altura 1.43 (20.02 px), espaciado 0.25, peso 400 |
+| `RadioListTile.titulo` | `TextTheme/bodyLarge` | 16 px, altura 1.5 (24 px), espaciado 0.5, peso 400 |
+| `RadioListTile.subtitulo` | `TextTheme/bodyMedium` | 14 px, altura 1.43 (20.02 px), espaciado 0.25, peso 400 |
+| `AlertDialog.titulo` | `TextTheme/headlineSmall` | 24 px, altura 1.33 (31.92 px), espaciado 0, peso 400 |
+| `AlertDialog.contenido` | `TextTheme/bodyMedium` | 14 px, altura 1.43 (20.02 px), espaciado 0.25, peso 400 |
+| `NavigationBar.etiqueta` | `TextTheme/labelMedium` | 12 px, altura 1.33 (15.96 px), espaciado 0.5, peso 500 |
+| `SnackBar` | `TextTheme/bodyMedium` | 14 px, altura 1.43 (20.02 px), espaciado 0.25, peso 400 |
+| `Chip` | `TextTheme/labelLarge` | 14 px, altura 1.43 (20.02 px), espaciado 0.1, peso 500 |
+| `InputChip` | `TextTheme/labelLarge` | 14 px, altura 1.43 (20.02 px), espaciado 0.1, peso 500 |
+| `SegmentedButton` | `TextTheme/labelLarge` | 14 px, altura 1.43 (20.02 px), espaciado 0.1, peso 500 |
+| `CircleAvatar.grande` | `TextoDerivado/avatarGrande` | 26 px, altura 1.5 (39 px), espaciado 0.15, peso 700 |
+| `CircleAvatar.chico` | `TextoDerivado/avatarChico` | 12 px, altura 1.5 (18 px), espaciado 0.15, peso 500 |
+| `EncabezadoAcceso.titulo` | `TextoDerivado/headlineMediumNegrita` | 28 px, altura 1.29 (36.12 px), espaciado 0, peso 700 |
+| `EncabezadoAcceso.subtitulo` | `TextTheme/bodyLarge` | 16 px, altura 1.5 (24 px), espaciado 0.5, peso 400 |
+| `Text.negrita` | `TextoDerivado/bodyMediumNegrita` | 14 px, altura 1.43 (20.02 px), espaciado 0.25, peso 700 |
+| `Text.semibold` | `TextoDerivado/bodyMediumSemibold` | 14 px, altura 1.43 (20.02 px), espaciado 0.25, peso 600 |
+| `Text.chipSemibold` | `TextoDerivado/chipSemibold` | 11 px, altura 1.43 (15.73 px), espaciado 0.25, peso 600 |
+| `Text.autorPropio` | `TextoDerivado/autorPropio` | 12 px, altura 1.43 (17.16 px), espaciado 0.25, peso 700 |
+| `Text.headlineSmallNegrita` | `TextoDerivado/headlineSmallNegrita` | 24 px, altura 1.33 (31.92 px), espaciado 0, peso 700 |
+| `Text.titleLargeNegrita` | `TextoDerivado/titleLargeNegrita` | 22 px, altura 1.27 (27.94 px), espaciado 0, peso 700 |
+| `Text.titleMediumNegrita` | `TextoDerivado/titleMediumNegrita` | 16 px, altura 1.5 (24 px), espaciado 0.15, peso 700 |
+<!-- contextos:fin -->
+
+Cómo se aplicó en los componentes: texto de botón (`BotonCarga`, `FloatingActionButton`, `SegmentedButton`, chips) usa `TextTheme/labelLarge`; texto de `CampoTexto` usa `TextTheme/bodyLarge` (valor), `TextoDerivado/campoEtiqueta` (etiqueta sin valor) y `TextTheme/bodySmall` (ayuda y error); `AppBar` usa `TextTheme/titleLarge`; los diálogos usan `TextTheme/headlineSmall` para el título; las etiquetas de `EstructuraPrincipal` usan `TextTheme/labelMedium`; las filas de lista usan `TextTheme/bodyLarge` y `TextTheme/bodyMedium`; el texto suelto de las pantallas usa `TextTheme/bodyMedium` o el derivado correspondiente (`TextoPantalla`: subtitulo es `headlineSmallNegrita`, negrita es `bodyMediumNegrita`, ayuda es `bodySmall`, enlace es `labelLarge`); y los widgets de la app con `TextosTruequeU.x` (tarjetas, chips, etiquetas) usan `TextosTruequeU/x`.
+
+## Íconos
+
+Todos los íconos son los de Material Icons, no glifos de texto. Fuente: paquete npm `@material-design-icons/svg` versión 0.14.15 (Google, licencia Apache 2.0), descargado de jsDelivr por `iconos.mjs`. La regla de nombres es: `foo_outlined` es el estilo Outlined de `foo`; un nombre sin sufijo es el estilo Filled (el de la fuente `MaterialIcons` de Flutter). Cuatro nombres antiguos de Flutter (`info_outline`, `lock_outline`, `label_outline`, `bookmark_outline`) no existen en el paquete y se toman del Outlined del mismo ícono.
+
+Se comparó el recuadro de cada SVG con el glifo de la fuente `MaterialIcons-Regular.otf` que trae Flutter 3.47.1: 51 de 52 coinciden dentro de 0.1 unidades; `handshake_outlined` difiere 0.39 unidades de 24 porque la fuente de Flutter tiene un rediseño más nuevo que el paquete.
+
+El componente `Icono` tiene una variante por ícono (`nombre=<identificador Flutter>`), de 24 x 24, con un solo vector aplanado de `figma.createNodeFromSvg` cuyo relleno es `ColorScheme/onSurfaceVariant` por defecto. Cada instancia se escala al tamaño que usa el código Flutter (14, 16, 18, 20, 24, 28, 36 o 64) y cambia el relleno a la variable que usa Flutter. Los íconos que Material dibuja por dentro de un widget (`Icons.arrow_drop_down` del selector, `Icons.check` del `SegmentedButton`) no aparecen en `lib`; viven en `IconoMarco` y en `iconos-marco.json`.
+
+Íconos que usa la app (tabla generada desde `iconos.json`):
+
+<!-- iconos:inicio -->
+| Identificador Flutter | Material Icons |
+| --- | --- |
+| `Icons.add` | Filled `add` |
+| `Icons.arrow_back` | Filled `arrow_back` |
+| `Icons.arrow_forward` | Filled `arrow_forward` |
+| `Icons.block_outlined` | Outlined `block` |
+| `Icons.bookmark_add_outlined` | Outlined `bookmark_add` |
+| `Icons.bookmark_outline` | Outlined `bookmark` (nombre antiguo de Flutter, mismo dibujo) |
+| `Icons.broken_image_outlined` | Outlined `broken_image` |
+| `Icons.cancel_outlined` | Outlined `cancel` |
+| `Icons.category_outlined` | Outlined `category` |
+| `Icons.chat_outlined` | Outlined `chat` |
+| `Icons.check_circle_outline` | Filled `check_circle_outline` |
+| `Icons.chevron_right` | Filled `chevron_right` |
+| `Icons.close` | Filled `close` |
+| `Icons.delete_outline` | Filled `delete_outline` |
+| `Icons.download` | Filled `download` |
+| `Icons.edit_outlined` | Outlined `edit` |
+| `Icons.explore` | Filled `explore` |
+| `Icons.explore_outlined` | Outlined `explore` |
+| `Icons.feed_outlined` | Outlined `feed` |
+| `Icons.folder_shared_outlined` | Outlined `folder_shared` |
+| `Icons.handshake_outlined` | Outlined `handshake` |
+| `Icons.help_outline` | Filled `help_outline` |
+| `Icons.history` | Filled `history` |
+| `Icons.image_outlined` | Outlined `image` |
+| `Icons.inbox_outlined` | Outlined `inbox` |
+| `Icons.info_outline` | Outlined `info` (nombre antiguo de Flutter, mismo dibujo) |
+| `Icons.inventory_2` | Filled `inventory_2` |
+| `Icons.inventory_2_outlined` | Outlined `inventory_2` |
+| `Icons.key_outlined` | Outlined `key` |
+| `Icons.label_outline` | Outlined `label` (nombre antiguo de Flutter, mismo dibujo) |
+| `Icons.lock_outline` | Outlined `lock` (nombre antiguo de Flutter, mismo dibujo) |
+| `Icons.logout` | Filled `logout` |
+| `Icons.mail_outline` | Filled `mail_outline` |
+| `Icons.more_vert` | Filled `more_vert` |
+| `Icons.notifications_active` | Filled `notifications_active` |
+| `Icons.notifications_none` | Filled `notifications_none` |
+| `Icons.outbox_outlined` | Outlined `outbox` |
+| `Icons.person` | Filled `person` |
+| `Icons.person_outline` | Filled `person_outline` |
+| `Icons.person_pin_outlined` | Outlined `person_pin` |
+| `Icons.phone_outlined` | Outlined `phone` |
+| `Icons.refresh` | Filled `refresh` |
+| `Icons.search` | Filled `search` |
+| `Icons.search_off` | Filled `search_off` |
+| `Icons.star` | Filled `star` |
+| `Icons.star_border` | Filled `star_border` |
+| `Icons.swap_horiz` | Filled `swap_horiz` |
+| `Icons.tune` | Filled `tune` |
+| `Icons.undo` | Filled `undo` |
+| `Icons.visibility_off_outlined` | Outlined `visibility_off` |
+| `Icons.visibility_outlined` | Outlined `visibility` |
+| `Icons.vpn_key` | Filled `vpn_key` |
+<!-- iconos:fin -->
+
+Íconos internos de Material:
+
+<!-- iconos-marco:inicio -->
+| Ícono interno de Material | Material Icons |
+| --- | --- |
+| `Icons.arrow_drop_down` | Filled `arrow_drop_down` |
+| `Icons.check` | Filled `check` |
+<!-- iconos-marco:fin -->
+
+Color y tamaño por contexto, tomados del código de Flutter y de los valores por defecto de Material 3:
+
+| Contexto | Color | Tamaño |
+| --- | --- | --- |
+| `NavigationBar` seleccionado / no seleccionado | `onSecondaryContainer` / `onSurfaceVariant` | 24 |
+| `IconButton` (`help_outline`, `refresh`, `arrow_forward`, `more_vert`) | `onSurfaceVariant` | 24 (20 en `TarjetaMiPublicacion`) |
+| Ícono de `AppBar` (volver, actualizar) | `TemaTruequeU/azulOscuro` (`foregroundColor`) | 24 |
+| `prefixIcon` y `suffixIcon` de `CampoTexto` | `onSurfaceVariant` (`error` en el sufijo con error; `onSurface` con opacidad 0.38 si está deshabilitado) | 24 |
+| Ícono dentro de botón (`FilledButton.icon`, `OutlinedButton.icon`) | color del texto del botón | 18 (16 donde el código lo indica) |
+| Avatar de `Chip` (`tune`, `check_circle_outline`) | `primary` | 16 |
+| Borrar de `InputChip` (`close`) | `onSurfaceVariant` | 18 |
+| `Estrellas`, `ResumenCalificaciones` | `secondary` | 24 |
+| Logo (`swap_horiz`) | `TemaTruequeU/rojo` | 36 |
+| `Etiqueta` | color del texto de la etiqueta | 14 |
+| `MensajeVacio` | `outline` | 64 |
+
+Diferencias con Flutter que no se pueden enlazar a un token: el ícono sin color explícito (`history`, `chevron_right` fuera de un `ListTile`, `broken_image_outlined`, el ícono de `TarjetaHistorial`) usa `IconTheme` negro al 87 % (`Color(0xDD000000)`) y la flecha del selector usa `Colors.grey.shade700`; ninguno es token, así que en Figma se enlazan a `ColorScheme/onSurface` y `ColorScheme/onSurfaceVariant`, que son los más cercanos.
 
 ## Componente Figma, archivo Flutter y variantes
 
@@ -116,8 +311,10 @@ Los archivos están en `trueque-u/app/lib/widgets/` salvo los marcados como Mate
 
 | Componente Figma | Archivo Flutter | Variantes y estados |
 | --- | --- | --- |
+| `Icono` | `Icons.*` de Material (ver la sección de íconos) | nombre: los 52 identificadores de `Icons.*` que usa `lib` |
+| `IconoMarco` | íconos que Material dibuja por dentro de un widget | nombre: `arrow_drop_down`, `check` |
 | `LogoTruequeU` | `logo_trueque_u.dart` | Variante: icono, conNombre |
-| `BotonCarga` | `boton_carga.dart` | Estado: default, hover, presionado, cargando, deshabilitado. Variante: primario, rojo, tonal, contorno, contornoRojo (contorno con color de error), texto (TextButton) |
+| `BotonCarga` | `boton_carga.dart` | Estado: default, hover, presionado, cargando, deshabilitado. Variante: primario, rojo, tonal, contorno, contornoRojo (contorno con color de error), texto (TextButton). Icono: no, si (ícono de 18 px antes del texto, como `FilledButton.icon`) |
 | `CampoTexto` | `campo_texto.dart` | Estado: vacio, enfocado, relleno, error, deshabilitado. Tipo: texto, contrasena, multilinea. Icono: no, si |
 | `BannerError` | `banner_error.dart` | Estado: default |
 | `ChipEstado` | `chip_estado.dart` | Estado: disponible, reservado, reservadoPorTi, intercambiado, acordado, noDisponible |
@@ -169,10 +366,10 @@ Los componentes con texto editable exponen una propiedad de texto (`texto`, `men
 
 Limitaciones conocidas:
 
-- Los íconos son glifos de texto como marcador de posición (solo el logo dibuja un vector); usan colores del sistema pero no son los íconos de Material.
+- Las dos tablas de colores por contexto de íconos y las diferencias con tokens están en la sección de íconos; los botones de las tarjetas y las pantallas llevan ícono donde el código Flutter lo lleva (`FilledButton.icon`, `OutlinedButton.icon`, `TextButton.icon`).
 - `EncabezadoAcceso` intenta un degradado de `azulOscuro` a `azul` con las paradas enlazadas a variables. Si la API de Figma no conserva ese enlace, el plugin usa un relleno sólido `ColorScheme/onPrimaryContainer` para no dejar colores fijos.
 - Estados como hover y presionado no existen en Flutter como widgets; se modelan con opacidad sobre el color del token.
-- Los textos de botones usan el estilo `TextosTruequeU/cuerpo`; Flutter usa el estilo de botón por defecto de Material (14 px, peso 500).
+- La estructura de `CampoTexto` muestra la etiqueta o el valor, no la etiqueta flotante encima del valor que dibuja Flutter; los estilos de cada texto sí son los de Flutter. El campo `DropdownButtonFormField` sí muestra la etiqueta flotante.
 - Los estados `BannerError` y `ErrorConReintento` tienen una sola variante porque no tienen estados propios en el código.
 
 ## Pantalla Figma y archivo Flutter
@@ -248,7 +445,7 @@ Cómo se verifica que no falte ninguna pantalla: `prueba.mjs` lee `trueque-u/app
 
 Limitaciones de las pantallas:
 
-- Los textos de varios estilos de Material sin token equivalente (por ejemplo el título de `ListTile` de 16 px regular, el título de `AppBar` de 22 px o `headlineSmall`) se aproximan con el estilo `TextosTruequeU` más cercano.
+- Los textos de los widgets de Material usan el estilo que Flutter aplica en ese contexto (ver la sección de tipografía), no una aproximación.
 - Las sombras y la elevación de `Card`, `SnackBar`, diálogos y botón flotante no se dibujan (no son variables de color).
 - El teclado, el desplazamiento y las animaciones no existen en Figma: el contenido largo se recorta al alto de la pantalla.
 - Los diálogos se muestran con ancho fijo de 310 y sus botones de acción se reparten el ancho, mientras que Flutter los alinea a la derecha.
@@ -257,10 +454,18 @@ Limitaciones de las pantallas:
 
 `trueque-u/app/test/tokens_figma_test.dart` lee `design/figma-plugin/tokens.json` y lo compara con el código Dart:
 
-- Las secciones del JSON son exactamente `TemaTruequeU`, `ColorScheme`, `Espacios`, `Radios`, `Tipos` y `TextosTruequeU`.
+- Las secciones del JSON son exactamente `TemaTruequeU`, `ColorScheme`, `Espacios`, `Radios`, `Tipos`, `TextosTruequeU`, `TextTheme`, `TextoDerivado` y `Contextos`.
 - Cada color de `TemaTruequeU` existe en el código con el mismo nombre y el mismo hex, y no sobran ni faltan claves.
 - Cada rol de `ColorScheme` apunta a un color del tema y el rol del tema Flutter resuelve a ese mismo color.
 - Espacios, radios y tamaños de texto coinciden en nombre y valor.
 - Cada estilo de `TextosTruequeU` coincide en tamaño (vía su alias a `Tipos`) y peso.
 
-Como el plugin construye las variables solo desde `tokens.json`, renombrar o cambiar un token en Dart sin actualizar el JSON rompe el test, y cambiarlo en el JSON sin tocar el código también. Flujo para cambiar un token: editar `tema.dart` y `tokens.json`, correr `flutter test test/tokens_figma_test.dart`, ejecutar `node design/figma-plugin/generar.mjs` y volver a correr el plugin en Figma.
+`trueque-u/app/test/tipografia_figma_test.dart` compara la tipografía con lo que resuelve Flutter, sin números escritos de memoria:
+
+- `TextTheme`: los 15 roles de `Theme.of(context).textTheme` (tamaño, altura, espaciado, peso y familia Roboto) coinciden con el JSON, sin claves de más ni de menos.
+- `TextosTruequeU`: el `DefaultTextStyle` del cuerpo de un `Scaffold` mezclado con cada estilo da tamaño, altura, espaciado y peso del JSON.
+- `Contextos` y `TextoDerivado`: para cada contexto monta el widget real (botones, campos, `AppBar`, `ListTile`, `AlertDialog`, `NavigationBar`, `SnackBar`, chips, `SegmentedButton`, `CircleAvatar`, `EncabezadoAcceso`...), lee el estilo del `Text` o del `EditableText` y lo compara con el estilo al que apunta el JSON. Falla si falta o sobra un contexto, si una referencia no existe o si un estilo derivado no lo usa ningún contexto.
+
+`prueba.mjs` además exige que cada estilo derivado se use en algún nodo de texto, que ningún texto tenga glifos de símbolo y que `Icons.*` de `lib`, `iconos.json` y las variantes de `Icono` sean el mismo conjunto.
+
+Como el plugin construye las variables solo desde `tokens.json`, renombrar o cambiar un token en Dart sin actualizar el JSON rompe el test, y cambiarlo en el JSON sin tocar el código también. Flujo para cambiar un token: editar `tema.dart` y `tokens.json`, correr `flutter test test/tokens_figma_test.dart test/tipografia_figma_test.dart`, ejecutar `node design/figma-plugin/generar.mjs` y volver a correr el plugin en Figma.

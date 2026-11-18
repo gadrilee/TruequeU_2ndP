@@ -1,5 +1,6 @@
 const FUENTE = 'Roboto';
-const PESOS = { 400: 'Regular', 500: 'Medium', 700: 'Bold' };
+const PESOS = { 400: 'Regular', 500: 'Medium', 600: 'SemiBold', 700: 'Bold' };
+const COLECCIONES_TEXTO = ['TextTheme', 'TextosTruequeU', 'TextoDerivado'];
 const ALCANCES = {
   TemaTruequeU: ['ALL_FILLS', 'STROKE_COLOR'],
   ColorScheme: ['ALL_FILLS', 'STROKE_COLOR'],
@@ -77,25 +78,56 @@ async function prepararVariables() {
   }
 }
 
+function definicionTexto(ruta) {
+  const partes = ruta.split('/');
+  const def = COLECCIONES_TEXTO.indexOf(partes[0]) === -1 ? undefined : TOKENS[partes[0]][partes[1]];
+  if (!def) throw new Error('Estilo inexistente: ' + ruta);
+  return def;
+}
+
+function tamanoTexto(def) {
+  return typeof def.fontSize === 'string' ? numero(def.fontSize) : def.fontSize;
+}
+
+function variableTamano(def) {
+  if (typeof def.fontSize === 'string') return variable(def.fontSize);
+  return vars['Tipos/t' + def.fontSize] || null;
+}
+
+function alturaLinea(def) {
+  if (def.height === null) return { unit: 'AUTO' };
+  return { unit: 'PIXELS', value: Math.round(tamanoTexto(def) * def.height * 100) / 100 };
+}
+
 async function prepararEstilos() {
   const existentes = await figma.getLocalTextStylesAsync();
-  for (const campo of Object.keys(TOKENS.TextosTruequeU)) {
-    const def = TOKENS.TextosTruequeU[campo];
-    const nombre = 'TextosTruequeU/' + campo;
-    let estilo = existentes.find(s => s.name === nombre);
-    if (!estilo) estilo = figma.createTextStyle();
-    estilo.name = nombre;
-    estilo.fontName = { family: FUENTE, style: PESOS[def.fontWeight] };
-    estilo.fontSize = numero(def.fontSize);
-    estilo.setBoundVariable('fontSize', variable(def.fontSize));
-    estilo.description = 'TextosTruequeU.' + campo;
-    estilos[campo] = estilo;
+  for (const coleccion of COLECCIONES_TEXTO) {
+    for (const campo of Object.keys(TOKENS[coleccion])) {
+      const def = TOKENS[coleccion][campo];
+      const nombre = coleccion + '/' + campo;
+      let estilo = existentes.find(s => s.name === nombre);
+      if (!estilo) estilo = figma.createTextStyle();
+      estilo.name = nombre;
+      estilo.fontName = { family: FUENTE, style: PESOS[def.fontWeight] };
+      estilo.fontSize = tamanoTexto(def);
+      const enlace = variableTamano(def);
+      if (enlace) estilo.setBoundVariable('fontSize', enlace);
+      estilo.lineHeight = alturaLinea(def);
+      estilo.letterSpacing = { unit: 'PIXELS', value: def.letterSpacing || 0 };
+      estilo.description = coleccion + '.' + campo;
+      estilos[nombre] = estilo;
+    }
   }
 }
 
 async function cargarFuentes() {
-  for (const estilo of Object.values(PESOS)) {
-    await figma.loadFontAsync({ family: FUENTE, style: estilo });
+  for (const peso of Object.keys(PESOS)) {
+    try {
+      await figma.loadFontAsync({ family: FUENTE, style: PESOS[peso] });
+    } catch (error) {
+      if (peso !== '600') throw error;
+      PESOS[600] = 'Bold';
+    }
   }
 }
 
@@ -180,34 +212,20 @@ function agregar(padre, hijo, o) {
   return hijo;
 }
 
+function rutaEstilo(estilo) {
+  return estilo.indexOf('/') === -1 ? 'TextosTruequeU/' + estilo : estilo;
+}
+
 async function texto(contenido, estilo, color, nombre, opacidad) {
   const t = figma.createText();
-  const def = TOKENS.TextosTruequeU[estilo];
+  const ruta = rutaEstilo(estilo);
+  const def = definicionTexto(ruta);
   t.fontName = { family: FUENTE, style: PESOS[def.fontWeight] };
   t.characters = contenido;
   t.name = nombre || 'texto';
-  await t.setTextStyleIdAsync(estilos[estilo].id);
+  await t.setTextStyleIdAsync(estilos[ruta].id);
   t.fills = [pintura(color, opacidad)];
   return t;
-}
-
-async function glifo(caracter, color, estilo, opacidad) {
-  return texto(caracter, estilo || 'tituloItem', color, 'icono', opacidad);
-}
-
-function icono() {
-  const v = figma.createVector();
-  v.name = 'swap';
-  v.vectorPaths = [{
-    windingRule: 'NONE',
-    data: 'M 0 8 L 32 8 M 24 0 L 32 8 L 24 16 M 32 28 L 0 28 M 8 20 L 0 28 L 8 36',
-  }];
-  v.fills = [];
-  v.strokes = [pintura('TemaTruequeU/rojo')];
-  v.strokeWeight = 4;
-  v.strokeCap = 'ROUND';
-  v.strokeJoin = 'ROUND';
-  return v;
 }
 
 function combinaciones(props) {
@@ -247,6 +265,47 @@ function cambiarTexto(inst, valor, nombre) {
   return inst;
 }
 
+function pintarIcono(inst, color, opacidad) {
+  inst.findOne(n => n.type === 'VECTOR').fills = [pintura(color, opacidad)];
+}
+
+function icono(nombre, color, tam, opacidad, conjunto) {
+  const inst = instancia(conjunto || 'Icono', { nombre: nombre });
+  inst.name = 'icono';
+  if (tam && tam !== 24) inst.resize(tam, tam);
+  pintarIcono(inst, color, opacidad);
+  return inst;
+}
+
+function cambiarIcono(inst, nombre, tam) {
+  const interno = inst.findOne(n => n.type === 'INSTANCE' && n.name === 'icono');
+  if (!interno) throw new Error('La instancia no tiene icono');
+  const anterior = interno.findOne(n => n.type === 'VECTOR').fills;
+  interno.setProperties({ nombre: nombre });
+  interno.findOne(n => n.type === 'VECTOR').fills = anterior;
+  if (tam) interno.resize(tam, tam);
+  return inst;
+}
+
+function iconoBase(fuente) {
+  return async function (c) {
+    const raiz = marco({ nombre: 'raiz', componente: true, dir: 'H', ancho: 24, alto: 24 });
+    const svg = figma.createNodeFromSvg(fuente[c.nombre]);
+    const vector = figma.flatten(svg.children, svg);
+    const x = vector.x;
+    const y = vector.y;
+    raiz.appendChild(vector);
+    vector.layoutPositioning = 'ABSOLUTE';
+    vector.x = x;
+    vector.y = y;
+    vector.constraints = { horizontal: 'SCALE', vertical: 'SCALE' };
+    vector.name = 'glifo';
+    vector.fills = [pintura('ColorScheme/onSurfaceVariant')];
+    svg.remove();
+    return raiz;
+  };
+}
+
 function disponer(comps, columnas) {
   const ancho = Math.max.apply(null, comps.map(c => c.width)) + 24;
   const alto = Math.max.apply(null, comps.map(c => c.height)) + 24;
@@ -256,9 +315,9 @@ function disponer(comps, columnas) {
   });
 }
 
-async function mini(contenido, fondo, color) {
+async function mini(contenido, fondo, color, estilo) {
   const f = marco({ nombre: 'mini', dir: 'H', pad: ['e4', 'e8'], radio: 'r8', fondo: fondo, cruz: 'CENTER' });
-  f.appendChild(await texto(contenido, 'chip', color, 'texto'));
+  f.appendChild(await texto(contenido, estilo || 'chip', color, 'texto'));
   return f;
 }
 
@@ -268,7 +327,7 @@ async function logo(c) {
     nombre: conNombre ? 'caja' : 'raiz', componente: !conNombre, dir: 'H', ancho: 64, alto: 64, radio: 'r20',
     fondo: 'TemaTruequeU/blanco', alinea: 'CENTER', cruz: 'CENTER',
   });
-  caja.appendChild(icono());
+  caja.appendChild(icono('swap_horiz', 'TemaTruequeU/rojo', 36));
   if (!conNombre) return caja;
   const fila = marco({ nombre: 'raiz', componente: true, dir: 'H', gap: 'e12', cruz: 'CENTER' });
   fila.appendChild(caja);
@@ -313,7 +372,7 @@ async function botonCarga(c) {
   }
   const f = marco({
     nombre: 'raiz', componente: true, dir: 'H', ancho: 280, alto: sinFondo ? 48 : 52, pad: [null, 'e16'],
-    radio: 'r28', fondo: fondo, opacidad: opacidad, borde: borde, opacidadBorde: opacidadBorde,
+    gap: c.Icono === 'si' ? 'e8' : null, radio: 'r28', fondo: fondo, opacidad: opacidad, borde: borde, opacidadBorde: opacidadBorde,
     alinea: 'CENTER', cruz: 'CENTER',
   });
   if (c.Estado === 'cargando') {
@@ -326,7 +385,8 @@ async function botonCarga(c) {
     giro.arcData = { startingAngle: 0, endingAngle: Math.PI * 1.5, innerRadius: 0 };
     f.appendChild(giro);
   } else {
-    f.appendChild(await texto('Continuar', 'cuerpo', color, 'texto', opacidadTexto));
+    if (c.Icono === 'si') f.appendChild(icono('add', color, 18, opacidadTexto));
+    f.appendChild(await texto('Continuar', 'TextTheme/labelLarge', color, 'texto', opacidadTexto));
   }
   return f;
 }
@@ -348,17 +408,29 @@ async function campoTexto(c) {
   let contenido = vacio ? 'Correo' : 'ana@universidad.edu';
   if (c.Tipo === 'contrasena') contenido = vacio ? 'Contraseña' : '••••••••';
   if (multilinea) contenido = vacio ? 'Descripción (opcional)' : 'Casi nueva, incluye funda y manual.';
-  if (c.Icono === 'si') caja.appendChild(await glifo('✉', 'ColorScheme/outline', 'cuerpo'));
-  const t = await texto(contenido, 'cuerpo', vacio ? 'ColorScheme/onSurfaceVariant' : 'ColorScheme/onSurface', 'texto', apagado ? 0.38 : undefined);
+  const colorIcono = apagado ? 'ColorScheme/onSurface' : 'ColorScheme/onSurfaceVariant';
+  if (c.Icono === 'si') caja.appendChild(icono('mail_outline', colorIcono, 24, apagado ? 0.38 : undefined));
+  const t = await texto(
+    contenido,
+    vacio ? 'TextoDerivado/campoEtiqueta' : 'TextTheme/bodyLarge',
+    vacio ? 'ColorScheme/onSurfaceVariant' : 'ColorScheme/onSurface',
+    'texto',
+    apagado ? 0.38 : undefined,
+  );
   agregar(caja, t, { ancho: true });
-  if (c.Tipo === 'contrasena') caja.appendChild(await texto('◉', 'cuerpo', 'ColorScheme/outline', 'ver'));
-  if (error) agregar(raiz, await texto('Revisa este campo', 'ayuda', 'ColorScheme/error', 'ayuda'), { ancho: true });
+  if (c.Tipo === 'contrasena') {
+    const colorVer = error ? 'ColorScheme/error' : colorIcono;
+    const ver = icono('visibility_outlined', colorVer, 24, apagado ? 0.38 : undefined);
+    ver.name = 'ver';
+    caja.appendChild(ver);
+  }
+  if (error) agregar(raiz, await texto('Revisa este campo', 'TextTheme/bodySmall', 'ColorScheme/error', 'ayuda'), { ancho: true });
   return raiz;
 }
 
 async function bannerError() {
   const f = marco({ nombre: 'raiz', componente: true, dir: 'H', ancho: 320, pad: 'e12', radio: 'r8', fondo: 'ColorScheme/errorContainer' });
-  agregar(f, await texto('No pudimos conectar con el servidor', 'cuerpo', 'ColorScheme/onErrorContainer', 'mensaje'), { ancho: true });
+  agregar(f, await texto('No pudimos conectar con el servidor', 'TextTheme/bodyMedium', 'ColorScheme/onErrorContainer', 'mensaje'), { ancho: true });
   return f;
 }
 
@@ -384,10 +456,12 @@ const TONOS = {
   terciario: ['ColorScheme/tertiaryContainer', 'ColorScheme/onTertiaryContainer'],
 };
 
+const ICONOS_ETIQUETA = { primario: 'label_outline', secundario: 'person_pin_outlined', terciario: 'chat_outlined' };
+
 async function etiqueta(c) {
   const d = TONOS[c.Tono];
   const f = marco({ nombre: 'raiz', componente: true, dir: 'H', pad: ['e4', 'e10'], gap: 'e4', radio: 'r16', fondo: d[0], cruz: 'CENTER' });
-  f.appendChild(await glifo('◆', d[1], 'chip'));
+  f.appendChild(icono(ICONOS_ETIQUETA[c.Tono], d[1], 14));
   f.appendChild(await texto('Libros', 'etiqueta', d[1], 'texto'));
   return f;
 }
@@ -396,7 +470,7 @@ async function estrellas(c) {
   const interactivo = c.Modo === 'interactivo';
   const f = marco({ nombre: 'raiz', componente: true, dir: 'H', pad: interactivo ? null : 'e4', gap: interactivo ? 'e2' : null, cruz: 'CENTER' });
   for (let i = 1; i <= 5; i++) {
-    const g = await glifo(i <= Number(c.Puntaje) ? '★' : '☆', 'ColorScheme/secondary', 'subtitulo');
+    const g = icono(i <= Number(c.Puntaje) ? 'star' : 'star_border', 'ColorScheme/secondary', 24);
     if (interactivo) {
       const boton = marco({ nombre: 'estrella-' + i, dir: 'H', ancho: 40, alto: 40, radio: 'r20', alinea: 'CENTER', cruz: 'CENTER' });
       boton.appendChild(g);
@@ -418,19 +492,19 @@ async function fotoPublicacion(c) {
     nombre: 'raiz', componente: true, dir: 'H', ancho: c.Forma === 'cuadrada' ? 140 : 280, alto: 140,
     radio: 'r12', fondo: fondos[c.Estado], alinea: 'CENTER', cruz: 'CENTER', recorta: true,
   });
-  if (c.Estado === 'vacia') f.appendChild(await glifo('▣', 'ColorScheme/outline', 'titulo'));
-  if (c.Estado === 'imagen') f.appendChild(await texto('Foto', 'cuerpo', 'ColorScheme/onPrimaryContainer', 'foto'));
-  if (c.Estado === 'error') f.appendChild(await glifo('⚠', 'ColorScheme/outline', 'titulo'));
+  if (c.Estado === 'vacia') f.appendChild(icono('image_outlined', 'ColorScheme/outline', 24));
+  if (c.Estado === 'imagen') f.appendChild(await texto('Foto', 'TextTheme/bodyMedium', 'ColorScheme/onPrimaryContainer', 'foto'));
+  if (c.Estado === 'error') f.appendChild(icono('broken_image_outlined', 'ColorScheme/onSurface', 24));
   return f;
 }
 
 async function mensajeVacio(c) {
   const f = marco({ nombre: 'raiz', componente: true, dir: 'V', ancho: 320, pad: 'e32', gap: 'e16', cruz: 'CENTER' });
-  f.appendChild(await glifo('▣', 'ColorScheme/outline', 'titulo'));
+  f.appendChild(icono('feed_outlined', 'ColorScheme/outline', 64));
   const titulo = await texto('Aún no hay publicaciones', 'subtitulo', 'ColorScheme/onSurface', 'titulo');
   titulo.textAlignHorizontal = 'CENTER';
   agregar(f, titulo, { ancho: true });
-  const mensaje = await texto('Publica un objeto para empezar a intercambiar', 'cuerpo', 'ColorScheme/onSurface', 'mensaje');
+  const mensaje = await texto('Publica un objeto para empezar a intercambiar', 'TextTheme/bodyMedium', 'ColorScheme/onSurface', 'mensaje');
   mensaje.textAlignHorizontal = 'CENTER';
   agregar(f, mensaje, { ancho: true });
   if (c.ConBoton === 'si') {
@@ -452,9 +526,9 @@ async function filtrosFeed(c) {
     nombre: 'buscador', dir: 'H', alto: 48, pad: [null, 'e12'], gap: 'e8', radio: 'r28',
     fondo: 'TemaTruequeU/blanco', borde: 'ColorScheme/outlineVariant', cruz: 'CENTER',
   });
-  buscador.appendChild(await glifo('⌕', 'ColorScheme/outline', 'tituloItem'));
-  agregar(buscador, await texto('Buscar objetos', 'cuerpo', 'ColorScheme/outline', 'busqueda'), { ancho: true });
-  buscador.appendChild(await glifo('→', 'ColorScheme/onSurfaceVariant', 'tituloItem'));
+  buscador.appendChild(icono('search', 'ColorScheme/onSurfaceVariant', 24));
+  agregar(buscador, await texto('Buscar objetos', 'TextTheme/bodyLarge', 'ColorScheme/onSurfaceVariant', 'busqueda'), { ancho: true });
+  buscador.appendChild(icono('arrow_forward', 'ColorScheme/onSurfaceVariant', 24));
   agregar(f, buscador, { ancho: true });
 
   const menus = marco({ nombre: 'menus', dir: 'H', gap: 'e8' });
@@ -463,8 +537,8 @@ async function filtrosFeed(c) {
       nombre: nombre, dir: 'H', pad: ['e4', 'e12'], gap: 'e4', radio: 'r28',
       fondo: 'TemaTruequeU/blanco', borde: 'ColorScheme/outlineVariant', cruz: 'CENTER',
     });
-    chip.appendChild(await glifo('≡', 'ColorScheme/onSurface', 'chip'));
-    chip.appendChild(await texto(nombre, 'etiqueta', 'ColorScheme/onSurface', 'texto'));
+    chip.appendChild(icono('tune', 'ColorScheme/primary', 16));
+    chip.appendChild(await texto(nombre, 'TextTheme/labelLarge', 'ColorScheme/onSurfaceVariant', 'texto'));
     menus.appendChild(chip);
   }
   agregar(f, menus);
@@ -476,11 +550,11 @@ async function filtrosFeed(c) {
         nombre: contenido, dir: 'H', pad: ['e4', 'e8'], gap: 'e4', radio: 'r8',
         fondo: 'ColorScheme/surfaceContainerHighest', cruz: 'CENTER',
       });
-      chip.appendChild(await texto(contenido, 'etiqueta', 'ColorScheme/onSurface', 'texto'));
-      chip.appendChild(await glifo('✕', 'ColorScheme/onSurfaceVariant', 'chip'));
+      chip.appendChild(await texto(contenido, 'TextTheme/labelLarge', 'ColorScheme/onSurfaceVariant', 'texto'));
+      chip.appendChild(icono('close', 'ColorScheme/onSurfaceVariant', 18));
       activos.appendChild(chip);
     }
-    activos.appendChild(await texto('Quitar todos', 'etiqueta', 'ColorScheme/primary', 'quitar'));
+    activos.appendChild(await texto('Quitar todos', 'TextTheme/labelLarge', 'ColorScheme/primary', 'quitar'));
     agregar(f, activos);
   }
   return f;
@@ -495,8 +569,10 @@ const TARJETAS = {
   intercambiado: { chip: 'intercambiado', autor: 'Por: Ana Pérez', borde: 'ColorScheme/outlineVariant' },
 };
 
-function boton(contenido, variante, estado) {
-  return cambiarTexto(instancia('BotonCarga', { Estado: estado || 'default', Variante: variante }), contenido);
+function boton(contenido, variante, estado, nombreIcono, tam) {
+  const inst = cambiarTexto(instancia('BotonCarga', { Estado: estado || 'default', Variante: variante, Icono: nombreIcono ? 'si' : 'no' }), contenido);
+  if (nombreIcono) cambiarIcono(inst, nombreIcono, tam || 18);
+  return inst;
 }
 
 async function tarjetaFeed(c) {
@@ -513,8 +589,8 @@ async function tarjetaFeed(c) {
   agregar(f, cabecera, { ancho: true });
 
   const autor = marco({ nombre: 'autor', dir: 'H', gap: 'e4', cruz: 'CENTER' });
-  autor.appendChild(await glifo('☺', 'ColorScheme/outline', 'chip'));
-  autor.appendChild(await texto(d.autor, 'etiqueta', d.propia ? 'ColorScheme/primary' : 'ColorScheme/outline', 'autor'));
+  autor.appendChild(icono('person_outline', 'ColorScheme/outline', 14));
+  autor.appendChild(await texto(d.autor, d.propia ? 'TextoDerivado/autorPropio' : 'ayuda', d.propia ? 'ColorScheme/primary' : 'ColorScheme/outline', 'autor'));
   agregar(f, autor);
 
   agregar(f, await texto('Casi nueva, incluye funda y manual.', 'detalle', 'ColorScheme/onSurfaceVariant', 'descripcion'), { ancho: true });
@@ -522,30 +598,36 @@ async function tarjetaFeed(c) {
   const datos = marco({ nombre: 'datos', dir: 'H', gap: 'e6', cruz: 'CENTER' });
   datos.appendChild(await mini('Condición: Usado', 'ColorScheme/primaryContainer', 'ColorScheme/onPrimaryContainer'));
   datos.appendChild(await mini('Categoría: Electrónica', 'ColorScheme/primaryContainer', 'ColorScheme/onPrimaryContainer'));
-  if (d.reserva) datos.appendChild(await mini(d.reserva, 'ColorScheme/secondaryContainer', 'ColorScheme/onSecondaryContainer'));
+  if (d.reserva) datos.appendChild(await mini(d.reserva, 'ColorScheme/secondaryContainer', 'ColorScheme/onSecondaryContainer', 'TextoDerivado/chipSemibold'));
   agregar(f, datos);
 
   const acciones = marco({ nombre: 'acciones', dir: 'V', gap: 'e6' });
   agregar(f, acciones, { ancho: true });
   if (c.Estado === 'disponible') {
-    agregar(acciones, boton('Ofrecer un objeto', 'primario'), { ancho: true });
-    agregar(acciones, boton('Reservar', 'contorno'), { ancho: true });
+    agregar(acciones, boton('Ofrecer un objeto', 'primario', 'default', 'swap_horiz'), { ancho: true });
+    agregar(acciones, boton('Reservar', 'contorno', 'default', 'bookmark_add_outlined'), { ancho: true });
     agregar(acciones, await texto('Ofrecer: cambias un objeto tuyo. Reservar: solo lo apartas.', 'pie', 'ColorScheme/outline', 'pie'), { ancho: true });
   }
   if (c.Estado === 'reservadoPorMi') {
-    agregar(acciones, boton('Completar intercambio', 'primario'), { ancho: true });
+    agregar(acciones, boton('Completar intercambio', 'primario', 'default', 'handshake_outlined'), { ancho: true });
     const fila = marco({ nombre: 'fila', dir: 'H', gap: 'e8' });
     agregar(acciones, fila, { ancho: true });
-    agregar(fila, boton('WhatsApp', 'contorno'), { ancho: true });
-    agregar(fila, boton('Cancelar reserva', 'contorno'), { ancho: true });
+    agregar(fila, boton('WhatsApp', 'contorno', 'default', 'chat_outlined'), { ancho: true });
+    agregar(fila, boton('Cancelar reserva', 'contorno', 'default', 'close'), { ancho: true });
   }
   if (c.Estado === 'reservadoPorOtro') agregar(acciones, boton('Reservado', 'tonal', 'deshabilitado'), { ancho: true });
-  if (c.Estado === 'propia') agregar(acciones, boton('Ver en mis publicaciones', 'contorno'), { ancho: true });
+  if (c.Estado === 'propia') agregar(acciones, boton('Ver en mis publicaciones', 'contorno', 'default', 'edit_outlined', 16), { ancho: true });
   if (c.Estado === 'ofertaEnviada') {
     agregar(acciones, boton('Oferta enviada', 'tonal', 'deshabilitado'), { ancho: true });
     agregar(acciones, boton('Ver mis ofertas', 'contorno'), { ancho: true });
   }
   if (c.Estado === 'intercambiado') agregar(acciones, boton('Intercambio completado', 'tonal', 'deshabilitado'), { ancho: true });
+  return f;
+}
+
+function botonIcono(nombreIcono, color) {
+  const f = marco({ nombre: 'boton', dir: 'H', ancho: 40, alto: 40, alinea: 'CENTER', cruz: 'CENTER' });
+  f.appendChild(icono(nombreIcono, color, 20));
   return f;
 }
 
@@ -559,10 +641,14 @@ async function tarjetaMiPublicacion(c) {
 
   const cabecera = marco({ nombre: 'cabecera', dir: 'H', gap: 'e8', cruz: 'CENTER' });
   agregar(cabecera, await texto('Calculadora científica', 'tituloTarjeta', 'ColorScheme/onSurface', 'titulo'), { ancho: true });
-  if (!reservada) cabecera.appendChild(await glifo('✎', 'ColorScheme/primary', 'tituloItem'));
+  if (!reservada) {
+    cabecera.appendChild(botonIcono('edit_outlined', 'ColorScheme/primary'));
+    cabecera.appendChild(botonIcono('more_vert', 'ColorScheme/onSurfaceVariant'));
+    cabecera.appendChild(botonIcono('delete_outline', 'ColorScheme/error'));
+  }
   agregar(f, cabecera, { ancho: true });
 
-  agregar(f, await texto('Casi nueva, incluye funda y manual.', 'detalle', 'ColorScheme/onSurfaceVariant', 'descripcion'), { ancho: true });
+  agregar(f, await texto('Casi nueva, incluye funda y manual.', 'cuerpo', 'ColorScheme/onSurfaceVariant', 'descripcion'), { ancho: true });
 
   const datos = marco({ nombre: 'datos', dir: 'H', gap: 'e8', cruz: 'CENTER' });
   datos.appendChild(instancia('Etiqueta', { Tono: 'primario' }));
@@ -570,8 +656,8 @@ async function tarjetaMiPublicacion(c) {
   agregar(f, datos);
 
   if (reservada) {
-    agregar(f, await texto('Reservado por: Luis Gómez', 'detalle', 'ColorScheme/onSurfaceVariant', 'reserva'), { ancho: true });
-    agregar(f, boton('Completar intercambio', 'primario'), { ancho: true });
+    agregar(f, await texto('Está reservada: solo puedes completar el intercambio.', 'ayuda', 'ColorScheme/onSurfaceVariant', 'reserva'), { ancho: true });
+    agregar(f, boton('Completar intercambio', 'primario', 'default', 'handshake_outlined', 16), { ancho: true });
   }
   return f;
 }
@@ -590,10 +676,10 @@ async function encabezadoAcceso(c) {
   if (conLogo) {
     f.appendChild(instancia('LogoTruequeU', { Variante: 'icono' }));
   } else {
-    f.appendChild(await glifo('←', 'ColorScheme/onPrimary', 'subtitulo'));
+    f.appendChild(icono('arrow_back', 'TemaTruequeU/blanco', 24));
   }
-  const titulo = await texto('Iniciar sesión', 'titulo', 'ColorScheme/onPrimary', 'titulo');
-  const subtitulo = await texto('Bienvenido de vuelta', 'cuerpo', 'ColorScheme/primaryContainer', 'subtitulo');
+  const titulo = await texto('Iniciar sesión', 'TextoDerivado/headlineMediumNegrita', 'ColorScheme/onPrimary', 'titulo');
+  const subtitulo = await texto('Bienvenido de vuelta', 'TextTheme/bodyLarge', 'ColorScheme/primaryContainer', 'subtitulo');
   if (conLogo) {
     titulo.textAlignHorizontal = 'CENTER';
     subtitulo.textAlignHorizontal = 'CENTER';
@@ -604,10 +690,10 @@ async function encabezadoAcceso(c) {
 }
 
 const DESTINOS = [
-  ['explorar', '⌖', 'Explorar'],
-  ['misPublicaciones', '▤', 'Mis publicaciones'],
-  ['ofertas', '⇄', 'Ofertas'],
-  ['perfil', '☺', 'Perfil'],
+  ['explorar', 'explore_outlined', 'explore', 'Explorar'],
+  ['misPublicaciones', 'inventory_2_outlined', 'inventory_2', 'Mis publicaciones'],
+  ['ofertas', 'swap_horiz', 'swap_horiz', 'Ofertas'],
+  ['perfil', 'person_outline', 'person', 'Perfil'],
 ];
 
 async function estructuraPrincipal(c) {
@@ -619,9 +705,9 @@ async function estructuraPrincipal(c) {
       nombre: 'indicador', dir: 'H', ancho: 64, alto: 32, radio: 'r16',
       fondo: activo ? 'ColorScheme/primaryContainer' : null, alinea: 'CENTER', cruz: 'CENTER',
     });
-    pastilla.appendChild(await glifo(d[1], activo ? 'ColorScheme/onPrimaryContainer' : 'ColorScheme/onSurfaceVariant', 'tituloItem'));
+    pastilla.appendChild(icono(activo ? d[2] : d[1], activo ? 'ColorScheme/onSecondaryContainer' : 'ColorScheme/onSurfaceVariant', 24));
     destino.appendChild(pastilla);
-    destino.appendChild(await texto(d[2], 'pie', activo ? 'ColorScheme/onSurface' : 'ColorScheme/onSurfaceVariant', 'texto'));
+    destino.appendChild(await texto(d[3], 'TextTheme/labelMedium', activo ? 'ColorScheme/onSurface' : 'ColorScheme/onSurfaceVariant', 'texto'));
     agregar(f, destino, { ancho: true });
   }
   return f;
@@ -647,13 +733,13 @@ function filaBotones(padre, hijos) {
 
 const ESTILOS_TEXTO = {
   titulo: ['titulo', 'ColorScheme/onSurface'],
-  subtitulo: ['subtitulo', 'ColorScheme/onSurface'],
-  cuerpo: ['cuerpo', 'ColorScheme/onSurface'],
-  negrita: ['tituloItem', 'ColorScheme/onSurface'],
-  suave: ['cuerpo', 'ColorScheme/onSurfaceVariant'],
-  ayuda: ['ayuda', 'ColorScheme/onSurfaceVariant'],
-  error: ['ayuda', 'ColorScheme/error'],
-  enlace: ['cuerpo', 'ColorScheme/primary'],
+  subtitulo: ['TextoDerivado/headlineSmallNegrita', 'ColorScheme/onSurface'],
+  cuerpo: ['TextTheme/bodyMedium', 'ColorScheme/onSurface'],
+  negrita: ['TextoDerivado/bodyMediumNegrita', 'ColorScheme/onSurface'],
+  suave: ['TextTheme/bodyMedium', 'ColorScheme/onSurfaceVariant'],
+  ayuda: ['TextTheme/bodySmall', 'ColorScheme/onSurfaceVariant'],
+  error: ['TextTheme/bodyMedium', 'ColorScheme/error'],
+  enlace: ['TextTheme/labelLarge', 'ColorScheme/primary'],
 };
 const ALINEACIONES = { izquierda: 'LEFT', centro: 'CENTER', derecha: 'RIGHT' };
 
@@ -675,9 +761,9 @@ async function appBar(c) {
     nombre: 'raiz', componente: true, dir: 'H', ancho: 390, alto: 56, pad: [null, 'e16'], gap: 'e16',
     fondo: 'ColorScheme/surface', cruz: 'CENTER',
   });
-  if (c.Volver === 'si') f.appendChild(await glifo('←', 'TemaTruequeU/azulOscuro', 'subtitulo'));
-  agregar(f, await texto('Título de la pantalla', 'subtitulo', 'TemaTruequeU/azulOscuro', 'titulo'), { ancho: true });
-  if (c.Accion === 'refrescar') f.appendChild(await glifo('⟳', 'TemaTruequeU/azulOscuro', 'tituloItem'));
+  if (c.Volver === 'si') f.appendChild(icono('arrow_back', 'TemaTruequeU/azulOscuro', 24));
+  agregar(f, await texto('Título de la pantalla', 'TextTheme/titleLarge', 'TemaTruequeU/azulOscuro', 'titulo'), { ancho: true });
+  if (c.Accion === 'refrescar') f.appendChild(icono('refresh', 'TemaTruequeU/azulOscuro', 24));
   return f;
 }
 
@@ -686,14 +772,14 @@ async function botonFlotante() {
     nombre: 'raiz', componente: true, dir: 'H', alto: 56, pad: [null, 'e20'], gap: 'e8', radio: 'r28',
     fondo: 'ColorScheme/secondary', alinea: 'CENTER', cruz: 'CENTER',
   });
-  f.appendChild(await glifo('+', 'ColorScheme/onSecondary', 'tituloItem'));
-  f.appendChild(await texto('Publicar', 'cuerpo', 'ColorScheme/onSecondary', 'texto'));
+  f.appendChild(icono('add', 'ColorScheme/onSecondary', 24));
+  f.appendChild(await texto('Publicar', 'TextTheme/labelLarge', 'ColorScheme/onSecondary', 'texto'));
   return f;
 }
 
 async function snackBar() {
   const f = marco({ nombre: 'raiz', componente: true, dir: 'H', ancho: 390, pad: 'e16', fondo: 'ColorScheme/onSurface', cruz: 'CENTER' });
-  agregar(f, await texto('Contraseña actualizada.', 'cuerpo', 'ColorScheme/surface', 'texto'), { ancho: true });
+  agregar(f, await texto('Contraseña actualizada.', 'TextTheme/bodyMedium', 'ColorScheme/surface', 'texto'), { ancho: true });
   return f;
 }
 
@@ -703,8 +789,8 @@ async function circleAvatar(c) {
     nombre: 'raiz', componente: true, dir: 'H', ancho: grande ? 72 : 22, alto: grande ? 72 : 22, radio: grande ? 'r36' : 'r12',
     fondo: grande ? 'ColorScheme/primary' : 'ColorScheme/primaryContainer', alinea: 'CENTER', cruz: 'CENTER',
   });
-  if (grande) f.appendChild(await texto('AP', 'titulo', 'ColorScheme/onPrimary', 'texto'));
-  else f.appendChild(await texto('1', 'ayuda', 'ColorScheme/onPrimaryContainer', 'texto'));
+  if (grande) f.appendChild(await texto('AP', 'TextoDerivado/avatarGrande', 'ColorScheme/onPrimary', 'texto'));
+  else f.appendChild(await texto('1', 'TextoDerivado/avatarChico', 'ColorScheme/onPrimaryContainer', 'texto'));
   return f;
 }
 
@@ -730,10 +816,10 @@ async function campoSelector(c) {
     grosor: enfocado ? 2 : 1, cruz: 'CENTER',
   });
   const textos = marco({ nombre: 'textos', dir: 'V', gap: 'e2' });
-  agregar(textos, await texto('Estado del objeto', 'ayuda', 'ColorScheme/onSurfaceVariant', 'etiqueta'), { ancho: true });
-  agregar(textos, await texto('Nuevo', 'cuerpo', 'ColorScheme/onSurface', 'valor'), { ancho: true });
+  agregar(textos, await texto('Estado del objeto', 'TextoDerivado/campoEtiquetaFlotante', 'ColorScheme/onSurfaceVariant', 'etiqueta'), { ancho: true });
+  agregar(textos, await texto('Nuevo', 'TextTheme/titleMedium', 'ColorScheme/onSurface', 'valor'), { ancho: true });
   agregar(f, textos, { ancho: true });
-  f.appendChild(await glifo('▾', 'ColorScheme/onSurfaceVariant', 'cuerpo'));
+  f.appendChild(icono('arrow_drop_down', 'ColorScheme/onSurfaceVariant', 24, undefined, 'IconoMarco'));
   return f;
 }
 
@@ -742,34 +828,34 @@ async function iconoCaja() {
     nombre: 'raiz', componente: true, dir: 'H', ancho: 56, alto: 56, radio: 'r16',
     fondo: 'ColorScheme/primaryContainer', alinea: 'CENTER', cruz: 'CENTER',
   });
-  f.appendChild(await glifo('⚿', 'ColorScheme/primary', 'tituloItem'));
+  f.appendChild(icono('vpn_key', 'ColorScheme/primary', 24));
   return f;
 }
 
 async function bannerExito() {
   const f = marco({ nombre: 'raiz', componente: true, dir: 'H', ancho: 350, pad: 'e16', gap: 'e12', radio: 'r14', fondo: 'ColorScheme/tertiaryContainer', cruz: 'CENTER' });
-  f.appendChild(await glifo('✓', 'ColorScheme/onTertiaryContainer', 'tituloItem'));
-  agregar(f, await texto('Listo. Revisa tu correo: ahí está tu contraseña nueva.', 'cuerpo', 'ColorScheme/onTertiaryContainer', 'mensaje'), { ancho: true });
+  f.appendChild(icono('check_circle_outline', 'ColorScheme/onTertiaryContainer', 24));
+  agregar(f, await texto('Listo. Revisa tu correo: ahí está tu contraseña nueva.', 'TextTheme/bodyMedium', 'ColorScheme/onTertiaryContainer', 'mensaje'), { ancho: true });
   return f;
 }
 
 async function pieEnlace(c) {
   const f = marco({ nombre: 'raiz', componente: true, dir: 'H', ancho: 390, pad: [null, null, 'e16', null], gap: 'e4', alinea: 'CENTER', cruz: 'CENTER' });
   const crear = c.Variante === 'crearCuenta';
-  f.appendChild(await texto(crear ? '¿No tienes cuenta?' : '¿Ya tienes cuenta?', 'cuerpo', 'ColorScheme/onSurface', 'pregunta'));
-  f.appendChild(await texto(crear ? 'Crear cuenta' : 'Inicia sesión', 'tituloItem', crear ? 'ColorScheme/secondary' : 'ColorScheme/primary', 'enlace'));
+  f.appendChild(await texto(crear ? '¿No tienes cuenta?' : '¿Ya tienes cuenta?', 'TextTheme/bodyMedium', 'ColorScheme/onSurface', 'pregunta'));
+  f.appendChild(await texto(crear ? 'Crear cuenta' : 'Inicia sesión', 'TextoDerivado/botonTextoNegrita', crear ? 'ColorScheme/secondary' : 'ColorScheme/primary', 'enlace'));
   return f;
 }
 
 async function cabeceraFeed() {
   const f = marco({ nombre: 'raiz', componente: true, dir: 'H', ancho: 390, pad: ['e16', 'e8', null, 'e20'], gap: 'e8', cruz: 'CENTER' });
   const columna = marco({ nombre: 'saludo', dir: 'V', gap: 'e2' });
-  agregar(columna, await texto('Hola, Ana', 'cuerpo', 'ColorScheme/onSurface', 'saludo'), { ancho: true });
-  agregar(columna, await texto('¿Qué quieres intercambiar hoy?', 'subtitulo', 'ColorScheme/onSurface', 'pregunta'), { ancho: true });
+  agregar(columna, await texto('Hola, Ana', 'TextTheme/bodyLarge', 'ColorScheme/onSurface', 'saludo'), { ancho: true });
+  agregar(columna, await texto('¿Qué quieres intercambiar hoy?', 'TextoDerivado/titleLargeNegrita', 'ColorScheme/onSurface', 'pregunta'), { ancho: true });
   agregar(f, columna, { ancho: true });
-  for (const g of ['?', '⟳']) {
+  for (const g of ['help_outline', 'refresh']) {
     const b = marco({ nombre: 'boton', dir: 'H', ancho: 40, alto: 40, alinea: 'CENTER', cruz: 'CENTER' });
-    b.appendChild(await glifo(g, 'ColorScheme/onSurfaceVariant', 'tituloItem'));
+    b.appendChild(icono(g, 'ColorScheme/onSurfaceVariant', 24));
     f.appendChild(b);
   }
   return f;
@@ -780,16 +866,16 @@ async function segmentado(c) {
     nombre: 'raiz', componente: true, dir: 'H', ancho: 350, alto: 40, radio: 'r28', fondo: 'TemaTruequeU/blanco',
     borde: 'ColorScheme/outline', recorta: true,
   });
-  const segmentos = [['recibidas', '↓', 'Recibidas'], ['enviadas', '↑', 'Enviadas']];
+  const segmentos = [['recibidas', 'inbox_outlined', 'Recibidas'], ['enviadas', 'outbox_outlined', 'Enviadas']];
   for (const s of segmentos) {
     const activo = s[0] === c.Seleccionado;
-    const color = activo ? 'ColorScheme/onPrimaryContainer' : 'ColorScheme/onSurface';
+    const color = activo ? 'ColorScheme/onSecondaryContainer' : 'ColorScheme/onSurface';
     const seg = marco({
-      nombre: 'segmento-' + s[0], dir: 'H', gap: 'e8', fondo: activo ? 'ColorScheme/primaryContainer' : null,
+      nombre: 'segmento-' + s[0], dir: 'H', gap: 'e8', fondo: activo ? 'ColorScheme/secondaryContainer' : null,
       alinea: 'CENTER', cruz: 'CENTER',
     });
-    seg.appendChild(await glifo(activo ? '✓' : s[1], color, 'cuerpo'));
-    seg.appendChild(await texto(s[2], 'cuerpo', color, s[0]));
+    seg.appendChild(activo ? icono('check', color, 18, undefined, 'IconoMarco') : icono(s[1], color, 18));
+    seg.appendChild(await texto(s[2], 'TextTheme/labelLarge', color, s[0]));
     agregar(f, seg, { ancho: true, alto: true });
   }
   return f;
@@ -798,12 +884,12 @@ async function segmentado(c) {
 async function filaLista(c) {
   const error = c.Tono === 'error';
   const f = marco({ nombre: 'raiz', componente: true, dir: 'H', ancho: 350, pad: ['e8', 'e16'], gap: 'e16', cruz: 'CENTER' });
-  if (c.Icono === 'con') f.appendChild(await glifo('◆', error ? 'ColorScheme/error' : 'ColorScheme/primary', 'tituloItem'));
+  if (c.Icono === 'con') f.appendChild(icono('handshake_outlined', error ? 'ColorScheme/error' : 'ColorScheme/primary', 24));
   const columna = marco({ nombre: 'textos', dir: 'V', gap: 'e2' });
-  agregar(columna, await texto('Intercambios completados', 'cuerpo', error ? 'ColorScheme/error' : 'ColorScheme/onSurface', 'titulo'), { ancho: true });
-  if (c.Subtitulo === 'con') agregar(columna, await texto('Subtítulo', 'detalle', 'ColorScheme/onSurfaceVariant', 'subtitulo'), { ancho: true });
+  agregar(columna, await texto('Intercambios completados', 'TextTheme/bodyLarge', error ? 'ColorScheme/error' : 'ColorScheme/onSurface', 'titulo'), { ancho: true });
+  if (c.Subtitulo === 'con') agregar(columna, await texto('Subtítulo', 'TextTheme/bodyMedium', 'ColorScheme/onSurfaceVariant', 'subtitulo'), { ancho: true });
   agregar(f, columna, { ancho: true });
-  if (c.Final === 'chevron') f.appendChild(await texto('›', 'tituloItem', 'ColorScheme/onSurfaceVariant', 'chevron'));
+  if (c.Final === 'chevron') f.appendChild(icono('chevron_right', 'ColorScheme/onSurfaceVariant', 24));
   return f;
 }
 
@@ -813,13 +899,13 @@ async function resumenCalificaciones(c) {
     alinea: 'CENTER', cruz: 'CENTER',
   });
   if (c.Estado === 'vacio') {
-    const t = await texto('Aún no tienes calificaciones', 'cuerpo', 'ColorScheme/onSurface', 'texto');
+    const t = await texto('Aún no tienes calificaciones', 'TextTheme/bodyMedium', 'ColorScheme/onSurface', 'texto');
     t.textAlignHorizontal = 'CENTER';
     agregar(f, t, { ancho: true });
   }
   if (c.Estado === 'conDatos') {
-    f.appendChild(await glifo('☆', 'ColorScheme/secondary', 'tituloItem'));
-    f.appendChild(await texto('4.5 de 5 · 12 calificaciones', 'cuerpo', 'ColorScheme/onSurface', 'texto'));
+    f.appendChild(icono('star_border', 'ColorScheme/secondary', 24));
+    f.appendChild(await texto('4.5 de 5 · 12 calificaciones', 'TextTheme/bodyMedium', 'ColorScheme/onSurface', 'texto'));
   }
   return f;
 }
@@ -865,10 +951,10 @@ async function bloqueEntrega(c) {
   return f;
 }
 
-async function chipMaterial(contenido, caracter) {
+async function chipMaterial(contenido, nombreIcono) {
   const f = marco({ nombre: 'chip', dir: 'H', pad: ['e4', 'e8'], gap: 'e4', radio: 'r8', borde: 'ColorScheme/outlineVariant', cruz: 'CENTER' });
-  if (caracter) f.appendChild(await glifo(caracter, 'ColorScheme/onSurface', 'chip'));
-  f.appendChild(await texto(contenido, 'etiqueta', 'ColorScheme/onSurface', 'texto'));
+  if (nombreIcono) f.appendChild(icono(nombreIcono, 'ColorScheme/primary', 16));
+  f.appendChild(await texto(contenido, 'TextTheme/labelLarge', 'ColorScheme/onSurfaceVariant', 'texto'));
   return f;
 }
 
@@ -883,10 +969,10 @@ async function tarjetaIntercambio(c) {
   const f = tarjetaBase('e6');
   agregar(f, await texto('Calculadora científica', 'tituloTarjeta', 'ColorScheme/onSurface', 'titulo'), { ancho: true });
   const entregue = c.Rol === 'entregue';
-  agregar(f, await texto(entregue ? 'Lo entregaste a: Luis Gómez' : 'Lo recibiste de: Ana Pérez', 'cuerpo', 'ColorScheme/onSurfaceVariant', 'quien'), { ancho: true });
+  agregar(f, await texto(entregue ? 'Lo entregaste a: Luis Gómez' : 'Lo recibiste de: Ana Pérez', 'TextTheme/bodyMedium', 'ColorScheme/onSurfaceVariant', 'quien'), { ancho: true });
   const chips = marco({ nombre: 'chips', dir: 'H', gap: 'e8' });
   chips.appendChild(await chipMaterial('Categoría: Electrónica'));
-  chips.appendChild(await chipMaterial('Intercambiado', '✓'));
+  chips.appendChild(await chipMaterial('Intercambiado', 'check_circle_outline'));
   agregar(f, chips);
   return f;
 }
@@ -904,7 +990,7 @@ const ESTADOS_OFERTA = {
 async function chipEstadoOferta(c) {
   const d = ESTADOS_OFERTA[c.Estado];
   const f = marco({ nombre: 'raiz', componente: true, dir: 'H', pad: ['e4', 'e10'], radio: 'r20', fondo: d[0], cruz: 'CENTER' });
-  f.appendChild(await texto(d[2], 'etiqueta', d[1], 'texto'));
+  f.appendChild(await texto(d[2], 'TextoDerivado/bodyMediumSemibold', d[1], 'texto'));
   return f;
 }
 
@@ -913,7 +999,7 @@ async function tarjetaOferta(c) {
   const f = tarjetaBase('e8');
   const cabecera = marco({ nombre: 'cabecera', dir: 'H', gap: 'e8', cruz: 'CENTER' });
   cabecera.appendChild(instancia('ChipEstadoOferta', { Estado: c.Estado }));
-  const quien = await texto(recibida ? 'De: Luis Gómez' : 'Para: Ana Pérez', 'cuerpo', 'ColorScheme/onSurfaceVariant', 'quien');
+  const quien = await texto(recibida ? 'De: Luis Gómez' : 'Para: Ana Pérez', 'TextTheme/bodyMedium', 'ColorScheme/onSurfaceVariant', 'quien');
   quien.textAlignHorizontal = 'RIGHT';
   agregar(cabecera, quien, { ancho: true });
   agregar(f, cabecera, { ancho: true });
@@ -953,16 +1039,16 @@ async function filtrosHistorial(c) {
       nombre: d[0], dir: 'H', pad: ['e6', 'e12'], radio: 'r8', cruz: 'CENTER',
       fondo: activo ? 'ColorScheme/secondaryContainer' : null, borde: activo ? null : 'ColorScheme/outlineVariant',
     });
-    chip.appendChild(await texto(d[1], 'cuerpo', activo ? 'ColorScheme/onSecondaryContainer' : 'ColorScheme/onSurface', 'texto'));
+    chip.appendChild(await texto(d[1], 'TextTheme/labelLarge', activo ? 'ColorScheme/onSecondaryContainer' : 'ColorScheme/onSurfaceVariant', 'texto'));
     f.appendChild(chip);
   }
   return f;
 }
 
 const MOVIMIENTOS = {
-  reservo: ['⚐', 'Reservaste «Calculadora científica» de Luis Gómez', 'Reservado · 20 oct'],
-  canceloReserva: ['⊘', 'Luis Gómez canceló su reserva de «Calculadora científica»', 'Reserva cancelada · 18 oct'],
-  completo: ['✓', 'Completaste el intercambio de «Calculadora científica» con Luis Gómez', 'Completado · 15 oct'],
+  reservo: ['bookmark_outline', 'Reservaste «Calculadora científica» de Luis Gómez', 'Reservado · 20 oct'],
+  canceloReserva: ['cancel_outlined', 'Luis Gómez canceló su reserva de «Calculadora científica»', 'Reserva cancelada · 18 oct'],
+  completo: ['check_circle_outline', 'Completaste el intercambio de «Calculadora científica» con Luis Gómez', 'Completado · 15 oct'],
 };
 
 async function tarjetaHistorial(c) {
@@ -971,12 +1057,12 @@ async function tarjetaHistorial(c) {
     nombre: 'raiz', componente: true, dir: 'H', ancho: 350, pad: 'e16', gap: 'e12', radio: 'r20',
     fondo: 'TemaTruequeU/blanco', borde: 'ColorScheme/outlineVariant', cruz: 'CENTER',
   });
-  f.appendChild(await glifo(d[0], 'ColorScheme/onSurface', 'titulo'));
+  f.appendChild(icono(d[0], 'ColorScheme/onSurface', 28));
   const columna = marco({ nombre: 'textos', dir: 'V', gap: 'e4' });
   agregar(columna, await texto(d[1], 'tituloItem', 'ColorScheme/onSurface', 'frase'), { ancho: true });
-  agregar(columna, await texto(d[2], 'cuerpo', 'ColorScheme/onSurfaceVariant', 'estado'), { ancho: true });
+  agregar(columna, await texto(d[2], 'TextTheme/bodyMedium', 'ColorScheme/onSurfaceVariant', 'estado'), { ancho: true });
   agregar(f, columna, { ancho: true });
-  f.appendChild(await texto('›', 'tituloItem', 'ColorScheme/onSurfaceVariant', 'chevron'));
+  f.appendChild(icono('chevron_right', 'ColorScheme/onSurface', 24));
   return f;
 }
 
@@ -985,18 +1071,18 @@ async function tarjetaAviso(c) {
     nombre: 'raiz', componente: true, dir: 'H', ancho: 350, pad: ['e8', 'e16'], gap: 'e16', radio: 'r20',
     fondo: 'TemaTruequeU/blanco', borde: 'ColorScheme/outlineVariant', cruz: 'CENTER',
   });
-  f.appendChild(await glifo(c.Estado === 'noLeida' ? '◉' : '○', 'ColorScheme/primary', 'tituloItem'));
+  f.appendChild(icono(c.Estado === 'noLeida' ? 'notifications_active' : 'notifications_none', 'ColorScheme/primary', 24));
   const columna = marco({ nombre: 'textos', dir: 'V', gap: 'e2' });
-  agregar(columna, await texto('Luis Gómez aceptó tu oferta por «Calculadora científica»', 'cuerpo', 'ColorScheme/onSurface', 'titulo'), { ancho: true });
-  agregar(columna, await texto('12/11/2026', 'detalle', 'ColorScheme/onSurfaceVariant', 'subtitulo'), { ancho: true });
+  agregar(columna, await texto('Luis Gómez aceptó tu oferta por «Calculadora científica»', 'TextTheme/bodyLarge', 'ColorScheme/onSurface', 'titulo'), { ancho: true });
+  agregar(columna, await texto('12/11/2026', 'TextTheme/bodyMedium', 'ColorScheme/onSurfaceVariant', 'subtitulo'), { ancho: true });
   agregar(f, columna, { ancho: true });
   return f;
 }
 
 async function tarjetaDatos(c) {
   const f = tarjetaBase('e8');
-  agregar(f, await texto('Tu perfil', 'tituloItem', 'ColorScheme/onSurface', 'titulo'), { ancho: true });
-  agregar(f, await texto('Nombre: Ana Pérez\nCorreo: ana@universidad.edu', 'cuerpo', 'ColorScheme/onSurface', 'lineas'), { ancho: true });
+  agregar(f, await texto('Tu perfil', 'TextoDerivado/titleMediumNegrita', 'ColorScheme/onSurface', 'titulo'), { ancho: true });
+  agregar(f, await texto('Nombre: Ana Pérez\nCorreo: ana@universidad.edu', 'TextTheme/bodyMedium', 'ColorScheme/onSurface', 'lineas'), { ancho: true });
   if (c.Variante === 'conAccion') agregar(f, tp('Quitar mi teléfono', 'enlace'), { ancho: true });
   return f;
 }
@@ -1006,7 +1092,7 @@ async function dialogoBase(titulo, alto) {
     nombre: 'raiz', componente: true, dir: 'V', ancho: 310, alto: alto, pad: 'e24', gap: 'e16', radio: 'r28',
     fondo: 'ColorScheme/surface', recorta: !!alto,
   });
-  agregar(f, await texto(titulo, 'titulo', 'ColorScheme/onSurface', 'titulo'), { ancho: true });
+  agregar(f, await texto(titulo, 'TextTheme/headlineSmall', 'ColorScheme/onSurface', 'titulo'), { ancho: true });
   return f;
 }
 
@@ -1100,12 +1186,38 @@ async function dialogoEntrega(c) {
   return f;
 }
 
+function botonRadio(marcada) {
+  const f = marco({ nombre: 'radio', dir: 'H', ancho: 20, alto: 20 });
+  const color = marcada ? 'ColorScheme/primary' : 'ColorScheme/onSurfaceVariant';
+  const anillo = figma.createEllipse();
+  anillo.name = 'anillo';
+  anillo.resize(16, 16);
+  anillo.fills = [];
+  anillo.strokes = [pintura(color)];
+  anillo.strokeWeight = 2;
+  f.appendChild(anillo);
+  anillo.layoutPositioning = 'ABSOLUTE';
+  anillo.x = 2;
+  anillo.y = 2;
+  if (marcada) {
+    const punto = figma.createEllipse();
+    punto.name = 'punto';
+    punto.resize(9, 9);
+    punto.fills = [pintura(color)];
+    f.appendChild(punto);
+    punto.layoutPositioning = 'ABSOLUTE';
+    punto.x = 5.5;
+    punto.y = 5.5;
+  }
+  return f;
+}
+
 async function filaRadio(titulo, subtitulo, marcada) {
   const f = marco({ nombre: 'opcion', dir: 'H', gap: 'e12', cruz: 'CENTER' });
-  f.appendChild(await glifo(marcada ? '◉' : '○', marcada ? 'ColorScheme/primary' : 'ColorScheme/onSurfaceVariant', 'tituloItem'));
+  f.appendChild(botonRadio(marcada));
   const columna = marco({ nombre: 'textos', dir: 'V', gap: 'e2' });
-  agregar(columna, await texto(titulo, 'cuerpo', 'ColorScheme/onSurface', 'titulo'), { ancho: true });
-  agregar(columna, await texto(subtitulo, 'detalle', 'ColorScheme/onSurfaceVariant', 'subtitulo'), { ancho: true });
+  agregar(columna, await texto(titulo, 'TextTheme/bodyLarge', 'ColorScheme/onSurface', 'titulo'), { ancho: true });
+  agregar(columna, await texto(subtitulo, 'TextTheme/bodyMedium', 'ColorScheme/onSurfaceVariant', 'subtitulo'), { ancho: true });
   agregar(f, columna, { ancho: true });
   return f;
 }
@@ -1175,23 +1287,38 @@ async function dialogoHistorial(c) {
     ],
     movimiento: [
       ['Reservaste «Calculadora científica» de Luis Gómez', 'suave'],
-      ['◔ Estado: Reservado', 'suave'], ['Categoría: Electrónica', 'suave'], ['Con: Luis Gómez', 'suave'],
+      ['Estado: Reservado', 'suave', 'bookmark_outline'], ['Categoría: Electrónica', 'suave'], ['Con: Luis Gómez', 'suave'],
       ['Fecha: 20 oct 2026, 16:24', 'suave'],
     ],
   };
   const cuerpo = marco({ nombre: 'contenido', dir: 'V', gap: 'e8' });
   agregar(f, cuerpo, { ancho: true });
-  lineas[c.Tipo].forEach(l => agregar(cuerpo, tp(l[0], l[1]), { ancho: true }));
+  lineas[c.Tipo].forEach(l => {
+    if (!l[2]) {
+      agregar(cuerpo, tp(l[0], l[1]), { ancho: true });
+      return;
+    }
+    const fila = marco({ nombre: 'fila', dir: 'H', gap: 'e8', cruz: 'CENTER' });
+    fila.appendChild(icono(l[2], 'ColorScheme/onSurface', 18));
+    agregar(fila, tp(l[0], l[1]), { ancho: true });
+    agregar(cuerpo, fila, { ancho: true });
+  });
   agregar(f, boton('Cerrar', 'primario'), { ancho: true });
   return f;
 }
 
 const DEFINICIONES = [
+  { nombre: 'Icono', props: { nombre: Object.keys(ICONOS) }, construir: iconoBase(ICONOS), textos: [], columnas: 8 },
+  { nombre: 'IconoMarco', props: { nombre: Object.keys(ICONOS_MARCO) }, construir: iconoBase(ICONOS_MARCO), textos: [] },
   { nombre: 'LogoTruequeU', props: { Variante: ['icono', 'conNombre'] }, construir: logo, textos: [] },
   {
     nombre: 'BotonCarga',
-    props: { Estado: ['default', 'hover', 'presionado', 'cargando', 'deshabilitado'], Variante: ['primario', 'rojo', 'tonal', 'contorno', 'contornoRojo', 'texto'] },
-    construir: botonCarga, textos: [['texto', 'texto', 'Continuar']], columnas: 5,
+    props: {
+      Estado: ['default', 'hover', 'presionado', 'cargando', 'deshabilitado'],
+      Variante: ['primario', 'rojo', 'tonal', 'contorno', 'contornoRojo', 'texto'],
+      Icono: ['no', 'si'],
+    },
+    construir: botonCarga, textos: [['texto', 'texto', 'Continuar']], columnas: 12,
   },
   {
     nombre: 'CampoTexto',
@@ -1398,11 +1525,30 @@ async function construirFundamentos() {
     }
   }
 
-  const tipografia = await seccion(raiz, 'Tipografía · TextosTruequeU');
-  for (const campo of Object.keys(TOKENS.TextosTruequeU)) {
-    const def = TOKENS.TextosTruequeU[campo];
-    const detalle = campo + ' · ' + numero(def.fontSize) + ' px · ' + PESOS[def.fontWeight];
-    tipografia.appendChild(await texto(detalle, campo, 'ColorScheme/onSurface', 'muestra'));
+  for (const coleccion of COLECCIONES_TEXTO) {
+    const tipografia = await seccion(raiz, 'Tipografía · ' + coleccion);
+    for (const campo of Object.keys(TOKENS[coleccion])) {
+      const def = TOKENS[coleccion][campo];
+      const lineaAlto = def.height === null ? 'auto' : alturaLinea(def).value + ' px';
+      const detalle = campo + ' · ' + tamanoTexto(def) + ' px · ' + PESOS[def.fontWeight] + ' · altura ' + lineaAlto + ' · espaciado ' + (def.letterSpacing || 0);
+      tipografia.appendChild(await texto(detalle, coleccion + '/' + campo, 'ColorScheme/onSurface', 'muestra'));
+    }
+  }
+
+  const iconos = await seccion(raiz, 'Íconos · Material Icons');
+  for (const [titulo, fuente, conjunto] of [['Íconos de la app', ICONOS, 'Icono'], ['Íconos internos de Material', ICONOS_MARCO, 'IconoMarco']]) {
+    iconos.appendChild(await texto(titulo, 'TextTheme/bodySmall', 'ColorScheme/onSurfaceVariant', 'subtitulo'));
+    const nombres = Object.keys(fuente);
+    for (let i = 0; i < nombres.length; i += 8) {
+      const fila = marco({ nombre: 'fila', dir: 'H', gap: 'e12' });
+      for (const nombre of nombres.slice(i, i + 8)) {
+        const celda = marco({ nombre: nombre, dir: 'V', gap: 'e4', ancho: 120, cruz: 'CENTER' });
+        celda.appendChild(icono(nombre, 'ColorScheme/onSurface', 24, undefined, conjunto));
+        agregar(celda, await texto(nombre, 'TextTheme/bodySmall', 'ColorScheme/onSurfaceVariant', 'nombre'), { ancho: true });
+        fila.appendChild(celda);
+      }
+      iconos.appendChild(fila);
+    }
   }
 
   const espacios = await seccion(raiz, 'Espacios');
@@ -1488,7 +1634,7 @@ function campo(padre, contenidoCampo, o) {
   const op = o || {};
   const inst = instancia('CampoTexto', { Estado: op.estado || 'vacio', Tipo: op.tipo || 'texto', Icono: op.icono ? 'si' : 'no' });
   cambiarTexto(inst, contenidoCampo);
-  if (op.icono) cambiarTexto(inst, op.icono, 'icono');
+  if (op.icono) cambiarIcono(inst, op.icono);
   if (op.error) cambiarTexto(inst, op.error, 'ayuda');
   agregar(padre, inst, { ancho: true });
   return inst;
@@ -1501,8 +1647,8 @@ function selector(padre, etiquetaCampo, valor) {
   agregar(padre, inst, { ancho: true });
 }
 
-function accion(padre, contenidoBoton, variante) {
-  agregar(padre, boton(contenidoBoton, variante), { ancho: true });
+function accion(padre, contenidoBoton, variante, nombreIcono) {
+  agregar(padre, boton(contenidoBoton, variante, 'default', nombreIcono), { ancho: true });
 }
 
 function navegacion(padre, activo) {
@@ -1513,14 +1659,15 @@ function pie(padre, variante) {
   agregar(padre, instancia('PieEnlace', { Variante: variante }), { ancho: true });
 }
 
-function pieBoton(padre, contenidoBoton) {
+function pieBoton(padre, contenidoBoton, nombreIcono) {
   const f = marco({ nombre: 'pie', dir: 'V', pad: [null, 'e24', 'e16', 'e24'] });
   agregar(padre, f, { ancho: true });
-  accion(f, contenidoBoton, 'texto');
+  accion(f, contenidoBoton, 'texto', nombreIcono);
 }
 
-function vacio(padre, titulo, mensaje, textoBoton) {
+function vacio(padre, titulo, mensaje, textoBoton, nombreIcono) {
   const inst = instancia('MensajeVacio', { ConBoton: textoBoton ? 'si' : 'no' });
+  cambiarIcono(inst, nombreIcono, 64);
   cambiarTexto(inst, titulo, 'titulo');
   if (mensaje) cambiarTexto(inst, mensaje, 'mensaje');
   else ocultar(inst, 'mensaje');
@@ -1565,8 +1712,8 @@ function armarIniciarSesion(p, conError) {
   encabezado(p, true, 'Trueque U', 'Qué bueno verte de nuevo');
   const c = contenido(p, 'e24', 'e16', true);
   agregar(c, tp('Inicia sesión', 'subtitulo'), { ancho: true });
-  campo(c, conError ? 'ana@universidad.edu' : 'Correo', { icono: '✉', estado: conError ? 'relleno' : 'vacio' });
-  campo(c, conError ? '••••••••' : 'Contraseña', { tipo: 'contrasena', icono: '⚿', estado: conError ? 'relleno' : 'vacio' });
+  campo(c, conError ? 'ana@universidad.edu' : 'Correo', { icono: 'mail_outline', estado: conError ? 'relleno' : 'vacio' });
+  campo(c, conError ? '••••••••' : 'Contraseña', { tipo: 'contrasena', icono: 'lock_outline', estado: conError ? 'relleno' : 'vacio' });
   agregar(c, tp('¿Olvidaste tu contraseña?', 'enlace', 'derecha'), { ancho: true });
   if (conError) agregar(c, cambiarTexto(instancia('BannerError', { Estado: 'default' }), 'Correo o contraseña incorrectos', 'mensaje'), { ancho: true });
   accion(c, 'Iniciar sesión', 'primario');
@@ -1576,13 +1723,13 @@ function armarIniciarSesion(p, conError) {
 function armarRegistro(p) {
   encabezado(p, false, 'Crear cuenta', 'Únete a la comunidad de tu campus');
   const c = contenido(p, 'e24', 'e16', true);
-  campo(c, 'Nombre completo', { icono: '☺' });
-  campo(c, 'Correo', { icono: '✉' });
+  campo(c, 'Nombre completo', { icono: 'person_outline' });
+  campo(c, 'Correo', { icono: 'mail_outline' });
   const telefono = grupo(c, 'e4');
-  campo(telefono, 'Teléfono (opcional, 8 dígitos)', { icono: '☎' });
+  campo(telefono, 'Teléfono (opcional, 8 dígitos)', { icono: 'phone_outlined' });
   agregar(telefono, tp('Solo lo verá la persona con la que acuerdes un trueque. Puedes dejarlo vacío.', 'ayuda'), { ancho: true });
-  campo(c, 'Contraseña', { tipo: 'contrasena', icono: '⚿' });
-  campo(c, 'Repite la contraseña', { tipo: 'contrasena', icono: '⚿' });
+  campo(c, 'Contraseña', { tipo: 'contrasena', icono: 'lock_outline' });
+  campo(c, 'Repite la contraseña', { tipo: 'contrasena', icono: 'lock_outline' });
   accion(c, 'Crear cuenta', 'rojo');
   pie(p, 'iniciarSesion');
 }
@@ -1592,10 +1739,10 @@ function armarRecuperar(p, enviado) {
   const c = contenido(p, 'e24', 'e16', true);
   c.appendChild(instancia('IconoCaja', { Icono: 'llave' }));
   agregar(c, tp('Escribe el correo de tu cuenta y te enviaremos una contraseña nueva.'), { ancho: true });
-  campo(c, enviado ? 'ana@universidad.edu' : 'Correo', { icono: '✉', estado: enviado ? 'relleno' : 'vacio' });
+  campo(c, enviado ? 'ana@universidad.edu' : 'Correo', { icono: 'mail_outline', estado: enviado ? 'relleno' : 'vacio' });
   accion(c, 'Enviar contraseña nueva', 'primario');
   if (enviado) agregar(c, instancia('BannerExito', { Estado: 'default' }), { ancho: true });
-  pieBoton(p, '← Volver a iniciar sesión');
+  pieBoton(p, 'Volver a iniciar sesión', 'arrow_back');
 }
 
 function armarFeed(p, estado) {
@@ -1606,8 +1753,8 @@ function armarFeed(p, estado) {
     agregar(lista, instancia('TarjetaFeed', { Estado: 'disponible' }), { ancho: true });
     agregar(lista, instancia('TarjetaFeed', { Estado: 'reservadoPorMi' }), { ancho: true });
   }
-  if (estado === 'vacio') vacio(lista, 'No hay publicaciones disponibles', 'Sé el primero en compartir un objeto para intercambiar con la comunidad.', 'Crear publicación');
-  if (estado === 'sinResultados') vacio(lista, 'Ninguna publicación coincide con tu búsqueda', null, 'Quitar filtros');
+  if (estado === 'vacio') vacio(lista, 'No hay publicaciones disponibles', 'Sé el primero en compartir un objeto para intercambiar con la comunidad.', 'Crear publicación', 'feed_outlined');
+  if (estado === 'sinResultados') vacio(lista, 'Ninguna publicación coincide con tu búsqueda', null, 'Quitar filtros', 'search_off');
   if (estado === 'error') fallo(lista, 'No se pudieron cargar las publicaciones');
   if (estado === 'cargando') cargando(lista);
   navegacion(p, 'explorar');
@@ -1618,7 +1765,7 @@ function armarMisPublicaciones(p, estado) {
   barra(p, 'Mis publicaciones', false, true);
   const c = contenido(p, 'e24', 'e12', estado === 'vacio');
   if (estado === 'vacio') {
-    vacio(c, 'Aún no tienes publicaciones', 'Crea una publicación para intercambiar objetos con otros estudiantes.', 'Crear nueva publicación');
+    vacio(c, 'Aún no tienes publicaciones', 'Crea una publicación para intercambiar objetos con otros estudiantes.', 'Crear nueva publicación', 'inventory_2_outlined');
   } else {
     agregar(c, tp('Total: 2', 'suave'), { ancho: true });
     agregar(c, instancia('TarjetaMiPublicacion', { Reservada: 'no' }), { ancho: true });
@@ -1647,15 +1794,15 @@ function armarOfertas(p, estado) {
     tarjeta('completada', 'recibida');
   }
   if (estado === 'vacio') {
-    vacio(c, 'Nadie te ha ofrecido un trueque', 'Cuando alguien ofrezca un objeto por una publicación tuya, aparecerá aquí.', 'Explorar publicaciones');
+    vacio(c, 'Nadie te ha ofrecido un trueque', 'Cuando alguien ofrezca un objeto por una publicación tuya, aparecerá aquí.', 'Explorar publicaciones', 'swap_horiz');
   }
   navegacion(p, 'ofertas');
 }
 
-function filaPerfil(card, caracter, titulo, tono) {
+function filaPerfil(card, nombreIcono, titulo, tono) {
   const inst = instancia('FilaLista', { Icono: 'con', Subtitulo: 'sin', Final: 'chevron', Tono: tono || 'normal' });
   cambiarTexto(inst, titulo, 'titulo');
-  cambiarTexto(inst, caracter, 'icono');
+  cambiarIcono(inst, nombreIcono);
   agregar(card, inst, { ancho: true });
 }
 
@@ -1672,14 +1819,15 @@ function armarPerfil(p) {
   });
   agregar(c, tarjeta, { ancho: true });
   const opciones = [
-    ['⇄', 'Intercambios completados'], ['↺', 'Historial'], ['✦', 'Avisos'], ['▤', 'Mis datos'], ['⚿', 'Cambiar contraseña'],
+    ['handshake_outlined', 'Intercambios completados'], ['history', 'Historial'], ['notifications_none', 'Avisos'],
+    ['folder_shared_outlined', 'Mis datos'], ['key_outlined', 'Cambiar contraseña'],
   ];
   for (const o of opciones) {
     filaPerfil(tarjeta, o[0], o[1]);
     agregar(tarjeta, instancia('Divider', { Estado: 'default' }), { ancho: true });
   }
-  filaPerfil(tarjeta, '⌫', 'Eliminar cuenta', 'error');
-  accion(c, 'Cerrar sesión', 'contornoRojo');
+  filaPerfil(tarjeta, 'delete_outline', 'Eliminar cuenta', 'error');
+  accion(c, 'Cerrar sesión', 'contornoRojo', 'logout');
   navegacion(p, 'perfil');
 }
 
@@ -1713,7 +1861,7 @@ function armarIntercambios(p, estado) {
   barra(p, 'Intercambios completados', true, true);
   const c = contenido(p, 'e24', 'e12', estado === 'vacio');
   if (estado === 'vacio') {
-    vacio(c, 'Aún no tienes intercambios completados', null, null);
+    vacio(c, 'Aún no tienes intercambios completados', null, null, 'handshake_outlined');
   } else {
     agregar(c, instancia('TarjetaIntercambio', { Rol: 'entregue' }), { ancho: true });
     agregar(c, instancia('TarjetaIntercambio', { Rol: 'recibi' }), { ancho: true });
@@ -1729,8 +1877,8 @@ function armarHistorial(p, estado) {
   if (estado === 'lista') {
     for (const t of ['reservo', 'canceloReserva', 'completo']) agregar(c, instancia('TarjetaHistorial', { Tipo: t }), { ancho: true });
   }
-  if (estado === 'vacio') vacio(c, 'Aún no tienes movimientos', 'Cuando reserves o completes un intercambio, aparecerá aquí.', 'Explorar publicaciones');
-  if (estado === 'filtroVacio') vacio(c, 'No hay reservas', 'Todavía no tienes nada en esta lista.', 'Ver todo');
+  if (estado === 'vacio') vacio(c, 'Aún no tienes movimientos', 'Cuando reserves o completes un intercambio, aparecerá aquí.', 'Explorar publicaciones', 'history');
+  if (estado === 'filtroVacio') vacio(c, 'No hay reservas', 'Todavía no tienes nada en esta lista.', 'Ver todo', 'history');
   accion(c, 'Volver al perfil', 'texto');
 }
 
@@ -1738,7 +1886,7 @@ function armarAvisos(p, estado) {
   barra(p, 'Avisos', true, false);
   const c = contenido(p, 'e24', 'e12', estado === 'vacio');
   if (estado === 'vacio') {
-    vacio(c, 'No tienes avisos', 'Aquí aparecerán los cambios importantes en tus trueques.', null);
+    vacio(c, 'No tienes avisos', 'Aquí aparecerán los cambios importantes en tus trueques.', null, 'notifications_none');
   } else {
     agregar(c, instancia('TarjetaAviso', { Estado: 'noLeida' }), { ancho: true });
     agregar(c, cambiarTexto(instancia('TarjetaAviso', { Estado: 'noLeida' }), 'Ana Pérez reservó tu «Mochila azul»', 'titulo'), { ancho: true });
@@ -1761,7 +1909,7 @@ function armarMisDatos(p, estado) {
     cargando(c);
   } else {
     agregar(c, tp('Esto es lo que la app guarda de ti. Puedes descargarlo cuando quieras.'), { ancho: true });
-    filaBotones(c, [boton('Descargar JSON', 'primario'), boton('Descargar CSV', 'primario')]);
+    filaBotones(c, [boton('Descargar JSON', 'primario', 'default', 'download'), boton('Descargar CSV', 'primario', 'default', 'download')]);
     const lista = grupo(c, 'e8');
     agregarDatos(lista, 'Tu perfil', 'Nombre: Ana Pérez\nCorreo: ana@universidad.edu\nTeléfono: 71234567\nCuenta creada: 2026-09-01', true);
     agregarDatos(lista, 'Tus publicaciones', 'Calculadora científica · disponible\nMochila azul · reservado');
