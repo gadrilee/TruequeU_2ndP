@@ -12,6 +12,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:trueque_u/estado/controlador_autenticacion.dart';
 import 'package:trueque_u/main.dart';
 import 'package:trueque_u/servicios/cliente_api.dart';
+import 'package:url_launcher_platform_interface/link.dart';
+import 'package:url_launcher_platform_interface/url_launcher_platform_interface.dart';
 
 const eudenia = ['eudeniaflores@gmail.com', 'eude1234'];
 const job = ['contrerasjob123@gmail.com', 'contreras123'];
@@ -237,4 +239,38 @@ Finder fotoDelServidor() {
     final imagen = widget.image;
     return imagen is NetworkImage && imagen.url.startsWith('http://localhost:3000/uploads/');
   });
+}
+
+class LanzadorFalso extends UrlLauncherPlatform with MockPlatformInterfaceMixin {
+  final List<String> enlaces = [];
+
+  @override
+  LinkDelegate? get linkDelegate => null;
+
+  @override
+  Future<bool> canLaunch(String url) async => true;
+
+  @override
+  Future<bool> launchUrl(String url, LaunchOptions options) async {
+    enlaces.add(url);
+    return true;
+  }
+}
+
+LanzadorFalso usarLanzadorFalso() {
+  final lanzador = LanzadorFalso();
+  UrlLauncherPlatform.instance = lanzador;
+  return lanzador;
+}
+
+Future<Map<String, dynamic>> crearCuentaPorApi(String nombre, String correo, String contrasena, String telefono) async {
+  final respuesta = await http.post(
+    Uri.parse('http://localhost:3000/api/usuarios'),
+    headers: const {'Content-Type': 'application/json'},
+    body: jsonEncode({'nombre': nombre, 'correo': correo, 'contrasena': contrasena, 'telefono': telefono}),
+  );
+  if (respuesta.statusCode != 201) {
+    throw TestFailure('No se pudo crear la cuenta de $nombre');
+  }
+  return jsonDecode(respuesta.body) as Map<String, dynamic>;
 }
