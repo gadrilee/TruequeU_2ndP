@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../utilidades/etiquetas.dart';
 import 'etiqueta.dart';
 import 'foto_publicacion.dart';
+import '../tema.dart';
 
 /// =========================================================================
 /// TARJETA DE PUBLICACIÓN PROPIA
@@ -59,23 +60,23 @@ class TarjetaMiPublicacion extends StatelessWidget {
 
     return Card(
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(Radios.r20),
         side: BorderSide(
           color: estaReservada ? colores.primary : colores.outlineVariant,
         ),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(Espacios.e16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Indicador de progreso mientras el servidor responde
             if (enProgreso) ...[
               const LinearProgressIndicator(minHeight: 3),
-              const SizedBox(height: 8),
+              const SizedBox(height: Espacios.e8),
             ],
             FotoPublicacion(url: imagenUrl, cuadrada: true),
-            const SizedBox(height: 12),
+            const SizedBox(height: Espacios.e12),
             // Encabezado: Título y menú de opciones (editar / cambiar estado / eliminar)
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -83,10 +84,7 @@ class TarjetaMiPublicacion extends StatelessWidget {
                 Expanded(
                   child: Text(
                     titulo,
-                    style: const TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextosTruequeU.tituloTarjeta,
                   ),
                 ),
                 // Con la publicación reservada estos tres controles no se
@@ -102,7 +100,7 @@ class TarjetaMiPublicacion extends StatelessWidget {
                     tooltip: 'Editar información',
                     onPressed: enProgreso ? null : alEditar,
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: Espacios.e8),
                   // Selector de modo / estado_publicacion
                   PopupMenuButton<String>(
                     icon: const Icon(Icons.more_vert, size: 20),
@@ -115,7 +113,7 @@ class TarjetaMiPublicacion extends StatelessWidget {
                         child: Row(
                           children: [
                             Icon(Icons.check_circle_outline, size: 18, color: colores.tertiary),
-                            const SizedBox(width: 8),
+                            const SizedBox(width: Espacios.e8),
                             const Text('Marcar como Disponible'),
                           ],
                         ),
@@ -125,7 +123,7 @@ class TarjetaMiPublicacion extends StatelessWidget {
                         child: Row(
                           children: [
                             Icon(Icons.visibility_off_outlined, size: 18, color: colores.onSurfaceVariant),
-                            const SizedBox(width: 8),
+                            const SizedBox(width: Espacios.e8),
                             const Text('Ocultar publicación'),
                           ],
                         ),
@@ -135,7 +133,7 @@ class TarjetaMiPublicacion extends StatelessWidget {
                         child: Row(
                           children: [
                             Icon(Icons.block_outlined, size: 18, color: colores.error),
-                            const SizedBox(width: 8),
+                            const SizedBox(width: Espacios.e8),
                             const Text('Marcar como No disponible'),
                           ],
                         ),
@@ -143,7 +141,7 @@ class TarjetaMiPublicacion extends StatelessWidget {
                     ],
                   ),
                   // Acción destructiva separada de las demás, con área táctil estándar (Ley de Fitts)
-                  const SizedBox(width: 8),
+                  const SizedBox(width: Espacios.e8),
                   IconButton(
                     icon: const Icon(Icons.delete_outline, size: 20),
                     color: colores.error,
@@ -154,21 +152,18 @@ class TarjetaMiPublicacion extends StatelessWidget {
               ],
             ),
             if (descripcion != null && descripcion!.trim().isNotEmpty) ...[
-              const SizedBox(height: 6),
+              const SizedBox(height: Espacios.e6),
               Text(
                 descripcion!,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: colores.onSurfaceVariant,
-                ),
+                style: TextosTruequeU.cuerpo.copyWith(color: colores.onSurfaceVariant),
               ),
             ],
-            const SizedBox(height: 12),
+            const SizedBox(height: Espacios.e12),
 
             // Chips con la condición del objeto y el estado de la publicación
             Wrap(
-              spacing: 8,
-              runSpacing: 4,
+              spacing: Espacios.e8,
+              runSpacing: Espacios.e4,
               children: [
                 Etiqueta(
                   icono: Icons.label_outline,
@@ -213,7 +208,7 @@ class TarjetaMiPublicacion extends StatelessWidget {
                     telefonoReserva != null &&
                     telefonoReserva!.isNotEmpty)
                   InkWell(
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(Radios.r16),
                     onTap: alAbrirWhatsapp,
                     child: Tooltip(
                       message: 'Abrir WhatsApp',
@@ -230,26 +225,26 @@ class TarjetaMiPublicacion extends StatelessWidget {
 
             // Como ya no se ven editar ni eliminar, se explica el porqué
             if (estaReservada) ...[
-              const SizedBox(height: 8),
+              const SizedBox(height: Espacios.e8),
               Text(
                 'Está reservada: solo puedes completar el intercambio.',
-                style: TextStyle(fontSize: 12, color: colores.onSurfaceVariant),
+                style: TextosTruequeU.ayuda.copyWith(color: colores.onSurfaceVariant),
               ),
             ],
 
             if (estaAcordada) ...[
-              const SizedBox(height: 8),
+              const SizedBox(height: Espacios.e8),
               Text(
                 'Tiene un intercambio acordado: confirma la entrega o cancélalo en Ofertas de trueque.',
-                style: TextStyle(fontSize: 12, color: colores.onSurfaceVariant),
+                style: TextosTruequeU.ayuda.copyWith(color: colores.onSurfaceVariant),
               ),
             ],
 
-            const SizedBox(height: 12),
+            const SizedBox(height: Espacios.e12),
             Wrap(
               alignment: WrapAlignment.end,
-              spacing: 8,
-              runSpacing: 8,
+              spacing: Espacios.e8,
+              runSpacing: Espacios.e8,
               children: [
                 // Descartar la reserva (volver a disponible): comentado por ahora
                 // if (estaReservada)

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../tema.dart';
 
 Future<String?> pedirMotivoCancelacion(BuildContext context) {
   return showDialog<String>(
@@ -37,7 +38,7 @@ class _DialogoMotivoState extends State<_DialogoMotivo> {
               'Las dos publicaciones volverán a estar disponibles. '
               'El motivo queda guardado en el historial.',
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: Espacios.e12),
             TextFormField(
               controller: _motivo,
               maxLength: 200,

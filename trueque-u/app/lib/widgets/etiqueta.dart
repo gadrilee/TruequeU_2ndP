@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../tema.dart';
 
 class Etiqueta extends StatelessWidget {
   const Etiqueta({
@@ -17,23 +18,19 @@ class Etiqueta extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: Espacios.e10, vertical: Espacios.e4),
       decoration: BoxDecoration(
         color: fondo,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(Radios.r16),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(icono, size: 14, color: colorTexto),
-          const SizedBox(width: 4),
+          const SizedBox(width: Espacios.e4),
           Text(
             texto,
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-              color: colorTexto,
-            ),
+            style: TextosTruequeU.etiqueta.copyWith(color: colorTexto),
           ),
         ],
       ),

@@ -9,6 +9,7 @@ import '../widgets/banner_error.dart';
 import '../widgets/boton_carga.dart';
 import '../widgets/campo_texto.dart';
 import '../widgets/pagina_acceso.dart';
+import '../tema.dart';
 
 /// Recuperar contraseña: la persona escribe su correo y recibe una contraseña nueva por correo.
 class PantallaRecuperarContrasena extends StatefulWidget {
@@ -76,16 +77,16 @@ class _PantallaRecuperarContrasenaState extends State<PantallaRecuperarContrasen
             height: 56,
             decoration: BoxDecoration(
               color: colores.primaryContainer,
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(Radios.r16),
             ),
             child: Icon(Icons.vpn_key, color: colores.primary),
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: Espacios.e16),
         const Text(
           'Escribe el correo de tu cuenta y te enviaremos una contraseña nueva.',
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: Espacios.e16),
         Form(
           key: _formulario,
           child: Column(
@@ -100,7 +101,7 @@ class _PantallaRecuperarContrasenaState extends State<PantallaRecuperarContrasen
                 alEnviar: _enviar,
                 validador: validarCorreo,
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: Espacios.e16),
               BannerError(_error),
               BotonCarga(
                 texto: 'Enviar contraseña nueva',
@@ -111,17 +112,17 @@ class _PantallaRecuperarContrasenaState extends State<PantallaRecuperarContrasen
           ),
         ),
         if (_enviado) ...[
-          const SizedBox(height: 16),
+          const SizedBox(height: Espacios.e16),
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(Espacios.e16),
             decoration: BoxDecoration(
               color: colores.tertiaryContainer,
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(Radios.r14),
             ),
             child: Row(
               children: [
                 Icon(Icons.check_circle_outline, color: colores.onTertiaryContainer),
-                const SizedBox(width: 12),
+                const SizedBox(width: Espacios.e12),
                 Expanded(
                   child: Text(
                     'Listo. Revisa tu correo: ahí está tu contraseña nueva.',

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../utilidades/formato_entrega.dart';
+import '../tema.dart';
 
 Future<Map<String, String>?> pedirDatosEntrega(
   BuildContext context, {
@@ -92,14 +93,14 @@ class _DialogoEntregaState extends State<_DialogoEntrega> {
                   decoration: const InputDecoration(labelText: 'Fecha (dd/mm/aaaa)'),
                   validator: _validarFecha,
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: Espacios.e8),
                 TextFormField(
                   controller: _hora,
                   keyboardType: TextInputType.datetime,
                   decoration: const InputDecoration(labelText: 'Hora (hh:mm)'),
                   validator: _validarHora,
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: Espacios.e8),
                 TextFormField(
                   controller: _lugar,
                   maxLength: 120,

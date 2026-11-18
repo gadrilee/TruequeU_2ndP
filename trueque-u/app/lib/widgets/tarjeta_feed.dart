@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../utilidades/etiquetas.dart';
 import 'chip_estado.dart';
 import 'foto_publicacion.dart';
+import '../tema.dart';
 
 /// =========================================================================
 /// COMPONENTE CARD DEL FEED
@@ -62,19 +63,19 @@ class TarjetaFeed extends StatelessWidget {
 
     return Card(
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(Radios.r20),
         side: BorderSide(
           color: loReserveYo ? colores.primary : colores.outlineVariant,
           width: loReserveYo ? 1.5 : 1,
         ),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(Espacios.e16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(child: FotoPublicacion(url: imagenUrl)),
-            const SizedBox(height: 10),
+            const SizedBox(height: Espacios.e10),
             // Fila superior: Título del objeto y Chip de estado de publicación
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -84,30 +85,27 @@ class TarjetaFeed extends StatelessWidget {
                     titulo,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextosTruequeU.tituloTarjeta,
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: Espacios.e8),
                 ChipEstado(
                   estado: estadoPublicacion,
                   loReserveYo: loReserveYo,
                 ),
               ],
             ),
-            const SizedBox(height: 6),
+            const SizedBox(height: Espacios.e6),
 
             // Autor de la publicación
             Row(
               children: [
                 Icon(Icons.person_outline, size: 14, color: colores.outline),
-                const SizedBox(width: 4),
+                const SizedBox(width: Espacios.e4),
                 Text(
                   esMiPublicacion ? 'Publicado por ti' : 'Por: $nombreAutor',
                   style: TextStyle(
-                    fontSize: 12,
+                    fontSize: Tipos.t12,
                     fontWeight:
                         esMiPublicacion ? FontWeight.bold : FontWeight.normal,
                     color: esMiPublicacion ? colores.primary : colores.outline,
@@ -115,7 +113,7 @@ class TarjetaFeed extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: Espacios.e8),
 
             Text(
               (descripcion != null && descripcion!.trim().isNotEmpty)
@@ -123,67 +121,56 @@ class TarjetaFeed extends StatelessWidget {
                   : 'Sin descripción detallada',
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: 13,
-                color: (descripcion != null && descripcion!.trim().isNotEmpty)
+              style: TextosTruequeU.detalle.copyWith(color: (descripcion != null && descripcion!.trim().isNotEmpty)
                     ? colores.onSurfaceVariant
-                    : colores.outline,
-              ),
+                    : colores.outline),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: Espacios.e8),
 
             // Chips de estado del objeto e información de reserva si aplica
             Wrap(
-              spacing: 6,
-              runSpacing: 4,
+              spacing: Espacios.e6,
+              runSpacing: Espacios.e4,
               children: [
                 Container(
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      const EdgeInsets.symmetric(horizontal: Espacios.e8, vertical: 3),
                   decoration: BoxDecoration(
                     color: colores.primaryContainer,
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(Radios.r8),
                   ),
                   child: Text(
                     estadoFisico == 'nuevo'
                         ? 'Condición: Nuevo'
                         : 'Condición: Usado',
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w500,
-                      color: colores.onPrimaryContainer,
-                    ),
+                    style: TextosTruequeU.chip.copyWith(color: colores.onPrimaryContainer),
                   ),
                 ),
                 Container(
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      const EdgeInsets.symmetric(horizontal: Espacios.e8, vertical: 3),
                   decoration: BoxDecoration(
                     color: colores.primaryContainer,
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(Radios.r8),
                   ),
                   child: Text(
                     'Categoría: ${etiquetasCategoria[categoria] ?? 'Otros'}',
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w500,
-                      color: colores.onPrimaryContainer,
-                    ),
+                    style: TextosTruequeU.chip.copyWith(color: colores.onPrimaryContainer),
                   ),
                 ),
                 // Quién reservó: solo si fue otra persona (si fui yo, ya lo dice el chip superior)
                 if (estaReservado && !loReserveYo && nombreReserva != null)
                   Container(
                     padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        const EdgeInsets.symmetric(horizontal: Espacios.e8, vertical: 3),
                     decoration: BoxDecoration(
                       color: colores.secondaryContainer,
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(Radios.r8),
                     ),
                     child: Text(
                       'Reservado por: $nombreReserva',
                       style: TextStyle(
-                        fontSize: 11,
+                        fontSize: Tipos.t11,
                         fontWeight: FontWeight.w600,
                         color: colores.onSecondaryContainer,
                       ),
@@ -191,7 +178,7 @@ class TarjetaFeed extends StatelessWidget {
                   ),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: Espacios.e12),
 
             // BOTÓN DE ACCIÓN: Reservar / Descartar
             SizedBox(
@@ -215,7 +202,7 @@ class TarjetaFeed extends StatelessWidget {
           height: 36,
           width: 36,
           child: Padding(
-            padding: EdgeInsets.all(8),
+            padding: EdgeInsets.all(Espacios.e8),
             child: CircularProgressIndicator(strokeWidth: 2),
           ),
         ),
@@ -249,7 +236,7 @@ class TarjetaFeed extends StatelessWidget {
             label: const Text('Completar intercambio'),
             onPressed: alCompletar,
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: Espacios.e6),
           Row(
             children: [
               // H7: quien reservó escribe al dueño con un toque para coordinar la entrega
@@ -261,7 +248,7 @@ class TarjetaFeed extends StatelessWidget {
                     onPressed: alContactar,
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: Espacios.e8),
               ],
               // H3: salida de emergencia para quien reservó por error
               Expanded(
@@ -278,11 +265,11 @@ class TarjetaFeed extends StatelessWidget {
             ],
           ),
           if (!tieneTelefono) ...[
-            const SizedBox(height: 4),
+            const SizedBox(height: Espacios.e4),
             Text(
               'El contacto se ve cuando los dos aceptan',
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 11, color: colores.outline),
+              style: TextosTruequeU.pie.copyWith(color: colores.outline),
             ),
           ],
         ],
@@ -324,7 +311,7 @@ class TarjetaFeed extends StatelessWidget {
             onPressed: null,
             child: Text('Oferta enviada'),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: Espacios.e6),
           OutlinedButton(
             onPressed: () => context.go('/ofertas'),
             child: const Text('Ver mis ofertas'),
@@ -343,7 +330,7 @@ class TarjetaFeed extends StatelessWidget {
           label: const Text('Ofrecer un objeto'),
           onPressed: alOfertar,
         ),
-        const SizedBox(height: 2),
+        const SizedBox(height: Espacios.e2),
         TextButton.icon(
           icon: const Icon(Icons.bookmark_add_outlined, size: 18),
           label: const Text('Reservar'),
@@ -352,7 +339,7 @@ class TarjetaFeed extends StatelessWidget {
         Text(
           'Ofrecer: cambias un objeto tuyo. Reservar: solo lo apartas.',
           textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.outline),
+          style: TextosTruequeU.pie.copyWith(color: Theme.of(context).colorScheme.outline),
         ),
       ],
     );

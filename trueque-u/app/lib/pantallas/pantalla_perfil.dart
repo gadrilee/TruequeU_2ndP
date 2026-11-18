@@ -7,6 +7,7 @@ import '../servicios/analitica.dart';
 import '../widgets/dialogo_eliminar_cuenta.dart';
 import '../widgets/pagina_acceso.dart';
 import '../widgets/resumen_calificaciones.dart';
+import '../tema.dart';
 
 class PantallaPerfil extends StatelessWidget {
   const PantallaPerfil({super.key});
@@ -62,15 +63,11 @@ class PantallaPerfil extends StatelessWidget {
             backgroundColor: colores.primary,
             child: Text(
               _iniciales(usuario.nombre),
-              style: TextStyle(
-                fontSize: 26,
-                fontWeight: FontWeight.bold,
-                color: colores.onPrimary,
-              ),
+              style: TextosTruequeU.titulo.copyWith(color: colores.onPrimary),
             ),
           ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: Espacios.e12),
         Text(
           usuario.nombre,
           textAlign: TextAlign.center,
@@ -80,19 +77,19 @@ class PantallaPerfil extends StatelessWidget {
               ?.copyWith(fontWeight: FontWeight.bold),
         ),
         if (usuario.correo != null) ...[
-          const SizedBox(height: 4),
+          const SizedBox(height: Espacios.e4),
           Text(
             usuario.correo!,
             textAlign: TextAlign.center,
             style: TextStyle(color: colores.onSurfaceVariant),
           ),
         ],
-        const SizedBox(height: 8),
+        const SizedBox(height: Espacios.e8),
         ResumenCalificaciones(
           key: ValueKey('calificaciones-${usuario.id}'),
           idUsuario: usuario.id,
         ),
-        const SizedBox(height: 24),
+        const SizedBox(height: Espacios.e24),
         Card(
           clipBehavior: Clip.antiAlias,
           child: Column(
@@ -116,7 +113,7 @@ class PantallaPerfil extends StatelessWidget {
             ],
           ),
         ),
-        const SizedBox(height: 24),
+        const SizedBox(height: Espacios.e24),
         OutlinedButton.icon(
           style: OutlinedButton.styleFrom(
             foregroundColor: colores.error,

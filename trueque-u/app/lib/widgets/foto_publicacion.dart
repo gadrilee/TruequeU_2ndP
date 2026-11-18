@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import '../tema.dart';
 
 Future<String?> elegirFoto() async {
   final archivo = await ImagePicker().pickImage(
@@ -40,7 +41,7 @@ class FotoPublicacion extends StatelessWidget {
           )
         : _imagen();
     return ClipRRect(
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(Radios.r12),
       child: cuadrada
           ? AspectRatio(aspectRatio: 1, child: hijo)
           : SizedBox(height: alto, width: double.infinity, child: hijo),

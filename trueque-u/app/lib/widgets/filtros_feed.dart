@@ -48,14 +48,14 @@ class FiltrosFeed extends StatelessWidget {
       child: Chip(
         avatar: const Icon(Icons.tune, size: 16),
         label: Text(titulo),
-        backgroundColor: Colors.white,
+        backgroundColor: TemaTruequeU.blanco,
         shape: const StadiumBorder(side: BorderSide(color: TemaTruequeU.borde)),
       ),
     );
   }
 
   static final buscadorBorde = OutlineInputBorder(
-    borderRadius: BorderRadius.circular(28),
+    borderRadius: BorderRadius.circular(Radios.r28),
     borderSide: const BorderSide(color: TemaTruequeU.borde),
   );
 
@@ -65,7 +65,7 @@ class FiltrosFeed extends StatelessWidget {
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 1100),
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+          padding: const EdgeInsets.fromLTRB(Espacios.e20, Espacios.e12, Espacios.e20, 0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -86,10 +86,10 @@ class FiltrosFeed extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: Espacios.e8),
               Wrap(
-                spacing: 8,
-                runSpacing: 4,
+                spacing: Espacios.e8,
+                runSpacing: Espacios.e4,
                 children: [
                   _menuFiltro('Categoría', 'categoria', etiquetasCategoria),
                   _menuFiltro('Condición', 'condicion', etiquetasCondicion),
@@ -98,10 +98,10 @@ class FiltrosFeed extends StatelessWidget {
               ),
               // Filtros activos: cada uno se puede quitar con la X
               if (_hayFiltros) ...[
-                const SizedBox(height: 4),
+                const SizedBox(height: Espacios.e4),
                 Wrap(
-                  spacing: 8,
-                  runSpacing: 4,
+                  spacing: Espacios.e8,
+                  runSpacing: Espacios.e4,
                   crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
                     if (busqueda.isNotEmpty)

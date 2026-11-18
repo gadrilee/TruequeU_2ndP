@@ -8,6 +8,7 @@ import '../widgets/error_con_reintento.dart';
 import '../widgets/mensaje_vacio.dart';
 import '../widgets/pagina_acceso.dart';
 import '../widgets/tarjeta_intercambio.dart';
+import '../tema.dart';
 
 /// RUTA PRIVADA ("/intercambios"): los intercambios completados de la persona,
 /// ya sea como dueña del objeto o como quien lo reservó.
@@ -64,7 +65,7 @@ class _PantallaIntercambiosState extends State<PantallaIntercambios> {
     Widget contenido;
     if (_cargando) {
       contenido = const Padding(
-        padding: EdgeInsets.all(40),
+        padding: EdgeInsets.all(Espacios.e40),
         child: Center(child: CircularProgressIndicator()),
       );
     } else if (_error != null) {
@@ -80,7 +81,7 @@ class _PantallaIntercambiosState extends State<PantallaIntercambios> {
         children: [
           for (final pub in _intercambios) ...[
             TarjetaIntercambio(pub: pub, idYo: yo?.id),
-            const SizedBox(height: 12),
+            const SizedBox(height: Espacios.e12),
           ],
         ],
       );
@@ -99,7 +100,7 @@ class _PantallaIntercambiosState extends State<PantallaIntercambios> {
       ],
       hijos: [
         contenido,
-        const SizedBox(height: 16),
+        const SizedBox(height: Espacios.e16),
         TextButton(
           onPressed: () => context.go('/perfil'),
           child: const Text('Volver al perfil'),

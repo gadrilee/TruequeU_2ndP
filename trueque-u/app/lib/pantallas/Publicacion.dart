@@ -11,6 +11,7 @@ import '../widgets/boton_carga.dart';
 import '../widgets/campo_texto.dart';
 import '../widgets/foto_publicacion.dart';
 import '../widgets/pagina_acceso.dart';
+import '../tema.dart';
 
 /// Formulario para crear una nueva publicación de trueque.
 class PantallaPublicacion extends StatefulWidget {
@@ -116,14 +117,14 @@ class _PantallaPublicacionState extends State<PantallaPublicacion> {
                   return null;
                 },
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: Espacios.e16),
               CampoTexto(
                 controlador: _descripcion,
                 etiqueta: 'Descripción (opcional)',
                 lineas: 3,
                 tipoTeclado: TextInputType.multiline,
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: Espacios.e16),
               DropdownButtonFormField<String>(
                 initialValue: _estado,
                 decoration: const InputDecoration(
@@ -140,7 +141,7 @@ class _PantallaPublicacionState extends State<PantallaPublicacion> {
                   }
                 },
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: Espacios.e16),
               DropdownButtonFormField<String>(
                 initialValue: _categoria,
                 decoration: const InputDecoration(
@@ -157,9 +158,9 @@ class _PantallaPublicacionState extends State<PantallaPublicacion> {
                   }
                 },
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: Espacios.e16),
               FotoPublicacion(url: _foto, alto: 160),
-              const SizedBox(height: 8),
+              const SizedBox(height: Espacios.e8),
               OutlinedButton(
                 onPressed: _cargando ? null : _elegirFoto,
                 child: Text(_foto == null ? 'Elegir foto' : 'Cambiar foto'),
@@ -169,7 +170,7 @@ class _PantallaPublicacionState extends State<PantallaPublicacion> {
                   onPressed: _cargando ? null : () => setState(() => _foto = null),
                   child: const Text('Quitar foto'),
                 ),
-              const SizedBox(height: 20),
+              const SizedBox(height: Espacios.e20),
               BannerError(_error),
               BotonCarga(
                 texto: 'Guardar',
@@ -179,7 +180,7 @@ class _PantallaPublicacionState extends State<PantallaPublicacion> {
             ],
           ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: Espacios.e12),
         TextButton(
           onPressed: () => context.go('/mis-publicaciones'),
           child: const Text('Cancelar'),

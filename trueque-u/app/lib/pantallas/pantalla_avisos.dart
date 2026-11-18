@@ -7,6 +7,7 @@ import '../servicios/cliente_api.dart';
 import '../widgets/error_con_reintento.dart';
 import '../widgets/mensaje_vacio.dart';
 import '../widgets/pagina_acceso.dart';
+import '../tema.dart';
 
 class PantallaAvisos extends StatefulWidget {
   const PantallaAvisos({super.key});
@@ -74,7 +75,7 @@ class _PantallaAvisosState extends State<PantallaAvisos> {
     Widget contenido;
     if (_cargando) {
       contenido = const Padding(
-        padding: EdgeInsets.all(40),
+        padding: EdgeInsets.all(Espacios.e40),
         child: Center(child: CircularProgressIndicator()),
       );
     } else if (_error != null) {
@@ -112,7 +113,7 @@ class _PantallaAvisosState extends State<PantallaAvisos> {
       alVolver: () => context.go('/perfil'),
       hijos: [
         contenido,
-        const SizedBox(height: 16),
+        const SizedBox(height: Espacios.e16),
         TextButton(
           onPressed: () => context.go('/perfil'),
           child: const Text('Volver al perfil'),

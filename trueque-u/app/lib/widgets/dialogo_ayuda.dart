@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../tema.dart';
 
 /// Ayuda corta y contextual: cómo se reserva y se entrega un objeto en Trueque U.
 Future<void> mostrarAyudaTrueque(BuildContext context) {
@@ -27,18 +28,18 @@ Future<void> mostrarAyudaTrueque(BuildContext context) {
               numero: '4',
               texto: 'Completar: toca "Completar intercambio" cuando ya se realizó.',
             ),
-            SizedBox(height: 8),
+            SizedBox(height: Espacios.e8),
             Text('¿Te equivocaste? Usa "Cancelar reserva" y el objeto vuelve a estar disponible.'),
-            SizedBox(height: 12),
+            SizedBox(height: Espacios.e12),
             Text(
               'También puedes ofrecer uno de tus objetos: en una publicación disponible toca '
               '"Ofrecer un objeto". El dueño la acepta, la rechaza o responde con una contraoferta en Ofertas de trueque. '
               'Ofrecer cambia un objeto tuyo por el suyo; Reservar solo lo aparta. '
               'Cuando el intercambio se completa, cada parte puede calificar a la otra de 1 a 5 estrellas en Ofertas de trueque.',
             ),
-            SizedBox(height: 12),
+            SizedBox(height: Espacios.e12),
             Text('Estados', style: TextStyle(fontWeight: FontWeight.bold)),
-            SizedBox(height: 4),
+            SizedBox(height: Espacios.e4),
             Text(
               '• Disponible: se puede reservar.\n'
               '• Reservado: alguien lo apartó.\n'
@@ -69,15 +70,15 @@ class _Paso extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 6),
+      padding: const EdgeInsets.only(bottom: Espacios.e6),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           CircleAvatar(
             radius: 11,
-            child: Text(numero, style: const TextStyle(fontSize: 12)),
+            child: Text(numero, style: TextosTruequeU.ayuda),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: Espacios.e8),
           Expanded(child: Text(texto)),
         ],
       ),

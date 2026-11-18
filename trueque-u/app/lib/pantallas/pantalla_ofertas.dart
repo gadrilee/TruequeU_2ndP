@@ -13,6 +13,7 @@ import '../widgets/dialogo_oferta.dart';
 import '../widgets/error_con_reintento.dart';
 import '../widgets/mensaje_vacio.dart';
 import '../widgets/pagina_acceso.dart';
+import '../tema.dart';
 
 class PantallaOfertas extends StatefulWidget {
   const PantallaOfertas({super.key});
@@ -229,7 +230,7 @@ class _PantallaOfertasState extends State<PantallaOfertas> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text('Se negocia: ${pedida['titulo']}'),
-                const SizedBox(height: 12),
+                const SizedBox(height: Espacios.e12),
                 for (final propuesta in propuestas) ...[
                   Text(
                     'Ronda ${propuesta['ronda']}: ${propuesta['oferente']['nombre']} propone ${propuesta['ofrecida']['titulo']}',
@@ -240,7 +241,7 @@ class _PantallaOfertasState extends State<PantallaOfertas> {
                   ),
                   if (propuesta['motivo_cancelacion'] != null)
                     Text('Motivo: ${propuesta['motivo_cancelacion']}'),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: Espacios.e10),
                 ],
               ],
             ),
@@ -261,7 +262,7 @@ class _PantallaOfertasState extends State<PantallaOfertas> {
     Widget contenido;
     if (_cargando) {
       contenido = const Padding(
-        padding: EdgeInsets.all(40),
+        padding: EdgeInsets.all(Espacios.e40),
         child: Center(child: CircularProgressIndicator()),
       );
     } else if (_error != null) {
@@ -328,7 +329,7 @@ class _PantallaOfertasState extends State<PantallaOfertas> {
                 destructivo: true,
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: Espacios.e12),
           ],
         ],
       );
@@ -352,14 +353,14 @@ class _PantallaOfertasState extends State<PantallaOfertas> {
           ],
           selected: {_viendoEnviadas ? 1 : 0},
           style: SegmentedButton.styleFrom(
-            backgroundColor: Colors.white,
+            backgroundColor: TemaTruequeU.blanco,
             selectedBackgroundColor: Theme.of(context).colorScheme.primaryContainer,
             selectedForegroundColor: Theme.of(context).colorScheme.onPrimaryContainer,
           ),
           onSelectionChanged: (valor) =>
               setState(() => _viendoEnviadas = valor.first == 1),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: Espacios.e16),
         contenido,
       ],
     );
@@ -419,7 +420,7 @@ class _TarjetaOferta extends StatelessWidget {
 
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(Espacios.e16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -430,17 +431,17 @@ class _TarjetaOferta extends StatelessWidget {
                 Text(quien, style: TextStyle(color: colores.onSurfaceVariant)),
               ],
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: Espacios.e4),
             Text('Ronda ${oferta['ronda'] ?? 1}', style: TextStyle(color: colores.onSurfaceVariant)),
-            const SizedBox(height: 8),
+            const SizedBox(height: Espacios.e8),
             Text('Quiere: ${pedida['titulo'] ?? 'un objeto'}'),
-            const SizedBox(height: 4),
+            const SizedBox(height: Espacios.e4),
             Text(
               'Ofrece: ${ofrecida['titulo'] ?? 'un objeto'}',
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),
             if (pendiente) ...[
-              const SizedBox(height: 12),
+              const SizedBox(height: Espacios.e12),
               if (enProgreso)
                 const Center(
                   child: SizedBox(
@@ -458,7 +459,7 @@ class _TarjetaOferta extends StatelessWidget {
                         child: const Text('Aceptar'),
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: Espacios.e8),
                     Expanded(
                       child: OutlinedButton(
                         onPressed: alRechazar,
@@ -473,7 +474,7 @@ class _TarjetaOferta extends StatelessWidget {
                   child: const Text('Cancelar oferta'),
                 ),
               if (!enProgreso && recibida) ...[
-                const SizedBox(height: 8),
+                const SizedBox(height: Espacios.e8),
                 OutlinedButton(
                   onPressed: alContraofertar,
                   child: const Text('Contraofertar'),
@@ -481,20 +482,20 @@ class _TarjetaOferta extends StatelessWidget {
               ],
             ],
             if (estado == 'aceptada') ...[
-              const SizedBox(height: 12),
+              const SizedBox(height: Espacios.e12),
               BloqueEntrega(
                 key: ValueKey('entrega-${oferta['id']}'),
                 idOferta: (oferta['id'] as num).toInt(),
                 idYo: idYo,
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: Espacios.e12),
               Text(miaConfirmada ? 'Tu entrega: confirmada' : 'Tu entrega: pendiente'),
               Text(
                 otraConfirmada
                     ? 'La otra persona: confirmada'
                     : 'La otra persona: pendiente',
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: Espacios.e8),
               if (enProgreso)
                 const Center(
                   child: SizedBox(
@@ -508,7 +509,7 @@ class _TarjetaOferta extends StatelessWidget {
                   onPressed: miaConfirmada ? null : alConfirmarEntrega,
                   child: const Text('Confirmar entrega'),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: Espacios.e8),
                 OutlinedButton(
                   onPressed: alCancelarIntercambio,
                   style: OutlinedButton.styleFrom(
@@ -520,7 +521,7 @@ class _TarjetaOferta extends StatelessWidget {
               ],
             ],
             if (estado == 'completada') ...[
-              const SizedBox(height: 12),
+              const SizedBox(height: Espacios.e12),
               BloqueCalificacion(
                 key: ValueKey('calificacion-${oferta['id']}'),
                 idOferta: (oferta['id'] as num).toInt(),
@@ -528,10 +529,10 @@ class _TarjetaOferta extends StatelessWidget {
               ),
             ],
             if ((estado == 'anulada' || estado == 'cancelada') && oferta['motivo_cancelacion'] != null) ...[
-              const SizedBox(height: 8),
+              const SizedBox(height: Espacios.e8),
               Text('Motivo: ${oferta['motivo_cancelacion']}'),
             ],
-            const SizedBox(height: 4),
+            const SizedBox(height: Espacios.e4),
             Align(
               alignment: Alignment.centerRight,
               child: TextButton(
@@ -564,10 +565,10 @@ class _ChipEstado extends StatelessWidget {
       _ => ('Pendiente', colores.primaryContainer, colores.onPrimaryContainer),
     };
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: Espacios.e10, vertical: Espacios.e4),
       decoration: BoxDecoration(
         color: fondo,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(Radios.r20),
       ),
       child: Text(texto, style: TextStyle(color: tinta, fontWeight: FontWeight.w600)),
     );

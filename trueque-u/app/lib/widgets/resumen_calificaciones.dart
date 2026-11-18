@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../estado/controlador_autenticacion.dart';
 import '../servicios/cliente_api.dart';
+import '../tema.dart';
 
 class ResumenCalificaciones extends StatefulWidget {
   const ResumenCalificaciones({super.key, required this.idUsuario});
@@ -41,7 +42,7 @@ class _ResumenCalificacionesState extends State<ResumenCalificaciones> {
 
   @override
   Widget build(BuildContext context) {
-    if (_cargando) return const SizedBox(height: 24);
+    if (_cargando) return const SizedBox(height: Espacios.e24);
     if (_cantidad == 0) {
       return const Text('Aún no tienes calificaciones', textAlign: TextAlign.center);
     }
@@ -50,7 +51,7 @@ class _ResumenCalificacionesState extends State<ResumenCalificaciones> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Icon(Icons.star_border, color: Theme.of(context).colorScheme.secondary),
-        const SizedBox(width: 6),
+        const SizedBox(width: Espacios.e6),
         Text('${_promedio.toStringAsFixed(1)} de 5 · $_cantidad $palabra'),
       ],
     );

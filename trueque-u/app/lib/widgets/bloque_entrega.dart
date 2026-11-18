@@ -6,6 +6,7 @@ import '../servicios/analitica.dart';
 import '../servicios/cliente_api.dart';
 import '../utilidades/formato_entrega.dart';
 import 'dialogo_entrega.dart';
+import '../tema.dart';
 
 class BloqueEntrega extends StatefulWidget {
   const BloqueEntrega({super.key, required this.idOferta, required this.idYo});
@@ -145,7 +146,7 @@ class _BloqueEntregaState extends State<BloqueEntrega> {
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                   Text(_nombreEstado(propuesta['estado'] as String)),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: Espacios.e10),
                 ],
               ],
             ),
@@ -177,7 +178,7 @@ class _BloqueEntregaState extends State<BloqueEntrega> {
       else
         const Text('Todavía no acordaron fecha ni lugar'),
       if (pendiente != null) ...[
-        const SizedBox(height: 8),
+        const SizedBox(height: Espacios.e8),
         if (esMia) ...[
           Text(
             '${reprograma ? 'Tu cambio espera respuesta' : 'Tu propuesta espera respuesta'}: ${resumenEntrega(pendiente)}',
@@ -188,7 +189,7 @@ class _BloqueEntregaState extends State<BloqueEntrega> {
             '${(pendiente['proponente'] as Map)['nombre']} ${reprograma ? 'propone cambiar a' : 'propone'}: ${resumenEntrega(pendiente)}',
           ),
           if (reprograma) const Text('Mientras tanto sigue vigente el acuerdo anterior.'),
-          const SizedBox(height: 8),
+          const SizedBox(height: Espacios.e8),
           if (_enviando)
             const Center(child: SizedBox(height: 24, width: 24, child: CircularProgressIndicator(strokeWidth: 2)))
           else
@@ -197,7 +198,7 @@ class _BloqueEntregaState extends State<BloqueEntrega> {
                 Expanded(
                   child: FilledButton(onPressed: _aceptar, child: const Text('Aceptar propuesta')),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: Espacios.e8),
                 Expanded(
                   child: OutlinedButton(onPressed: _contraproponer, child: const Text('Contraproponer')),
                 ),
@@ -205,7 +206,7 @@ class _BloqueEntregaState extends State<BloqueEntrega> {
             ),
         ],
       ] else if (!_enviando) ...[
-        const SizedBox(height: 8),
+        const SizedBox(height: Espacios.e8),
         OutlinedButton(
           onPressed: _proponer,
           child: Text(reprograma ? 'Reprogramar' : 'Proponer fecha y lugar'),
@@ -224,16 +225,16 @@ class _BloqueEntregaState extends State<BloqueEntrega> {
     final colores = Theme.of(context).colorScheme;
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(Espacios.e12),
       decoration: BoxDecoration(
         color: colores.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(Radios.r12),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text('Fecha y lugar de entrega', style: TextStyle(fontWeight: FontWeight.bold)),
-          const SizedBox(height: 6),
+          const SizedBox(height: Espacios.e6),
           ..._contenido(),
         ],
       ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../utilidades/etiquetas.dart';
+import '../tema.dart';
 
 Future<int?> mostrarDialogoOferta(
   BuildContext context, {
@@ -85,7 +86,7 @@ class _DialogoOfertaState extends State<_DialogoOferta> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(widget.pregunta),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: Espacios.e8),
                   ConstrainedBox(
                     constraints: const BoxConstraints(maxHeight: 280),
                     child: SingleChildScrollView(

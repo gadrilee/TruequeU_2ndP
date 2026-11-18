@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../tema.dart';
+import 'logo_trueque_u.dart';
 
 class EncabezadoAcceso extends StatelessWidget {
   const EncabezadoAcceso({
@@ -30,12 +31,12 @@ class EncabezadoAcceso extends StatelessWidget {
           end: Alignment.bottomCenter,
           colors: [TemaTruequeU.azulOscuro, TemaTruequeU.azul],
         ),
-        borderRadius: BorderRadius.vertical(bottom: Radius.circular(36)),
+        borderRadius: BorderRadius.vertical(bottom: Radius.circular(Radios.r36)),
       ),
       child: SafeArea(
         bottom: false,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
+          padding: const EdgeInsets.fromLTRB(Espacios.e24, Espacios.e16, Espacios.e24, Espacios.e32),
           child: Column(
             crossAxisAlignment: alineacion,
             children: [
@@ -44,34 +45,22 @@ class EncabezadoAcceso extends StatelessWidget {
                   padding: EdgeInsets.zero,
                   alignment: Alignment.centerLeft,
                   tooltip: 'Volver',
-                  icon: const Icon(Icons.arrow_back, color: Colors.white),
+                  icon: const Icon(Icons.arrow_back, color: TemaTruequeU.blanco),
                   onPressed: alVolver,
                 ),
               if (conLogo) ...[
-                const SizedBox(height: 16),
-                Container(
-                  width: 64,
-                  height: 64,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: const Icon(
-                    Icons.swap_horiz,
-                    size: 36,
-                    color: TemaTruequeU.rojo,
-                  ),
-                ),
-                const SizedBox(height: 16),
+                const SizedBox(height: Espacios.e16),
+                const LogoTruequeU(),
+                const SizedBox(height: Espacios.e16),
               ],
               Text(
                 titulo,
                 style: textos.headlineMedium?.copyWith(
-                  color: Colors.white,
+                  color: TemaTruequeU.blanco,
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: Espacios.e4),
               Text(
                 subtitulo,
                 textAlign: conLogo ? TextAlign.center : TextAlign.start,

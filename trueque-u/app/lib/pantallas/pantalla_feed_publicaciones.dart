@@ -13,6 +13,7 @@ import '../widgets/error_con_reintento.dart';
 import '../widgets/filtros_feed.dart';
 import '../widgets/mensaje_vacio.dart';
 import '../widgets/tarjeta_feed.dart';
+import '../tema.dart';
 
 /// =========================================================================
 /// PANTALLA FEED DE PUBLICACIONES (VISTA EN CUADRÍCULA / GRID)
@@ -370,7 +371,7 @@ class _PantallaFeedPublicacionesState extends State<PantallaFeedPublicaciones> {
     if (_cargando) {
       cuerpo = const Center(
         child: Padding(
-          padding: EdgeInsets.all(40),
+          padding: EdgeInsets.all(Espacios.e40),
           child: CircularProgressIndicator(),
         ),
       );
@@ -408,7 +409,7 @@ class _PantallaFeedPublicacionesState extends State<PantallaFeedPublicaciones> {
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 1100),
               child: GridView.builder(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.all(Espacios.e20),
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: columnas,
                   crossAxisSpacing: 16,
@@ -503,7 +504,7 @@ class _PantallaFeedPublicacionesState extends State<PantallaFeedPublicaciones> {
         child: Column(
           children: [
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, 16, 8, 0),
+              padding: const EdgeInsets.fromLTRB(Espacios.e20, Espacios.e16, Espacios.e8, 0),
               child: Row(
                 children: [
                   Expanded(
