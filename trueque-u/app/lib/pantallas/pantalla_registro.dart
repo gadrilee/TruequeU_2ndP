@@ -9,6 +9,7 @@ import '../widgets/banner_error.dart';
 import '../widgets/boton_carga.dart';
 import '../widgets/campo_texto.dart';
 import '../widgets/pagina_acceso.dart';
+import '../tema.dart';
 
 class PantallaRegistro extends StatefulWidget {
   const PantallaRegistro({super.key});
@@ -92,7 +93,7 @@ class _PantallaRegistroState extends State<PantallaRegistro> {
                 validador: (v) =>
                     (v ?? '').trim().length < 2 ? 'Escribe tu nombre' : null,
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: Espacios.e16),
               CampoTexto(
                 controlador: _correo,
                 etiqueta: 'Correo',
@@ -101,7 +102,7 @@ class _PantallaRegistroState extends State<PantallaRegistro> {
                 accionTeclado: TextInputAction.next,
                 validador: validarCorreo,
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: Espacios.e16),
               CampoTexto(
                 controlador: _telefono,
                 etiqueta: 'Teléfono (opcional, 8 dígitos)',
@@ -112,7 +113,7 @@ class _PantallaRegistroState extends State<PantallaRegistro> {
                 accionTeclado: TextInputAction.next,
                 validador: validarTelefonoOpcional,
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: Espacios.e16),
               CampoTexto(
                 controlador: _contrasena,
                 etiqueta: 'Contraseña',
@@ -121,7 +122,7 @@ class _PantallaRegistroState extends State<PantallaRegistro> {
                 accionTeclado: TextInputAction.next,
                 validador: validarContrasenaNueva,
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: Espacios.e16),
               CampoTexto(
                 controlador: _confirmacion,
                 etiqueta: 'Repite la contraseña',
@@ -132,7 +133,7 @@ class _PantallaRegistroState extends State<PantallaRegistro> {
                 validador: (v) =>
                     v != _contrasena.text ? 'Las contraseñas no coinciden' : null,
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: Espacios.e16),
               BannerError(_error),
               BotonCarga(
                 texto: 'Crear cuenta',

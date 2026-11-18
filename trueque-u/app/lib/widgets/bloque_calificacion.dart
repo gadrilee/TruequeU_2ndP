@@ -6,6 +6,7 @@ import '../servicios/analitica.dart';
 import '../servicios/cliente_api.dart';
 import 'dialogo_calificacion.dart';
 import 'estrellas.dart';
+import '../tema.dart';
 
 class BloqueCalificacion extends StatefulWidget {
   const BloqueCalificacion({super.key, required this.idOferta, required this.nombreOtra});
@@ -85,7 +86,7 @@ class _BloqueCalificacionState extends State<BloqueCalificacion> {
     if (mia == null) {
       return [
         Text('Todavía no calificas a ${widget.nombreOtra}'),
-        const SizedBox(height: 8),
+        const SizedBox(height: Espacios.e8),
         OutlinedButton(onPressed: _calificar, child: const Text('Calificar')),
       ];
     }
@@ -105,16 +106,16 @@ class _BloqueCalificacionState extends State<BloqueCalificacion> {
     final colores = Theme.of(context).colorScheme;
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(Espacios.e12),
       decoration: BoxDecoration(
         color: colores.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(Radios.r12),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text('Calificación', style: TextStyle(fontWeight: FontWeight.bold)),
-          const SizedBox(height: 6),
+          const SizedBox(height: Espacios.e6),
           ..._contenido(),
         ],
       ),

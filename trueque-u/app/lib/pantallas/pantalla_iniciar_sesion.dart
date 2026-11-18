@@ -9,6 +9,7 @@ import '../widgets/banner_error.dart';
 import '../widgets/boton_carga.dart';
 import '../widgets/campo_texto.dart';
 import '../widgets/pagina_acceso.dart';
+import '../tema.dart';
 
 class PantallaIniciarSesion extends StatefulWidget {
   const PantallaIniciarSesion({super.key});
@@ -80,7 +81,7 @@ class _PantallaIniciarSesionState extends State<PantallaIniciarSesion> {
               .headlineSmall
               ?.copyWith(fontWeight: FontWeight.bold),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: Espacios.e16),
         Form(
           key: _formulario,
           child: Column(
@@ -94,7 +95,7 @@ class _PantallaIniciarSesionState extends State<PantallaIniciarSesion> {
                 accionTeclado: TextInputAction.next,
                 validador: validarCorreo,
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: Espacios.e16),
               CampoTexto(
                 controlador: _contrasena,
                 etiqueta: 'Contraseña',
@@ -111,7 +112,7 @@ class _PantallaIniciarSesionState extends State<PantallaIniciarSesion> {
                   child: const Text('¿Olvidaste tu contraseña?'),
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: Espacios.e8),
               BannerError(_error),
               BotonCarga(
                 texto: 'Iniciar sesión',

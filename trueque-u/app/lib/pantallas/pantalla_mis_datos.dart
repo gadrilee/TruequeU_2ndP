@@ -8,6 +8,7 @@ import '../servicios/cliente_api.dart';
 import '../servicios/descarga_archivo.dart';
 import '../widgets/error_con_reintento.dart';
 import '../widgets/pagina_acceso.dart';
+import '../tema.dart';
 
 class PantallaMisDatos extends StatefulWidget {
   const PantallaMisDatos({super.key, this.descargar = descargarArchivo});
@@ -104,7 +105,7 @@ class _PantallaMisDatosState extends State<PantallaMisDatos> {
   Widget _tarjeta(String titulo, List<String> lineas, String vacio, {Widget? accion}) {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(Espacios.e16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -115,11 +116,11 @@ class _PantallaMisDatosState extends State<PantallaMisDatos> {
                   .titleMedium
                   ?.copyWith(fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: Espacios.e8),
             if (lineas.isEmpty) Text(vacio),
             for (final linea in lineas)
               Padding(
-                padding: const EdgeInsets.only(bottom: 4),
+                padding: const EdgeInsets.only(bottom: Espacios.e4),
                 child: Text(linea),
               ),
             if (accion != null) accion,
@@ -202,7 +203,7 @@ class _PantallaMisDatosState extends State<PantallaMisDatos> {
     Widget contenido;
     if (_cargando) {
       contenido = const Padding(
-        padding: EdgeInsets.all(40),
+        padding: EdgeInsets.all(Espacios.e40),
         child: Center(child: CircularProgressIndicator()),
       );
     } else if (_error != null) {
@@ -212,7 +213,7 @@ class _PantallaMisDatosState extends State<PantallaMisDatos> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           const Text('Esto es lo que la app guarda de ti. Puedes descargarlo cuando quieras.'),
-          const SizedBox(height: 16),
+          const SizedBox(height: Espacios.e16),
           Row(
             children: [
               Expanded(
@@ -222,7 +223,7 @@ class _PantallaMisDatosState extends State<PantallaMisDatos> {
                   label: const Text('Descargar JSON'),
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: Espacios.e12),
               Expanded(
                 child: FilledButton.icon(
                   onPressed: _descargando ? null : () => _descargar('csv'),
@@ -232,10 +233,10 @@ class _PantallaMisDatosState extends State<PantallaMisDatos> {
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: Espacios.e16),
           for (final tarjeta in _tarjetas()) ...[
             tarjeta,
-            const SizedBox(height: 8),
+            const SizedBox(height: Espacios.e8),
           ],
         ],
       );
@@ -247,7 +248,7 @@ class _PantallaMisDatosState extends State<PantallaMisDatos> {
       alVolver: () => context.go('/perfil'),
       hijos: [
         contenido,
-        const SizedBox(height: 16),
+        const SizedBox(height: Espacios.e16),
         TextButton(
           onPressed: () => context.go('/perfil'),
           child: const Text('Volver al perfil'),

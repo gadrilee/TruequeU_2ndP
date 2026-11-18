@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../tema.dart';
 
 /// Mensaje centrado para cuando no hay nada que mostrar:
 /// un ícono, un título, un texto opcional y un botón opcional.
@@ -26,23 +27,23 @@ class MensajeVacio extends StatelessWidget {
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 450),
         child: Padding(
-          padding: const EdgeInsets.all(32),
+          padding: const EdgeInsets.all(Espacios.e32),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(icono, size: 64, color: colores.outline),
-              const SizedBox(height: 16),
+              const SizedBox(height: Espacios.e16),
               Text(
                 titulo,
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                style: TextosTruequeU.subtitulo,
                 textAlign: TextAlign.center,
               ),
               if (mensaje != null) ...[
-                const SizedBox(height: 8),
+                const SizedBox(height: Espacios.e8),
                 Text(mensaje!, textAlign: TextAlign.center),
               ],
               if (textoBoton != null && alBoton != null) ...[
-                const SizedBox(height: 24),
+                const SizedBox(height: Espacios.e24),
                 FilledButton(onPressed: alBoton, child: Text(textoBoton!)),
               ],
             ],

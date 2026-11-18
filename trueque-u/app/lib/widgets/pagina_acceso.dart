@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'encabezado_acceso.dart';
+import '../tema.dart';
 
 class PaginaAcceso extends StatelessWidget {
   const PaginaAcceso({
@@ -52,7 +53,7 @@ class PaginaAcceso extends StatelessWidget {
         floatingActionButton: botonFlotante,
         body: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.all(Espacios.e24),
             child: contenido,
           ),
         ),
@@ -71,7 +72,7 @@ class PaginaAcceso extends StatelessWidget {
           Expanded(
             child: Center(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.all(24),
+                padding: const EdgeInsets.all(Espacios.e24),
                 child: contenido,
               ),
             ),
@@ -80,7 +81,7 @@ class PaginaAcceso extends StatelessWidget {
             SafeArea(
               top: false,
               child: Padding(
-                padding: const EdgeInsets.only(bottom: 16),
+                padding: const EdgeInsets.only(bottom: Espacios.e16),
                 child: pie,
               ),
             ),

@@ -8,6 +8,7 @@ import '../utilidades/etiquetas.dart';
 import '../widgets/error_con_reintento.dart';
 import '../widgets/mensaje_vacio.dart';
 import '../widgets/pagina_acceso.dart';
+import '../tema.dart';
 
 /// RUTA PRIVADA ("/historial"): qué ocurrió con los intercambios de la persona.
 ///
@@ -142,22 +143,22 @@ class _PantallaHistorialState extends State<PantallaHistorial> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(_frase(evento)),
-            const SizedBox(height: 16),
+            const SizedBox(height: Espacios.e16),
             Row(
               children: [
                 Icon(icono, size: 18),
-                const SizedBox(width: 8),
+                const SizedBox(width: Espacios.e8),
                 Text('Estado: $estado'),
               ],
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: Espacios.e8),
             Text('Categoría: $categoria'),
-            const SizedBox(height: 8),
+            const SizedBox(height: Espacios.e8),
             Text('Con: $otra'),
-            const SizedBox(height: 8),
+            const SizedBox(height: Espacios.e8),
             Text('Fecha: ${_fecha(evento['creado_en'] as String?, completa: true)}'),
             if (publicacion['id'] == null) ...[
-              const SizedBox(height: 12),
+              const SizedBox(height: Espacios.e12),
               const Text('Esta publicación ya no existe.'),
             ],
           ],
@@ -179,7 +180,7 @@ class _PantallaHistorialState extends State<PantallaHistorial> {
     Widget contenido;
     if (_cargando) {
       contenido = const Padding(
-        padding: EdgeInsets.all(40),
+        padding: EdgeInsets.all(Espacios.e40),
         child: Center(child: CircularProgressIndicator()),
       );
     } else if (_error != null) {
@@ -212,23 +213,20 @@ class _PantallaHistorialState extends State<PantallaHistorial> {
               child: InkWell(
                 onTap: () => _verDetalle(evento),
                 child: Padding(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(Espacios.e16),
                   child: Row(
                     children: [
                       Icon(_estado(evento['tipo'] as String).$1, size: 28),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: Espacios.e12),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
                               _frase(evento),
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
+                              style: TextosTruequeU.tituloItem,
                             ),
-                            const SizedBox(height: 4),
+                            const SizedBox(height: Espacios.e4),
                             Text(
                               '${_estado(evento['tipo'] as String).$2} · ${_fecha(evento['creado_en'] as String?)}',
                               style: TextStyle(color: colores.onSurfaceVariant),
@@ -242,7 +240,7 @@ class _PantallaHistorialState extends State<PantallaHistorial> {
                 ),
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: Espacios.e12),
           ],
         ],
       );
@@ -262,7 +260,7 @@ class _PantallaHistorialState extends State<PantallaHistorial> {
       hijos: [
         // Los tres filtros en una fila
         Wrap(
-          spacing: 8,
+          spacing: Espacios.e8,
           children: [
             for (final filtro in _filtros.keys)
               ChoiceChip(
@@ -273,9 +271,9 @@ class _PantallaHistorialState extends State<PantallaHistorial> {
               ),
           ],
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: Espacios.e16),
         contenido,
-        const SizedBox(height: 16),
+        const SizedBox(height: Espacios.e16),
         TextButton(
           onPressed: () => context.go('/perfil'),
           child: const Text('Volver al perfil'),

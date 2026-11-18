@@ -12,6 +12,7 @@ import '../widgets/error_con_reintento.dart';
 import '../widgets/mensaje_vacio.dart';
 import '../widgets/pagina_acceso.dart';
 import '../widgets/tarjeta_mi_publicacion.dart';
+import '../tema.dart';
 
 /// Pantalla que lista las publicaciones del usuario en formato de tarjetas.
 class PantallaMisPublicaciones extends StatefulWidget {
@@ -263,7 +264,7 @@ class _PantallaMisPublicacionesState extends State<PantallaMisPublicaciones> {
     Widget contenido;
     if (_cargando) {
       contenido = const Padding(
-        padding: EdgeInsets.all(40),
+        padding: EdgeInsets.all(Espacios.e40),
         child: Center(child: CircularProgressIndicator()),
       );
     } else if (_error != null) {
@@ -287,7 +288,7 @@ class _PantallaMisPublicacionesState extends State<PantallaMisPublicaciones> {
             'Total: ${_publicaciones.length}',
             style: TextStyle(color: colores.onSurfaceVariant),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: Espacios.e12),
           for (final pub in _publicaciones) ...[
             Builder(builder: (context) {
               final idPub = (pub['id'] as num).toInt();
@@ -333,7 +334,7 @@ class _PantallaMisPublicacionesState extends State<PantallaMisPublicaciones> {
                 alCambiarEstado: (nuevoEstado) => _cambiarEstado(idPub, nuevoEstado),
               );
             }),
-            const SizedBox(height: 12),
+            const SizedBox(height: Espacios.e12),
           ],
         ],
       );

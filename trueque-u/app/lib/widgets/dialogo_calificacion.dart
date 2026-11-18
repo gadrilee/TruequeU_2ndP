@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'estrellas.dart';
+import '../tema.dart';
 
 Future<Map<String, dynamic>?> pedirCalificacion(BuildContext context, {required String nombre}) {
   return showDialog<Map<String, dynamic>>(
@@ -57,7 +58,7 @@ class _DialogoCalificacionState extends State<_DialogoCalificacion> {
               Estrellas(puntaje: _puntaje, alElegir: _elegir),
               if (_error != null)
                 Text(_error!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
-              const SizedBox(height: 8),
+              const SizedBox(height: Espacios.e8),
               TextFormField(
                 controller: _comentario,
                 maxLength: 200,

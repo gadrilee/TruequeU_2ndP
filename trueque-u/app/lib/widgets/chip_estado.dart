@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../tema.dart';
 
 /// Etiqueta visual pequeña que indica el estado actual de la publicación
 class ChipEstado extends StatelessWidget {
@@ -52,18 +53,14 @@ class ChipEstado extends StatelessWidget {
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: Espacios.e10, vertical: Espacios.e4),
       decoration: BoxDecoration(
         color: fondo,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(Radios.r20),
       ),
       child: Text(
         etiqueta,
-        style: TextStyle(
-          fontSize: 11,
-          fontWeight: FontWeight.bold,
-          color: texto,
-        ),
+        style: TextosTruequeU.chipDestacado.copyWith(color: texto),
       ),
     );
   }

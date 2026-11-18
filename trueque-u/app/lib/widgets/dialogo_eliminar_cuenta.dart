@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../estado/controlador_autenticacion.dart';
 import '../servicios/analitica.dart';
 import '../servicios/cliente_api.dart';
+import '../tema.dart';
 
 class DialogoEliminarCuenta extends StatefulWidget {
   const DialogoEliminarCuenta({super.key});
@@ -61,12 +62,12 @@ class _DialogoEliminarCuentaState extends State<DialogoEliminarCuenta> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text('Esto es lo que va a pasar:'),
-            const SizedBox(height: 8),
+            const SizedBox(height: Espacios.e8),
             const Text('• Tus trueques en curso se cancelan y se avisa a la otra persona.'),
             const Text('• Tus publicaciones dejan de mostrarse.'),
             const Text('• Tus calificaciones quedan sin tu nombre.'),
             const Text('• No se puede deshacer.'),
-            const SizedBox(height: 16),
+            const SizedBox(height: Espacios.e16),
             TextField(
               controller: _contrasena,
               obscureText: true,
@@ -77,7 +78,7 @@ class _DialogoEliminarCuentaState extends State<DialogoEliminarCuenta> {
               ),
               onSubmitted: (_) => _eliminar(),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: Espacios.e16),
             Row(
               children: [
                 Expanded(
@@ -86,20 +87,20 @@ class _DialogoEliminarCuentaState extends State<DialogoEliminarCuenta> {
                     style: OutlinedButton.styleFrom(
                       foregroundColor: colores.primary,
                       side: BorderSide(color: colores.primary, width: 1.5),
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+                      padding: const EdgeInsets.symmetric(horizontal: Espacios.e8, vertical: Espacios.e12),
                     ),
                     onPressed: _enviando ? null : () => Navigator.of(context).pop(),
                     child: const Text('Cancelar', maxLines: 1),
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: Espacios.e12),
                 Expanded(
                   child: OutlinedButton(
                     key: const Key('boton-confirmar-eliminar'),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: colores.error,
                       side: BorderSide(color: colores.error, width: 1.5),
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+                      padding: const EdgeInsets.symmetric(horizontal: Espacios.e8, vertical: Espacios.e12),
                     ),
                     onPressed: _enviando ? null : _eliminar,
                     child: const Text('Eliminar cuenta', maxLines: 1),

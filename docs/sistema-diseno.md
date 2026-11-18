@@ -1,0 +1,170 @@
+# Sistema de diseño TruequeU
+
+Los valores de diseño (colores, espacios, radios, tamaños y estilos de texto) viven en un solo archivo, `design/figma-plugin/tokens.json`. Un plugin local de Figma lee ese archivo y construye el sistema de diseño en el archivo abierto: variables, estilos de texto, logo, componentes y pantallas.
+
+## Cómo ejecutarlo
+
+1. Generar el código del plugin desde los tokens:
+
+   ```
+   node design/figma-plugin/generar.mjs
+   ```
+
+   Esto escribe `design/figma-plugin/code.js` (los tokens van incrustados al inicio) y actualiza la tabla de tokens de este documento.
+2. En Figma Desktop, abrir el archivo de destino y elegir Plugins, Development, Import plugin from manifest, y seleccionar `design/figma-plugin/manifest.json`.
+3. Ejecutar Plugins, Development, TruequeU Sistema de diseño.
+
+El plugin es idempotente: al volver a ejecutarlo actualiza por nombre las colecciones, variables y estilos existentes, y recrea todo el contenido de las tres páginas (Fundamentos, Componentes, Pantallas). No debe editarse a mano el contenido de esas páginas, porque se reemplaza.
+
+Para comprobar el código del plugin sin Figma, `node design/figma-plugin/prueba.mjs` lo ejecuta contra una simulación mínima de la API. Verifica variables, estilos, conjuntos de componentes, pantallas y que ningún relleno quede sin variable, pero no demuestra cómo se ve en Figma real.
+
+## Regla de nombres
+
+- Dart `Clase.campo` se llama en Figma `Clase/campo`. La barra reemplaza el punto porque Figma no admite puntos en los nombres de variables.
+- Las colecciones de variables son `TemaTruequeU`, `ColorScheme`, `Espacios`, `Radios` y `Tipos`. El nombre de cada variable es el nombre del campo Dart; su descripción guarda el identificador Dart (por ejemplo `TemaTruequeU.azul`).
+- `ColorScheme` contiene los roles del tema; cada uno es un alias a una variable de `TemaTruequeU`.
+- Los estilos de texto se llaman `TextosTruequeU/<campo>` y su tamaño está enlazado a la variable de `Tipos` correspondiente.
+- Cada componente de Figma se llama igual que la clase del widget Flutter, y cada pantalla igual que la clase de la pantalla.
+- Las propiedades de variante usan el vocabulario del código (`Estado`, `Variante`, `Tipo`, `Tono`, etc.) y los valores de estado coinciden con los del widget cuando existen (`disponible`, `reservado`, `intercambiado`...).
+
+## Token Dart, variable Figma y valor
+
+Tabla generada desde `tokens.json` por `generar.mjs`; no se edita a mano.
+
+<!-- tokens:inicio -->
+| Token Dart | Variable Figma | Valor |
+| --- | --- | --- |
+| `TemaTruequeU.azul` | `TemaTruequeU/azul` | #2A3964 |
+| `TemaTruequeU.azulOscuro` | `TemaTruequeU/azulOscuro` | #1B2645 |
+| `TemaTruequeU.azulClaro` | `TemaTruequeU/azulClaro` | #DDE3F2 |
+| `TemaTruequeU.rojo` | `TemaTruequeU/rojo` | #CC100C |
+| `TemaTruequeU.rojoClaro` | `TemaTruequeU/rojoClaro` | #FBE3E2 |
+| `TemaTruequeU.rojoOscuro` | `TemaTruequeU/rojoOscuro` | #8F0B08 |
+| `TemaTruequeU.fondo` | `TemaTruequeU/fondo` | #FAF7F2 |
+| `TemaTruequeU.borde` | `TemaTruequeU/borde` | #E7E5E4 |
+| `TemaTruequeU.verdeClaro` | `TemaTruequeU/verdeClaro` | #DCF2E3 |
+| `TemaTruequeU.verdeOscuro` | `TemaTruequeU/verdeOscuro` | #14532D |
+| `TemaTruequeU.blanco` | `TemaTruequeU/blanco` | #FFFFFF |
+| `TemaTruequeU.texto` | `TemaTruequeU/texto` | #1C1917 |
+| `TemaTruequeU.textoSuave` | `TemaTruequeU/textoSuave` | #57534E |
+| `TemaTruequeU.contorno` | `TemaTruequeU/contorno` | #78716C |
+| `TemaTruequeU.superficieAlta` | `TemaTruequeU/superficieAlta` | #F1ECE5 |
+| `ColorScheme.primary` | `ColorScheme/primary` | TemaTruequeU/azul (#2A3964) |
+| `ColorScheme.onPrimary` | `ColorScheme/onPrimary` | TemaTruequeU/blanco (#FFFFFF) |
+| `ColorScheme.primaryContainer` | `ColorScheme/primaryContainer` | TemaTruequeU/azulClaro (#DDE3F2) |
+| `ColorScheme.onPrimaryContainer` | `ColorScheme/onPrimaryContainer` | TemaTruequeU/azulOscuro (#1B2645) |
+| `ColorScheme.secondary` | `ColorScheme/secondary` | TemaTruequeU/rojo (#CC100C) |
+| `ColorScheme.onSecondary` | `ColorScheme/onSecondary` | TemaTruequeU/blanco (#FFFFFF) |
+| `ColorScheme.secondaryContainer` | `ColorScheme/secondaryContainer` | TemaTruequeU/rojoClaro (#FBE3E2) |
+| `ColorScheme.onSecondaryContainer` | `ColorScheme/onSecondaryContainer` | TemaTruequeU/rojoOscuro (#8F0B08) |
+| `ColorScheme.tertiary` | `ColorScheme/tertiary` | TemaTruequeU/verdeOscuro (#14532D) |
+| `ColorScheme.onTertiary` | `ColorScheme/onTertiary` | TemaTruequeU/blanco (#FFFFFF) |
+| `ColorScheme.tertiaryContainer` | `ColorScheme/tertiaryContainer` | TemaTruequeU/verdeClaro (#DCF2E3) |
+| `ColorScheme.onTertiaryContainer` | `ColorScheme/onTertiaryContainer` | TemaTruequeU/verdeOscuro (#14532D) |
+| `ColorScheme.error` | `ColorScheme/error` | TemaTruequeU/rojo (#CC100C) |
+| `ColorScheme.onError` | `ColorScheme/onError` | TemaTruequeU/blanco (#FFFFFF) |
+| `ColorScheme.errorContainer` | `ColorScheme/errorContainer` | TemaTruequeU/rojoClaro (#FBE3E2) |
+| `ColorScheme.onErrorContainer` | `ColorScheme/onErrorContainer` | TemaTruequeU/rojoOscuro (#8F0B08) |
+| `ColorScheme.surface` | `ColorScheme/surface` | TemaTruequeU/fondo (#FAF7F2) |
+| `ColorScheme.onSurface` | `ColorScheme/onSurface` | TemaTruequeU/texto (#1C1917) |
+| `ColorScheme.onSurfaceVariant` | `ColorScheme/onSurfaceVariant` | TemaTruequeU/textoSuave (#57534E) |
+| `ColorScheme.outline` | `ColorScheme/outline` | TemaTruequeU/contorno (#78716C) |
+| `ColorScheme.outlineVariant` | `ColorScheme/outlineVariant` | TemaTruequeU/borde (#E7E5E4) |
+| `ColorScheme.surfaceContainerHighest` | `ColorScheme/surfaceContainerHighest` | TemaTruequeU/superficieAlta (#F1ECE5) |
+| `Espacios.e2` | `Espacios/e2` | 2 |
+| `Espacios.e4` | `Espacios/e4` | 4 |
+| `Espacios.e6` | `Espacios/e6` | 6 |
+| `Espacios.e8` | `Espacios/e8` | 8 |
+| `Espacios.e10` | `Espacios/e10` | 10 |
+| `Espacios.e12` | `Espacios/e12` | 12 |
+| `Espacios.e16` | `Espacios/e16` | 16 |
+| `Espacios.e20` | `Espacios/e20` | 20 |
+| `Espacios.e24` | `Espacios/e24` | 24 |
+| `Espacios.e32` | `Espacios/e32` | 32 |
+| `Espacios.e40` | `Espacios/e40` | 40 |
+| `Radios.r8` | `Radios/r8` | 8 |
+| `Radios.r12` | `Radios/r12` | 12 |
+| `Radios.r14` | `Radios/r14` | 14 |
+| `Radios.r16` | `Radios/r16` | 16 |
+| `Radios.r20` | `Radios/r20` | 20 |
+| `Radios.r28` | `Radios/r28` | 28 |
+| `Radios.r36` | `Radios/r36` | 36 |
+| `Tipos.t11` | `Tipos/t11` | 11 |
+| `Tipos.t12` | `Tipos/t12` | 12 |
+| `Tipos.t13` | `Tipos/t13` | 13 |
+| `Tipos.t14` | `Tipos/t14` | 14 |
+| `Tipos.t16` | `Tipos/t16` | 16 |
+| `Tipos.t17` | `Tipos/t17` | 17 |
+| `Tipos.t18` | `Tipos/t18` | 18 |
+| `Tipos.t26` | `Tipos/t26` | 26 |
+| `TextosTruequeU.titulo` | Estilo de texto `TextosTruequeU/titulo` | 26 px, peso 700 |
+| `TextosTruequeU.subtitulo` | Estilo de texto `TextosTruequeU/subtitulo` | 18 px, peso 700 |
+| `TextosTruequeU.tituloTarjeta` | Estilo de texto `TextosTruequeU/tituloTarjeta` | 17 px, peso 700 |
+| `TextosTruequeU.tituloItem` | Estilo de texto `TextosTruequeU/tituloItem` | 16 px, peso 700 |
+| `TextosTruequeU.cuerpo` | Estilo de texto `TextosTruequeU/cuerpo` | 14 px, peso 400 |
+| `TextosTruequeU.detalle` | Estilo de texto `TextosTruequeU/detalle` | 13 px, peso 400 |
+| `TextosTruequeU.etiqueta` | Estilo de texto `TextosTruequeU/etiqueta` | 12 px, peso 500 |
+| `TextosTruequeU.ayuda` | Estilo de texto `TextosTruequeU/ayuda` | 12 px, peso 400 |
+| `TextosTruequeU.chip` | Estilo de texto `TextosTruequeU/chip` | 11 px, peso 500 |
+| `TextosTruequeU.chipDestacado` | Estilo de texto `TextosTruequeU/chipDestacado` | 11 px, peso 700 |
+| `TextosTruequeU.pie` | Estilo de texto `TextosTruequeU/pie` | 11 px, peso 400 |
+<!-- tokens:fin -->
+
+## Componente Figma, archivo Flutter y variantes
+
+Los archivos están en `trueque-u/app/lib/widgets/`. Todos usan auto layout; padding y separación están enlazados a `Espacios`, radios a `Radios`, y rellenos y bordes a variables de `ColorScheme` (o `TemaTruequeU/blanco` y `TemaTruequeU/rojo` donde el código usa esos colores directamente).
+
+| Componente Figma | Archivo Flutter | Variantes y estados |
+| --- | --- | --- |
+| `LogoTruequeU` | `logo_trueque_u.dart` | Variante: icono, conNombre |
+| `BotonCarga` | `boton_carga.dart` | Estado: default, hover, presionado, cargando, deshabilitado. Variante: primario, rojo, tonal, contorno |
+| `CampoTexto` | `campo_texto.dart` | Estado: vacio, enfocado, relleno, error, deshabilitado. Tipo: texto, contrasena |
+| `BannerError` | `banner_error.dart` | Estado: default |
+| `ChipEstado` | `chip_estado.dart` | Estado: disponible, reservado, reservadoPorTi, intercambiado, acordado, noDisponible |
+| `Etiqueta` | `etiqueta.dart` | Tono: primario, secundario, terciario |
+| `Estrellas` | `estrellas.dart` | Puntaje: 0 a 5. Modo: lectura, interactivo |
+| `FotoPublicacion` | `foto_publicacion.dart` | Estado: vacia, imagen, error. Forma: ancha, cuadrada |
+| `MensajeVacio` | `mensaje_vacio.dart` | ConBoton: si, no |
+| `ErrorConReintento` | `error_con_reintento.dart` | Estado: default |
+| `FiltrosFeed` | `filtros_feed.dart` | Estado: sinFiltros, conFiltros |
+| `TarjetaFeed` | `tarjeta_feed.dart` | Estado: disponible, reservadoPorMi, reservadoPorOtro, propia, ofertaEnviada, intercambiado |
+| `TarjetaMiPublicacion` | `tarjeta_mi_publicacion.dart` | Reservada: si, no |
+| `EncabezadoAcceso` | `encabezado_acceso.dart` | ConLogo: si, no |
+| `EstructuraPrincipal` | `estructura_principal.dart` | Activo: explorar, misPublicaciones, ofertas, perfil |
+
+Los componentes con texto editable exponen una propiedad de texto (`texto`, `mensaje`, `titulo` o `subtitulo`). Las tarjetas, `MensajeVacio` y `ErrorConReintento` están armadas con instancias de los componentes anteriores.
+
+Limitaciones conocidas:
+
+- Los íconos son glifos de texto como marcador de posición (solo el logo dibuja un vector); usan colores del sistema pero no son los íconos de Material.
+- `EncabezadoAcceso` intenta un degradado de `azulOscuro` a `azul` con las paradas enlazadas a variables. Si la API de Figma no conserva ese enlace, el plugin usa un relleno sólido `ColorScheme/onPrimaryContainer` para no dejar colores fijos.
+- Estados como hover y presionado no existen en Flutter como widgets; se modelan con opacidad sobre el color del token.
+- Los textos de botones usan el estilo `TextosTruequeU/cuerpo`; Flutter usa el estilo de botón por defecto de Material (14 px, peso 500).
+- Los estados `BannerError` y `ErrorConReintento` tienen una sola variante porque no tienen estados propios en el código.
+
+## Pantalla Figma y archivo Flutter
+
+Los archivos están en `trueque-u/app/lib/pantallas/`. Cada pantalla es un marco de 390 x 844 con auto layout vertical, armado solo con instancias de los componentes y marcos de disposición enlazados a variables.
+
+| Pantalla Figma | Archivo Flutter |
+| --- | --- |
+| `PantallaInicio` | `pantalla_inicio.dart` |
+| `PantallaIniciarSesion` | `pantalla_iniciar_sesion.dart` |
+| `PantallaRegistro` | `pantalla_registro.dart` |
+| `PantallaFeedPublicaciones` | `pantalla_feed_publicaciones.dart` |
+| `PantallaMisPublicaciones` | `pantalla_mis_publicaciones.dart` |
+| `PantallaPerfil` | `pantalla_perfil.dart` |
+
+Las pantallas de Figma son composiciones representativas, no una copia exacta de cada estado de la pantalla en Flutter.
+
+## Cómo el test de paridad protege los nombres
+
+`trueque-u/app/test/tokens_figma_test.dart` lee `design/figma-plugin/tokens.json` y lo compara con el código Dart:
+
+- Las secciones del JSON son exactamente `TemaTruequeU`, `ColorScheme`, `Espacios`, `Radios`, `Tipos` y `TextosTruequeU`.
+- Cada color de `TemaTruequeU` existe en el código con el mismo nombre y el mismo hex, y no sobran ni faltan claves.
+- Cada rol de `ColorScheme` apunta a un color del tema y el rol del tema Flutter resuelve a ese mismo color.
+- Espacios, radios y tamaños de texto coinciden en nombre y valor.
+- Cada estilo de `TextosTruequeU` coincide en tamaño (vía su alias a `Tipos`) y peso.
+
+Como el plugin construye las variables solo desde `tokens.json`, renombrar o cambiar un token en Dart sin actualizar el JSON rompe el test, y cambiarlo en el JSON sin tocar el código también. Flujo para cambiar un token: editar `tema.dart` y `tokens.json`, correr `flutter test test/tokens_figma_test.dart`, ejecutar `node design/figma-plugin/generar.mjs` y volver a correr el plugin en Figma.

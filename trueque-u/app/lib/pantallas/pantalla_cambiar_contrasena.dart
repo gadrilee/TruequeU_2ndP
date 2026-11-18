@@ -9,6 +9,7 @@ import '../widgets/banner_error.dart';
 import '../widgets/boton_carga.dart';
 import '../widgets/campo_texto.dart';
 import '../widgets/pagina_acceso.dart';
+import '../tema.dart';
 
 /// RUTA PRIVADA ("/cambiar-contrasena"): cambio de contraseña con la sesión iniciada.
 class PantallaCambiarContrasena extends StatefulWidget {
@@ -76,7 +77,7 @@ class _PantallaCambiarContrasenaState extends State<PantallaCambiarContrasena> {
                 validador: (v) =>
                     (v ?? '').isEmpty ? 'Escribe tu contraseña actual' : null,
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: Espacios.e16),
               CampoTexto(
                 controlador: _nueva,
                 etiqueta: 'Contraseña nueva',
@@ -84,7 +85,7 @@ class _PantallaCambiarContrasenaState extends State<PantallaCambiarContrasena> {
                 accionTeclado: TextInputAction.next,
                 validador: validarContrasenaNueva,
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: Espacios.e16),
               CampoTexto(
                 controlador: _confirmacion,
                 etiqueta: 'Repite la contraseña nueva',
@@ -94,13 +95,13 @@ class _PantallaCambiarContrasenaState extends State<PantallaCambiarContrasena> {
                 validador: (v) =>
                     v != _nueva.text ? 'Las contraseñas no coinciden' : null,
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: Espacios.e16),
               BannerError(_error),
               BotonCarga(texto: 'Guardar', cargando: _cargando, alPresionar: _enviar),
             ],
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: Espacios.e8),
         TextButton(
           onPressed: () => context.go('/perfil'),
           child: const Text('Cancelar'),

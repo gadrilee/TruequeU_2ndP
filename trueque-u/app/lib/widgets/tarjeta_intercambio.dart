@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../utilidades/etiquetas.dart';
+import '../tema.dart';
 
 /// Una tarjeta por intercambio completado: el objeto y con quién se hizo.
 class TarjetaIntercambio extends StatelessWidget {
@@ -28,24 +29,24 @@ class TarjetaIntercambio extends StatelessWidget {
     return Card(
       elevation: 1,
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(Espacios.e16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               (pub['titulo'] as String?) ?? 'Sin título',
-              style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+              style: TextosTruequeU.tituloTarjeta,
             ),
-            const SizedBox(height: 6),
+            const SizedBox(height: Espacios.e6),
             Text(
               fueDueno
                   ? 'Lo entregaste a: $nombreOtra'
                   : 'Lo recibiste de: $nombreOtra',
               style: TextStyle(color: colores.onSurfaceVariant),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: Espacios.e8),
             Wrap(
-              spacing: 8,
+              spacing: Espacios.e8,
               children: [
                 Chip(
                   visualDensity: VisualDensity.compact,

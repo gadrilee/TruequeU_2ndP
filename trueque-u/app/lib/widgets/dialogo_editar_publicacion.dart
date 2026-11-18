@@ -6,6 +6,7 @@ import '../servicios/cliente_api.dart';
 import 'banner_error.dart';
 import 'campo_texto.dart';
 import 'foto_publicacion.dart';
+import '../tema.dart';
 
 /// =========================================================================
 /// DIÁLOGO PARA EDITAR INFORMACIÓN (SOLO NOMBRE Y DESCRIPCIÓN)
@@ -134,16 +135,16 @@ class _DialogoEditarPublicacionState extends State<DialogoEditarPublicacion> {
                     return null;
                   },
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: Espacios.e16),
                 CampoTexto(
                   controlador: _descripcionCtrl,
                   etiqueta: 'Descripción (opcional)',
                   lineas: 3,
                   tipoTeclado: TextInputType.multiline,
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: Espacios.e16),
                 FotoPublicacion(url: _fotoVisible, alto: 140),
-                const SizedBox(height: 8),
+                const SizedBox(height: Espacios.e8),
                 OutlinedButton(
                   onPressed: _guardando ? null : _elegir,
                   child: const Text('Cambiar foto'),
@@ -159,7 +160,7 @@ class _DialogoEditarPublicacionState extends State<DialogoEditarPublicacion> {
                     child: const Text('Quitar foto'),
                   ),
                 if (_error != null) ...[
-                  const SizedBox(height: 16),
+                  const SizedBox(height: Espacios.e16),
                   BannerError(_error),
                 ],
               ],
