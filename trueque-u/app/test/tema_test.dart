@@ -24,5 +24,67 @@ void main() {
       expect(tema.floatingActionButtonTheme.backgroundColor, TemaTruequeU.rojo);
       expect(tema.navigationBarTheme.indicatorColor, TemaTruequeU.azulClaro);
     });
+
+    test('los roles derivados del seed son explicitos', () {
+      final esquema = TemaTruequeU.claro().colorScheme;
+
+      expect(TemaTruequeU.blanco, const Color(0xFFFFFFFF));
+      expect(TemaTruequeU.texto, const Color(0xFF1C1917));
+      expect(TemaTruequeU.textoSuave, const Color(0xFF57534E));
+      expect(TemaTruequeU.contorno, const Color(0xFF78716C));
+      expect(TemaTruequeU.superficieAlta, const Color(0xFFF1ECE5));
+      expect(esquema.onPrimary, TemaTruequeU.blanco);
+      expect(esquema.onSecondary, TemaTruequeU.blanco);
+      expect(esquema.onTertiary, TemaTruequeU.blanco);
+      expect(esquema.onError, TemaTruequeU.blanco);
+      expect(esquema.onSurface, TemaTruequeU.texto);
+      expect(esquema.onSurfaceVariant, TemaTruequeU.textoSuave);
+      expect(esquema.outline, TemaTruequeU.contorno);
+      expect(esquema.surfaceContainerHighest, TemaTruequeU.superficieAlta);
+    });
+
+    test('los tokens de espacio, radio y tipo tienen su valor', () {
+      expect(Espacios.e2, 2);
+      expect(Espacios.e4, 4);
+      expect(Espacios.e6, 6);
+      expect(Espacios.e8, 8);
+      expect(Espacios.e10, 10);
+      expect(Espacios.e12, 12);
+      expect(Espacios.e16, 16);
+      expect(Espacios.e20, 20);
+      expect(Espacios.e24, 24);
+      expect(Espacios.e32, 32);
+      expect(Espacios.e40, 40);
+      expect(Radios.r8, 8);
+      expect(Radios.r12, 12);
+      expect(Radios.r14, 14);
+      expect(Radios.r16, 16);
+      expect(Radios.r20, 20);
+      expect(Radios.r28, 28);
+      expect(Radios.r36, 36);
+      expect(Tipos.t11, 11);
+      expect(Tipos.t12, 12);
+      expect(Tipos.t13, 13);
+      expect(Tipos.t14, 14);
+      expect(Tipos.t16, 16);
+      expect(Tipos.t17, 17);
+      expect(Tipos.t18, 18);
+      expect(Tipos.t26, 26);
+    });
+
+    test('los estilos de texto usan los tamanos de Tipos', () {
+      expect(TextosTruequeU.titulo.fontSize, Tipos.t26);
+      expect(TextosTruequeU.titulo.fontWeight, FontWeight.bold);
+      expect(TextosTruequeU.subtitulo.fontSize, Tipos.t18);
+      expect(TextosTruequeU.tituloTarjeta.fontSize, Tipos.t17);
+      expect(TextosTruequeU.tituloItem.fontSize, Tipos.t16);
+      expect(TextosTruequeU.cuerpo.fontSize, Tipos.t14);
+      expect(TextosTruequeU.detalle.fontSize, Tipos.t13);
+      expect(TextosTruequeU.etiqueta.fontWeight, FontWeight.w500);
+      expect(TextosTruequeU.ayuda.fontSize, Tipos.t12);
+      expect(TextosTruequeU.chip.fontSize, Tipos.t11);
+      expect(TextosTruequeU.chipDestacado.fontWeight, FontWeight.bold);
+      expect(TextosTruequeU.pie.fontSize, Tipos.t11);
+    });
   });
 }
