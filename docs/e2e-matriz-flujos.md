@@ -89,7 +89,7 @@ Columnas: **ID** (identificador estable), **Flujo o caso**, **Endpoint** (o pant
 | FEE-17 | Ver la publicación propia y saltar a Mis publicaciones | `GET /publicaciones` | `feed_test.dart` | Eudenia ve su propia publicación y salta a Mis publicaciones | cubierto |
 | FEE-18 | Cancelar la reserva de otra persona (403, solo API: la app no ofrece el botón) | `PUT /publicaciones/:id/disponible` | `feed_test.dart` | Carlos no puede cancelar la reserva que hizo Job | cubierto |
 | FEE-19 | Reservar una publicación ya intercambiada o no disponible (409, solo API: la app no ofrece el botón) | `PUT /publicaciones/:id/reservado` | `feed_test.dart` | Eudenia no puede reservar los audífonos que ya fueron intercambiados; Job no puede reservar una publicación que su dueña marcó como no disponible | cubierto |
-| FEE-20 | Botón de WhatsApp para contactar a la otra persona (inalcanzable hoy: al aceptar una oferta el servidor deja las publicaciones en `acordado` sin guardar `id_usuario_reserva`, así que nunca entrega el teléfono; ver nota abajo) | `UI /mis-publicaciones, /feed` | - | - | pendiente (bloqueado por fallo del producto) |
+| FEE-20 | Botón de WhatsApp para contactar a la otra persona tras aceptar una oferta (cada parte ve el teléfono de la otra; un tercero y la oferta pendiente no lo entregan) | `UI /mis-publicaciones` | `whatsapp_test.dart` | Ana acepta la oferta y escribe por WhatsApp al teléfono de Beto; Beto también ve el botón y escribe por WhatsApp al teléfono de Ana; Ana todavía no ve el botón de WhatsApp mientras la oferta de Beto está pendiente; Carlos no recibe los teléfonos de un trueque acordado entre otras dos personas | cubierto |
 
 ## Ofertas y contraofertas
 
@@ -209,15 +209,14 @@ Columnas: **ID** (identificador estable), **Flujo o caso**, **Endpoint** (o pant
 |---|---|---|---|
 | Acceso y cuenta | 21 | 21 | 100.0% |
 | Publicaciones | 29 | 29 | 100.0% |
-| Feed y reservas | 19 | 20 | 95.0% |
+| Feed y reservas | 20 | 20 | 100.0% |
 | Ofertas y contraofertas | 35 | 35 | 100.0% |
 | Intercambios y entrega | 17 | 17 | 100.0% |
 | Calificaciones | 7 | 7 | 100.0% |
 | Historial | 10 | 10 | 100.0% |
 | Avisos, Mis datos y cuenta | 8 | 8 | 100.0% |
 | Eventos y analítica | 5 | 5 | 100.0% |
-| **Total** | **151** | **152** | **99.3%** |
+| **Total** | **152** | **152** | **100.0%** |
 
-Flujos cubiertos: 151 de 152 (99.3%). Pendientes: 1 (FEE-20).
+Flujos cubiertos: 152 de 152 (100.0%). Pendientes: 0.
 
-Nota sobre FEE-20: ni el botón de WhatsApp del feed (para quien reservó) ni el de Mis publicaciones (para el dueño, `Escribir por WhatsApp`) se pueden mostrar. El teléfono solo se entrega cuando la publicación está `acordado`, pero `PUT /ofertas/:id/aceptada` pasa las dos publicaciones a `acordado` sin llenar `id_usuario_reserva`. Así `usuario_reserva` (Mis publicaciones) y la reserva propia (feed) quedan vacíos y la app nunca ve el teléfono. Con una reserva normal el teléfono se oculta porque el estado es `reservado`. Hace falta una decisión sobre el producto antes de poder probarlo de punta a punta.
