@@ -193,3 +193,133 @@ describe("Ver la coordinación", () => {
     expect(datos.pendiente.id).toBe(4);
   });
 });
+
+describe("Propuestas de entrega: datos invalidos y errores", () => {
+  let consolaError;
+
+  beforeEach(() => {
+    consolaError = jest.spyOn(console, "error").mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    consolaError.mockRestore();
+  });
+
+  test("ver la coordinacion sin oferta indicada responde 400", async () => {
+    const res = await llamar(getPropuestasEntrega, 1, { query: {} });
+
+    expect(res.status).toHaveBeenCalledWith(400);
+  });
+
+  test("ver la coordinacion de una oferta que no existe responde 404", async () => {
+    models.ofertas.findByPk.mockResolvedValue(null);
+
+    const res = await llamar(getPropuestasEntrega, 1, { query: { id_oferta: "9" } });
+
+    expect(res.status).toHaveBeenCalledWith(404);
+  });
+
+  test("sin propuestas el acuerdo vigente y la pendiente son null", async () => {
+    models.propuestas_entrega.findAll.mockResolvedValue([]);
+
+    const res = await llamar(getPropuestasEntrega, 1, { query: { id_oferta: "1" } });
+
+    expect(res.json).toHaveBeenCalledWith({ propuestas: [], vigente: null, pendiente: null });
+  });
+
+  test("ver la coordinacion con un fallo responde 500", async () => {
+    models.ofertas.findByPk.mockRejectedValue(new Error("caida"));
+
+    const res = await llamar(getPropuestasEntrega, 1, { query: { id_oferta: "1" } });
+
+    expect(res.status).toHaveBeenCalledWith(500);
+  });
+
+  test("proponer sin oferta indicada responde 400", async () => {
+    const res = await llamar(postPropuestaEntrega, 1, { body: undefined });
+
+    expect(res.status).toHaveBeenCalledWith(400);
+  });
+
+  test("proponer en una oferta que no existe responde 404", async () => {
+    models.ofertas.findByPk.mockResolvedValue(null);
+
+    const res = await llamar(postPropuestaEntrega, 1, { body: cuerpo });
+
+    expect(res.status).toHaveBeenCalledWith(404);
+  });
+
+  test("dos propuestas a la vez responden 409", async () => {
+    models.propuestas_entrega.create.mockRejectedValue(
+      Object.assign(new Error("duplicado"), { name: "SequelizeUniqueConstraintError" }),
+    );
+
+    const res = await llamar(postPropuestaEntrega, 1, { body: cuerpo });
+
+    expect(res.status).toHaveBeenCalledWith(409);
+  });
+
+  test("proponer con un fallo inesperado responde 500", async () => {
+    models.propuestas_entrega.create.mockRejectedValue(new Error("caida"));
+
+    const res = await llamar(postPropuestaEntrega, 1, { body: cuerpo });
+
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.json).toHaveBeenCalledWith({ error: "Error al enviar la propuesta de entrega" });
+  });
+
+  test("contraproponer con un id no valido responde 400", async () => {
+    const res = await llamar(postContrapropuestaEntrega, 3, { params: { id: "abc" } });
+
+    expect(res.status).toHaveBeenCalledWith(400);
+  });
+
+  test("contraproponer una propuesta que no existe responde 404", async () => {
+    models.propuestas_entrega.findByPk.mockResolvedValue(null);
+
+    const res = await llamar(postContrapropuestaEntrega, 3, { params: { id: "5" } });
+
+    expect(res.status).toHaveBeenCalledWith(404);
+  });
+
+  test("contraproponer cuando la oferta ya no existe responde 404", async () => {
+    models.propuestas_entrega.findByPk.mockResolvedValue(crearPropuesta({ id: 5, id_oferta: 1 }));
+    models.ofertas.findByPk.mockResolvedValue(null);
+
+    const res = await llamar(postContrapropuestaEntrega, 3, { params: { id: "5" } });
+
+    expect(res.status).toHaveBeenCalledWith(404);
+  });
+
+  test("contraproponer con un fallo inesperado responde 500", async () => {
+    models.propuestas_entrega.findByPk.mockRejectedValue(new Error("caida"));
+
+    const res = await llamar(postContrapropuestaEntrega, 3, { params: { id: "5" } });
+
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.json).toHaveBeenCalledWith({ error: "Error al enviar la contrapropuesta" });
+  });
+
+  test("aceptar con un id no valido responde 400", async () => {
+    const res = await llamar(putPropuestaEntregaAceptada, 3, { params: { id: "0" } });
+
+    expect(res.status).toHaveBeenCalledWith(400);
+  });
+
+  test("aceptar una propuesta que no existe responde 404", async () => {
+    models.propuestas_entrega.findByPk.mockResolvedValue(null);
+
+    const res = await llamar(putPropuestaEntregaAceptada, 3, { params: { id: "5" } });
+
+    expect(res.status).toHaveBeenCalledWith(404);
+  });
+
+  test("aceptar con un fallo inesperado responde 500", async () => {
+    models.propuestas_entrega.findByPk.mockRejectedValue(new Error("caida"));
+
+    const res = await llamar(putPropuestaEntregaAceptada, 3, { params: { id: "5" } });
+
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.json).toHaveBeenCalledWith({ error: "Error al aceptar la propuesta de entrega" });
+  });
+});

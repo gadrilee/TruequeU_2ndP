@@ -127,3 +127,17 @@ describe("Historial de intercambios", () => {
     });
   });
 });
+
+describe("Historial: errores inesperados", () => {
+  test("un fallo de la base de datos responde 500", async () => {
+    models.historial.findAll.mockReset();
+    models.historial.findAll.mockRejectedValue(new Error("caida"));
+    const consolaError = jest.spyOn(console, "error").mockImplementation(() => {});
+    const res = crearRespuesta();
+
+    await getHistorial({ usuario: { id: 7 }, query: {} }, res);
+
+    expect(res.status).toHaveBeenCalledWith(500);
+    consolaError.mockRestore();
+  });
+});

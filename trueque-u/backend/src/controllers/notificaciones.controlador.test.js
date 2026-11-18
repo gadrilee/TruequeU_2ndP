@@ -62,3 +62,33 @@ describe("Avisos", () => {
     expect(models.notificaciones.update).not.toHaveBeenCalled();
   });
 });
+
+describe("Avisos: errores inesperados", () => {
+  let consolaError;
+
+  beforeEach(() => {
+    consolaError = jest.spyOn(console, "error").mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    consolaError.mockRestore();
+  });
+
+  test("listar con un fallo responde 500", async () => {
+    models.notificaciones.findAll.mockRejectedValue(new Error("caida"));
+    const res = crearRespuesta();
+
+    await getNotificaciones({ usuario: { id: 1 } }, res);
+
+    expect(res.status).toHaveBeenCalledWith(500);
+  });
+
+  test("marcar como leido con un fallo responde 500", async () => {
+    models.notificaciones.update.mockRejectedValue(new Error("caida"));
+    const res = crearRespuesta();
+
+    await putNotificacionLeida({ params: { id: "3" }, usuario: { id: 1 } }, res);
+
+    expect(res.status).toHaveBeenCalledWith(500);
+  });
+});
