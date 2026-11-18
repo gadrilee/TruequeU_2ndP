@@ -20,11 +20,11 @@ Columnas: **ID** (identificador estable), **Flujo o caso**, **Endpoint** (o pant
 | ACC-08 | Crear cuenta con contraseñas distintas (validación) | `POST /usuarios` | `acceso_test.dart` | Ana escribe contraseñas distintas y la app se lo avisa | cubierto |
 | ACC-09 | Crear cuenta con teléfono de menos de 8 dígitos (400) | `POST /usuarios` | `acceso_test.dart` | Ana usa un teléfono de menos de 8 dígitos y la app lo rechaza | cubierto |
 | ACC-10 | Crear cuenta con un correo ya registrado (409) | `POST /usuarios` | `acceso_test.dart` | Ana intenta crear su cuenta con el correo de Eudenia y ve el error | cubierto |
-| ACC-11 | Crear cuenta con correo inválido o nombre corto (400) | `POST /usuarios` | - | - | pendiente (brecha 3) |
+| ACC-11 | Crear cuenta con correo inválido o nombre corto (validación y 400) | `POST /usuarios` | `acceso_test.dart` | Ana escribe un correo inválido y la app se lo avisa; Ana escribe un nombre de una sola letra y la app se lo avisa; El servidor rechaza un correo inválido y un nombre corto al crear la cuenta | cubierto |
 | ACC-12 | Recuperar contraseña por correo | `POST /recuperaciones` | `acceso_test.dart` | Eudenia pide una contraseña nueva y la app le avisa que revise su correo | cubierto |
 | ACC-13 | Recuperar contraseña con un correo que no existe (404) | `POST /recuperaciones` | `acceso_test.dart` | Ana pide recuperar un correo que no existe y ve el error | cubierto |
 | ACC-14 | Volver a iniciar sesión desde recuperar contraseña | `UI /recuperar-contrasena` | `acceso_test.dart` | Eudenia vuelve a iniciar sesión desde la pantalla de recuperar | cubierto |
-| ACC-15 | Iniciar sesión con la contraseña temporal recibida | `POST /sesiones` | - | - | pendiente (brecha 4) |
+| ACC-15 | Iniciar sesión con la contraseña temporal recibida | `POST /sesiones` | `acceso_test.dart` | Eudenia pide una contraseña nueva, la recibe y entra con ella | cubierto |
 | ACC-16 | Cambiar contraseña y entrar con la nueva | `PUT /usuarios/contrasena` | `acceso_test.dart` | Eudenia cambia su contraseña y entra con la nueva | cubierto |
 | ACC-17 | Cambiar contraseña con la actual incorrecta (400) | `PUT /usuarios/contrasena` | `acceso_test.dart` | Eudenia se equivoca con su contraseña actual y ve el error | cubierto |
 | ACC-18 | Cambiar contraseña con una nueva muy corta (validación) | `PUT /usuarios/contrasena` | `acceso_test.dart` | Eudenia usa una contraseña nueva muy corta y la app se lo avisa | cubierto |
@@ -39,20 +39,20 @@ Columnas: **ID** (identificador estable), **Flujo o caso**, **Endpoint** (o pant
 | PUB-01 | Publicar un objeto | `POST /publicaciones` | `publicaciones_test.dart` | Eudenia publica un libro usado y lo ve en sus publicaciones | cubierto |
 | PUB-02 | Publicar con el nombre vacío (validación) | `POST /publicaciones` | `publicaciones_test.dart` | Eudenia deja el nombre vacío y la app se lo pide | cubierto |
 | PUB-03 | Cancelar la publicación | `UI /publicacion` | `publicaciones_test.dart` | Eudenia cancela la publicación y vuelve a sus publicaciones | cubierto |
-| PUB-04 | Publicar con foto | `POST /publicaciones` | - | - | pendiente (brecha 1) |
-| PUB-05 | Editar con foto (cambiar o quitar la imagen) | `PUT /publicaciones/:id` | - | - | pendiente (brecha 1) |
+| PUB-04 | Publicar con foto | `POST /publicaciones` | `publicaciones_test.dart` | Eudenia publica un libro con foto y el servidor la entrega | cubierto |
+| PUB-05 | Editar con foto (agregar y quitar la imagen) | `PUT /publicaciones/:id` | `publicaciones_test.dart` | Eudenia agrega una foto a su chompa al editarla y después la quita | cubierto |
 | PUB-06 | Ver mis publicaciones | `GET /publicaciones/mias` | `publicaciones_test.dart` | Eudenia ve sus tres publicaciones | cubierto |
 | PUB-07 | Lista vacía de mis publicaciones | `GET /publicaciones/mias` | `publicaciones_test.dart` | Ana todavía no publicó nada y ve el mensaje de lista vacía | cubierto |
 | PUB-08 | Editar el título | `PUT /publicaciones/:id` | `publicaciones_test.dart` | Eudenia corrige el título de su chompa | cubierto |
 | PUB-09 | Cancelar la edición | `UI /publicacion` | `publicaciones_test.dart` | Eudenia cancela la edición y su chompa queda igual | cubierto |
 | PUB-10 | Editar bloqueado por reserva (409, la app oculta la acción) | `PUT /publicaciones/:id` | `publicaciones_test.dart` | Eudenia no puede editar la calculadora porque Job la reservó | cubierto |
 | PUB-11 | Editar o reservar una publicación acordada (409) | `PUT /publicaciones/:id` | `intercambio_acordado_test.dart` | Una publicación acordada no se reserva ni se edita | cubierto |
-| PUB-12 | Editar bloqueado por una oferta pendiente (409) | `PUT /publicaciones/:id` | - | - | pendiente (brecha 7) |
+| PUB-12 | Editar con una oferta pendiente (el servidor lo permite; solo bloquea ocultar, no disponible y eliminar) | `PUT /publicaciones/:id` | `publicaciones_test.dart` | Eudenia puede corregir el título de su libro de cálculo aunque tenga una oferta pendiente | cubierto |
 | PUB-13 | Ocultar una publicación | `PUT /publicaciones/:id/oculto` | `publicaciones_test.dart` | Eudenia oculta su chompa | cubierto |
 | PUB-14 | Marcar como no disponible | `PUT /publicaciones/:id/no-disponible` | `publicaciones_test.dart` | Eudenia marca su chompa como no disponible | cubierto |
 | PUB-15 | Ocultar y volver a dejar disponible | `PUT /publicaciones/:id/oculto` | `publicaciones_test.dart` | Eudenia oculta su chompa y después la vuelve a dejar disponible | cubierto |
 | PUB-16 | Ocultar bloqueado por una oferta pendiente (409) | `PUT /publicaciones/:id/oculto` | `publicaciones_test.dart` | Eudenia no puede ocultar su libro de cálculo porque tiene una oferta pendiente | cubierto |
-| PUB-17 | Marcar como no disponible bloqueado por una oferta pendiente (409) | `PUT /publicaciones/:id/no-disponible` | - | - | pendiente (brecha 7) |
+| PUB-17 | Marcar como no disponible bloqueado por una oferta pendiente (409) | `PUT /publicaciones/:id/no-disponible` | `publicaciones_test.dart` | Eudenia no puede marcar su libro de cálculo como no disponible porque tiene una oferta pendiente | cubierto |
 | PUB-18 | Eliminar una publicación | `DELETE /publicaciones/:id` | `publicaciones_test.dart` | Eudenia elimina su chompa | cubierto |
 | PUB-19 | Arrepentirse de eliminar | `UI /mis-publicaciones` | `publicaciones_test.dart` | Eudenia se arrepiente y no elimina su chompa | cubierto |
 | PUB-20 | Eliminar bloqueado por una oferta pendiente (409) | `DELETE /publicaciones/:id` | `publicaciones_test.dart` | Eudenia no puede eliminar su libro de cálculo porque tiene una oferta pendiente | cubierto |
@@ -60,6 +60,11 @@ Columnas: **ID** (identificador estable), **Flujo o caso**, **Endpoint** (o pant
 | PUB-22 | Completar el intercambio de una publicación reservada | `PUT /publicaciones/:id/intercambiado` | `publicaciones_test.dart` | Eudenia completa el intercambio de su calculadora reservada | cubierto |
 | PUB-23 | Salir de mis publicaciones con la barra inferior | `UI /mis-publicaciones` | `publicaciones_test.dart` | Eudenia sale de sus publicaciones con la barra inferior | cubierto |
 | PUB-24 | Consultar una publicación por id (solo API, sin pantalla) | `GET /publicaciones/:id` | - | - | pendiente (brecha 14) |
+| PUB-25 | Quitar la foto elegida antes de publicar | `UI /publicacion` | `publicaciones_test.dart` | Eudenia elige una foto, se arrepiente y publica sin ella | cubierto |
+| PUB-26 | Elegir una foto que no es jpg ni png (validación) | `UI /publicacion` | `publicaciones_test.dart` | Eudenia elige una foto que no es jpg ni png y la app se lo avisa | cubierto |
+| PUB-27 | Elegir una foto de más de 2 MB al publicar (validación) | `UI /publicacion` | `publicaciones_test.dart` | Eudenia elige una foto de más de 2 MB y la app se lo avisa | cubierto |
+| PUB-28 | El servidor rechaza una foto que no es una imagen (400) | `POST /publicaciones` | `publicaciones_test.dart` | El servidor rechaza una foto que no es una imagen y no crea la publicación | cubierto |
+| PUB-29 | Reemplazar la foto al editar y elegir una foto de más de 2 MB | `PUT /publicaciones/:id` | `publicaciones_test.dart` | Eudenia reemplaza la foto de su chompa por otra; Eudenia elige una foto de más de 2 MB al editar y la app se lo avisa | cubierto |
 
 ## Feed y reservas
 
@@ -82,8 +87,8 @@ Columnas: **ID** (identificador estable), **Flujo o caso**, **Endpoint** (o pant
 | FEE-15 | Ver la reserva propia | `GET /publicaciones` | `feed_test.dart` | Job ve que ya reservó la calculadora de Eudenia | cubierto |
 | FEE-16 | Ver una publicación reservada por otra persona sin poder reservarla | `GET /publicaciones` | `feed_test.dart` | Carlos ve la calculadora reservada por otra persona sin poder reservarla | cubierto |
 | FEE-17 | Ver la publicación propia y saltar a Mis publicaciones | `GET /publicaciones` | `feed_test.dart` | Eudenia ve su propia publicación y salta a Mis publicaciones | cubierto |
-| FEE-18 | Cancelar la reserva de otra persona (403) | `PUT /publicaciones/:id/disponible` | - | - | pendiente (brecha 5) |
-| FEE-19 | Reservar una publicación ya intercambiada o no disponible (409) | `PUT /publicaciones/:id/reservado` | - | - | pendiente (brecha 6) |
+| FEE-18 | Cancelar la reserva de otra persona (403, solo API: la app no ofrece el botón) | `PUT /publicaciones/:id/disponible` | `feed_test.dart` | Carlos no puede cancelar la reserva que hizo Job | cubierto |
+| FEE-19 | Reservar una publicación ya intercambiada o no disponible (409, solo API: la app no ofrece el botón) | `PUT /publicaciones/:id/reservado` | `feed_test.dart` | Eudenia no puede reservar los audífonos que ya fueron intercambiados; Job no puede reservar una publicación que su dueña marcó como no disponible | cubierto |
 | FEE-20 | Botón de WhatsApp para contactar a la otra persona | `UI /feed` | - | - | pendiente (brecha 12) |
 
 ## Ofertas y contraofertas
@@ -180,12 +185,13 @@ Columnas: **ID** (identificador estable), **Flujo o caso**, **Endpoint** (o pant
 | ID | Flujo o caso | Endpoint | Archivo | Prueba | Estado |
 |---|---|---|---|---|---|
 | AVI-01 | Ver mis datos y descargarlos (JSON y CSV) | `GET /usuarios/yo/datos` | `salida_honesta_test.dart` | Eudenia ve sus datos y al descargarlos se registra datos_descargados | cubierto |
-| AVI-02 | Quitar el teléfono guardado | `DELETE /usuarios/yo/telefono` | - | - | pendiente (brecha 2) |
+| AVI-02 | Quitar el teléfono guardado | `DELETE /usuarios/yo/telefono` | `salida_honesta_test.dart` | Ana quita su teléfono desde Mis datos y la app lo confirma | cubierto |
 | AVI-03 | Eliminar la cuenta con la contraseña incorrecta (401) | `DELETE /usuarios/yo` | `salida_honesta_test.dart` | Eudenia se equivoca de contraseña, no se borra nada y se registra el bloqueo | cubierto |
 | AVI-04 | Eliminar la cuenta con un trueque acordado y avisar a la otra parte | `DELETE /usuarios/yo, GET /notificaciones` | `salida_honesta_test.dart` | Eudenia elimina su cuenta con un trueque acordado y Carlos recibe el aviso | cubierto |
 | AVI-05 | Ver el aviso en la pantalla de avisos | `GET /notificaciones` | `salida_honesta_test.dart` | Eudenia elimina su cuenta con un trueque acordado y Carlos recibe el aviso | cubierto |
 | AVI-06 | Una cuenta eliminada ya no inicia sesión (401) | `POST /sesiones` | `salida_honesta_test.dart` | Quien eliminó su cuenta ya no puede iniciar sesión | cubierto |
 | AVI-07 | Marcar un aviso como leído | `PUT /notificaciones/:id/leida` | - | - | pendiente (brecha 11) |
+| AVI-08 | Sin teléfono guardado no aparece el botón para quitarlo | `UI /mis-datos` | `salida_honesta_test.dart` | Eudenia no tiene teléfono guardado y no ve el botón para quitarlo | cubierto |
 
 ## Eventos y analítica
 
@@ -201,15 +207,15 @@ Columnas: **ID** (identificador estable), **Flujo o caso**, **Endpoint** (o pant
 
 | Área | Cubiertos | Total | % |
 |---|---|---|---|
-| Acceso y cuenta | 17 | 21 | 81.0% |
-| Publicaciones | 19 | 24 | 79.2% |
-| Feed y reservas | 17 | 20 | 85.0% |
+| Acceso y cuenta | 19 | 21 | 90.5% |
+| Publicaciones | 28 | 29 | 96.6% |
+| Feed y reservas | 19 | 20 | 95.0% |
 | Ofertas y contraofertas | 34 | 35 | 97.1% |
 | Intercambios y entrega | 17 | 17 | 100.0% |
 | Calificaciones | 7 | 7 | 100.0% |
 | Historial | 9 | 10 | 90.0% |
-| Avisos, Mis datos y cuenta | 5 | 7 | 71.4% |
+| Avisos, Mis datos y cuenta | 7 | 8 | 87.5% |
 | Eventos y analítica | 5 | 5 | 100.0% |
-| **Total** | **130** | **146** | **89.0%** |
+| **Total** | **145** | **152** | **95.4%** |
 
-Flujos cubiertos: 130 de 146 (89.0%). Pendientes: 16 (brechas 1 a 14; las brechas 1 y 7 ocupan dos filas cada una).
+Flujos cubiertos: 145 de 152 (95.4%). Pendientes: 7 (brechas 8 a 14).
