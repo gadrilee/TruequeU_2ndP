@@ -798,10 +798,10 @@ async function segmentado(c) {
 async function filaLista(c) {
   const error = c.Tono === 'error';
   const f = marco({ nombre: 'raiz', componente: true, dir: 'H', ancho: 350, pad: ['e8', 'e16'], gap: 'e16', cruz: 'CENTER' });
-  if (c.Icono === 'si') f.appendChild(await glifo('◆', error ? 'ColorScheme/error' : 'ColorScheme/primary', 'tituloItem'));
+  if (c.Icono === 'con') f.appendChild(await glifo('◆', error ? 'ColorScheme/error' : 'ColorScheme/primary', 'tituloItem'));
   const columna = marco({ nombre: 'textos', dir: 'V', gap: 'e2' });
   agregar(columna, await texto('Intercambios completados', 'cuerpo', error ? 'ColorScheme/error' : 'ColorScheme/onSurface', 'titulo'), { ancho: true });
-  if (c.Subtitulo === 'si') agregar(columna, await texto('Subtítulo', 'detalle', 'ColorScheme/onSurfaceVariant', 'subtitulo'), { ancho: true });
+  if (c.Subtitulo === 'con') agregar(columna, await texto('Subtítulo', 'detalle', 'ColorScheme/onSurfaceVariant', 'subtitulo'), { ancho: true });
   agregar(f, columna, { ancho: true });
   if (c.Final === 'chevron') f.appendChild(await texto('›', 'tituloItem', 'ColorScheme/onSurfaceVariant', 'chevron'));
   return f;
@@ -1437,16 +1437,39 @@ async function construirFundamentos() {
   radios.appendChild(filaRadios);
 }
 
-function pantalla(nombre, indice) {
+let posicion = 0;
+
+function pantalla(nombre) {
   const f = marco({ nombre: nombre, dir: 'V', ancho: 390, alto: 844, fondo: 'ColorScheme/surface', recorta: true });
-  f.x = indice * 430;
+  f.x = (posicion % 7) * 430;
+  f.y = Math.floor(posicion / 7) * 900;
+  posicion++;
   return f;
 }
 
-function contenido(padre, pad, gap) {
-  const c = marco({ nombre: 'contenido', dir: 'V', pad: pad, gap: gap, recorta: true });
+function contenido(padre, pad, gap, centrado) {
+  const c = marco({ nombre: 'contenido', dir: 'V', pad: pad, gap: gap, recorta: true, alinea: centrado ? 'CENTER' : 'MIN' });
   agregar(padre, c, { ancho: true, alto: true });
   return c;
+}
+
+function grupo(padre, gap) {
+  const g = marco({ nombre: 'grupo', dir: 'V', gap: gap || 'e8' });
+  agregar(padre, g, { ancho: true });
+  return g;
+}
+
+function centrar(padre, inst) {
+  const f = marco({ nombre: 'centrado', dir: 'H', alinea: 'CENTER' });
+  f.appendChild(inst);
+  agregar(padre, f, { ancho: true });
+  return f;
+}
+
+function cambiarTextoN(inst, valor, nombre, indice) {
+  const lista = inst.findAll(n => n.type === 'TEXT' && n.name === nombre);
+  if (lista[indice]) lista[indice].characters = valor;
+  return inst;
 }
 
 function encabezado(padre, conLogo, titulo, subtitulo) {
@@ -1456,9 +1479,26 @@ function encabezado(padre, conLogo, titulo, subtitulo) {
   agregar(padre, inst, { ancho: true });
 }
 
-function campo(padre, contenidoCampo, tipo) {
-  const inst = instancia('CampoTexto', { Estado: 'vacio', Tipo: tipo || 'texto', Icono: 'no' });
-  agregar(padre, cambiarTexto(inst, contenidoCampo), { ancho: true });
+function barra(padre, titulo, volver, refrescar) {
+  const inst = instancia('AppBar', { Volver: volver ? 'si' : 'no', Accion: refrescar ? 'refrescar' : 'ninguna' });
+  agregar(padre, cambiarTexto(inst, titulo, 'titulo'), { ancho: true });
+}
+
+function campo(padre, contenidoCampo, o) {
+  const op = o || {};
+  const inst = instancia('CampoTexto', { Estado: op.estado || 'vacio', Tipo: op.tipo || 'texto', Icono: op.icono ? 'si' : 'no' });
+  cambiarTexto(inst, contenidoCampo);
+  if (op.icono) cambiarTexto(inst, op.icono, 'icono');
+  if (op.error) cambiarTexto(inst, op.error, 'ayuda');
+  agregar(padre, inst, { ancho: true });
+  return inst;
+}
+
+function selector(padre, etiquetaCampo, valor) {
+  const inst = instancia('DropdownButtonFormField', { Estado: 'default' });
+  cambiarTexto(inst, etiquetaCampo, 'etiqueta');
+  cambiarTexto(inst, valor, 'valor');
+  agregar(padre, inst, { ancho: true });
 }
 
 function accion(padre, contenidoBoton, variante) {
@@ -1469,55 +1509,369 @@ function navegacion(padre, activo) {
   agregar(padre, instancia('EstructuraPrincipal', { Activo: activo }), { ancho: true });
 }
 
+function pie(padre, variante) {
+  agregar(padre, instancia('PieEnlace', { Variante: variante }), { ancho: true });
+}
+
+function pieBoton(padre, contenidoBoton) {
+  const f = marco({ nombre: 'pie', dir: 'V', pad: [null, 'e24', 'e16', 'e24'] });
+  agregar(padre, f, { ancho: true });
+  accion(f, contenidoBoton, 'texto');
+}
+
+function vacio(padre, titulo, mensaje, textoBoton) {
+  const inst = instancia('MensajeVacio', { ConBoton: textoBoton ? 'si' : 'no' });
+  cambiarTexto(inst, titulo, 'titulo');
+  if (mensaje) cambiarTexto(inst, mensaje, 'mensaje');
+  else ocultar(inst, 'mensaje');
+  if (textoBoton) cambiarTexto(inst, textoBoton);
+  agregar(padre, inst, { ancho: true });
+}
+
+function fallo(padre, mensaje) {
+  const inst = instancia('ErrorConReintento', { Estado: 'default' });
+  cambiarTexto(inst, mensaje, 'mensaje');
+  agregar(padre, inst, { ancho: true });
+}
+
+function cargando(padre) {
+  agregar(padre, instancia('CircularProgressIndicator', { Tamano: 'grande' }), { ancho: true });
+}
+
+function flotante(p, conNavegacion) {
+  const fab = instancia('FloatingActionButton', { Variante: 'extendido' });
+  p.appendChild(fab);
+  fab.layoutPositioning = 'ABSOLUTE';
+  fab.x = 390 - 16 - fab.width;
+  fab.y = 844 - (conNavegacion ? 80 : 0) - 16 - fab.height;
+}
+
+function mensajeInferior(p, mensaje, conNavegacion) {
+  const s = cambiarTexto(instancia('SnackBar', { Estado: 'default' }), mensaje);
+  p.appendChild(s);
+  s.layoutPositioning = 'ABSOLUTE';
+  s.x = 0;
+  s.y = 844 - (conNavegacion ? 80 : 0) - s.height;
+}
+
+function armarInicio(p) {
+  encabezado(p, true, 'Trueque U', 'Intercambia objetos y materiales con otros estudiantes.');
+  const c = contenido(p, ['e40', 'e24', 'e24', 'e24'], 'e12', true);
+  accion(c, 'Iniciar sesión', 'primario');
+  accion(c, 'Crear cuenta', 'contorno');
+}
+
+function armarIniciarSesion(p, conError) {
+  encabezado(p, true, 'Trueque U', 'Qué bueno verte de nuevo');
+  const c = contenido(p, 'e24', 'e16', true);
+  agregar(c, tp('Inicia sesión', 'subtitulo'), { ancho: true });
+  campo(c, conError ? 'ana@universidad.edu' : 'Correo', { icono: '✉', estado: conError ? 'relleno' : 'vacio' });
+  campo(c, conError ? '••••••••' : 'Contraseña', { tipo: 'contrasena', icono: '⚿', estado: conError ? 'relleno' : 'vacio' });
+  agregar(c, tp('¿Olvidaste tu contraseña?', 'enlace', 'derecha'), { ancho: true });
+  if (conError) agregar(c, cambiarTexto(instancia('BannerError', { Estado: 'default' }), 'Correo o contraseña incorrectos', 'mensaje'), { ancho: true });
+  accion(c, 'Iniciar sesión', 'primario');
+  pie(p, 'crearCuenta');
+}
+
+function armarRegistro(p) {
+  encabezado(p, false, 'Crear cuenta', 'Únete a la comunidad de tu campus');
+  const c = contenido(p, 'e24', 'e16', true);
+  campo(c, 'Nombre completo', { icono: '☺' });
+  campo(c, 'Correo', { icono: '✉' });
+  const telefono = grupo(c, 'e4');
+  campo(telefono, 'Teléfono (opcional, 8 dígitos)', { icono: '☎' });
+  agregar(telefono, tp('Solo lo verá la persona con la que acuerdes un trueque. Puedes dejarlo vacío.', 'ayuda'), { ancho: true });
+  campo(c, 'Contraseña', { tipo: 'contrasena', icono: '⚿' });
+  campo(c, 'Repite la contraseña', { tipo: 'contrasena', icono: '⚿' });
+  accion(c, 'Crear cuenta', 'rojo');
+  pie(p, 'iniciarSesion');
+}
+
+function armarRecuperar(p, enviado) {
+  encabezado(p, false, 'Recuperar contraseña', 'Te ayudamos a volver a entrar');
+  const c = contenido(p, 'e24', 'e16', true);
+  c.appendChild(instancia('IconoCaja', { Icono: 'llave' }));
+  agregar(c, tp('Escribe el correo de tu cuenta y te enviaremos una contraseña nueva.'), { ancho: true });
+  campo(c, enviado ? 'ana@universidad.edu' : 'Correo', { icono: '✉', estado: enviado ? 'relleno' : 'vacio' });
+  accion(c, 'Enviar contraseña nueva', 'primario');
+  if (enviado) agregar(c, instancia('BannerExito', { Estado: 'default' }), { ancho: true });
+  pieBoton(p, '← Volver a iniciar sesión');
+}
+
+function armarFeed(p, estado) {
+  agregar(p, instancia('CabeceraFeed', { Estado: 'default' }), { ancho: true });
+  agregar(p, instancia('FiltrosFeed', { Estado: estado === 'sinResultados' ? 'conFiltros' : 'sinFiltros' }), { ancho: true });
+  const lista = contenido(p, 'e20', 'e16', estado !== 'lista');
+  if (estado === 'lista') {
+    agregar(lista, instancia('TarjetaFeed', { Estado: 'disponible' }), { ancho: true });
+    agregar(lista, instancia('TarjetaFeed', { Estado: 'reservadoPorMi' }), { ancho: true });
+  }
+  if (estado === 'vacio') vacio(lista, 'No hay publicaciones disponibles', 'Sé el primero en compartir un objeto para intercambiar con la comunidad.', 'Crear publicación');
+  if (estado === 'sinResultados') vacio(lista, 'Ninguna publicación coincide con tu búsqueda', null, 'Quitar filtros');
+  if (estado === 'error') fallo(lista, 'No se pudieron cargar las publicaciones');
+  if (estado === 'cargando') cargando(lista);
+  navegacion(p, 'explorar');
+  flotante(p, true);
+}
+
+function armarMisPublicaciones(p, estado) {
+  barra(p, 'Mis publicaciones', false, true);
+  const c = contenido(p, 'e24', 'e12', estado === 'vacio');
+  if (estado === 'vacio') {
+    vacio(c, 'Aún no tienes publicaciones', 'Crea una publicación para intercambiar objetos con otros estudiantes.', 'Crear nueva publicación');
+  } else {
+    agregar(c, tp('Total: 2', 'suave'), { ancho: true });
+    agregar(c, instancia('TarjetaMiPublicacion', { Reservada: 'no' }), { ancho: true });
+    agregar(c, instancia('TarjetaMiPublicacion', { Reservada: 'si' }), { ancho: true });
+  }
+  navegacion(p, 'misPublicaciones');
+  flotante(p, true);
+  if (estado === 'guardada') mensajeInferior(p, 'Publicación guardada exitosamente', true);
+}
+
+function armarOfertas(p, estado) {
+  barra(p, 'Ofertas de trueque', false, true);
+  const c = contenido(p, 'e24', 'e12', estado === 'vacio');
+  agregar(c, instancia('SegmentedButton', { Seleccionado: estado === 'enviadas' ? 'enviadas' : 'recibidas' }), { ancho: true });
+  const tarjeta = (e, lado) => agregar(c, instancia('TarjetaOferta', { Estado: e, Lado: lado }), { ancho: true });
+  if (estado === 'recibidas') {
+    tarjeta('pendiente', 'recibida');
+    tarjeta('contraofertada', 'recibida');
+  }
+  if (estado === 'enviadas') {
+    tarjeta('pendiente', 'enviada');
+    tarjeta('rechazada', 'enviada');
+  }
+  if (estado === 'entrega') {
+    tarjeta('aceptada', 'recibida');
+    tarjeta('completada', 'recibida');
+  }
+  if (estado === 'vacio') {
+    vacio(c, 'Nadie te ha ofrecido un trueque', 'Cuando alguien ofrezca un objeto por una publicación tuya, aparecerá aquí.', 'Explorar publicaciones');
+  }
+  navegacion(p, 'ofertas');
+}
+
+function filaPerfil(card, caracter, titulo, tono) {
+  const inst = instancia('FilaLista', { Icono: 'con', Subtitulo: 'sin', Final: 'chevron', Tono: tono || 'normal' });
+  cambiarTexto(inst, titulo, 'titulo');
+  cambiarTexto(inst, caracter, 'icono');
+  agregar(card, inst, { ancho: true });
+}
+
+function armarPerfil(p) {
+  barra(p, 'Mi perfil', false, false);
+  const c = contenido(p, 'e24', 'e24', true);
+  const cabecera = grupo(c, 'e8');
+  centrar(cabecera, cambiarTexto(instancia('CircleAvatar', { Tamano: 'grande' }), 'AP'));
+  agregar(cabecera, tp('Ana Pérez', 'subtitulo', 'centro'), { ancho: true });
+  agregar(cabecera, tp('ana@universidad.edu', 'suave', 'centro'), { ancho: true });
+  agregar(cabecera, instancia('ResumenCalificaciones', { Estado: 'conDatos' }), { ancho: true });
+  const tarjeta = marco({
+    nombre: 'opciones', dir: 'V', fondo: 'TemaTruequeU/blanco', borde: 'ColorScheme/outlineVariant', radio: 'r20', recorta: true,
+  });
+  agregar(c, tarjeta, { ancho: true });
+  const opciones = [
+    ['⇄', 'Intercambios completados'], ['↺', 'Historial'], ['✦', 'Avisos'], ['▤', 'Mis datos'], ['⚿', 'Cambiar contraseña'],
+  ];
+  for (const o of opciones) {
+    filaPerfil(tarjeta, o[0], o[1]);
+    agregar(tarjeta, instancia('Divider', { Estado: 'default' }), { ancho: true });
+  }
+  filaPerfil(tarjeta, '⌫', 'Eliminar cuenta', 'error');
+  accion(c, 'Cerrar sesión', 'contornoRojo');
+  navegacion(p, 'perfil');
+}
+
+function armarPublicacion(p, conFoto) {
+  barra(p, 'Nueva publicación', true, false);
+  const c = contenido(p, 'e24', 'e16', false);
+  campo(c, 'Nombre del objeto');
+  campo(c, 'Descripción (opcional)', { tipo: 'multilinea' });
+  selector(c, 'Estado del objeto', 'Nuevo');
+  selector(c, 'Categoría', 'Otros');
+  agregar(c, instancia('FotoPublicacion', { Estado: conFoto ? 'imagen' : 'vacia', Forma: 'ancha' }), { ancho: true });
+  accion(c, conFoto ? 'Cambiar foto' : 'Elegir foto', 'contorno');
+  if (conFoto) accion(c, 'Quitar foto', 'texto');
+  accion(c, 'Guardar', 'primario');
+  accion(c, 'Cancelar', 'texto');
+}
+
+function armarCambiarContrasena(p, conError) {
+  barra(p, 'Cambiar contraseña', false, false);
+  const c = contenido(p, 'e24', 'e16', true);
+  campo(c, conError ? '••••••••' : 'Contraseña actual', { tipo: 'contrasena', estado: conError ? 'relleno' : 'vacio' });
+  campo(c, conError ? '••••••••' : 'Contraseña nueva', { tipo: 'contrasena', estado: conError ? 'relleno' : 'vacio' });
+  campo(c, conError ? '••••••' : 'Repite la contraseña nueva', {
+    tipo: 'contrasena', estado: conError ? 'error' : 'vacio', error: conError ? 'Las contraseñas no coinciden' : null,
+  });
+  accion(c, 'Guardar', 'primario');
+  accion(c, 'Cancelar', 'texto');
+}
+
+function armarIntercambios(p, estado) {
+  barra(p, 'Intercambios completados', true, true);
+  const c = contenido(p, 'e24', 'e12', estado === 'vacio');
+  if (estado === 'vacio') {
+    vacio(c, 'Aún no tienes intercambios completados', null, null);
+  } else {
+    agregar(c, instancia('TarjetaIntercambio', { Rol: 'entregue' }), { ancho: true });
+    agregar(c, instancia('TarjetaIntercambio', { Rol: 'recibi' }), { ancho: true });
+  }
+  accion(c, 'Volver al perfil', 'texto');
+}
+
+function armarHistorial(p, estado) {
+  barra(p, 'Historial', true, true);
+  const c = contenido(p, 'e24', 'e12', estado !== 'lista');
+  const filtro = estado === 'filtroVacio' ? 'reservas' : 'todo';
+  agregar(c, instancia('FiltrosHistorial', { Seleccionado: filtro }), { ancho: true });
+  if (estado === 'lista') {
+    for (const t of ['reservo', 'canceloReserva', 'completo']) agregar(c, instancia('TarjetaHistorial', { Tipo: t }), { ancho: true });
+  }
+  if (estado === 'vacio') vacio(c, 'Aún no tienes movimientos', 'Cuando reserves o completes un intercambio, aparecerá aquí.', 'Explorar publicaciones');
+  if (estado === 'filtroVacio') vacio(c, 'No hay reservas', 'Todavía no tienes nada en esta lista.', 'Ver todo');
+  accion(c, 'Volver al perfil', 'texto');
+}
+
+function armarAvisos(p, estado) {
+  barra(p, 'Avisos', true, false);
+  const c = contenido(p, 'e24', 'e12', estado === 'vacio');
+  if (estado === 'vacio') {
+    vacio(c, 'No tienes avisos', 'Aquí aparecerán los cambios importantes en tus trueques.', null);
+  } else {
+    agregar(c, instancia('TarjetaAviso', { Estado: 'noLeida' }), { ancho: true });
+    agregar(c, cambiarTexto(instancia('TarjetaAviso', { Estado: 'noLeida' }), 'Ana Pérez reservó tu «Mochila azul»', 'titulo'), { ancho: true });
+    agregar(c, cambiarTexto(instancia('TarjetaAviso', { Estado: 'leida' }), 'Se completó tu intercambio de «Libro de cálculo»', 'titulo'), { ancho: true });
+  }
+  accion(c, 'Volver al perfil', 'texto');
+}
+
+function agregarDatos(padre, titulo, lineas, conAccion) {
+  const inst = instancia('TarjetaDatos', { Variante: conAccion ? 'conAccion' : 'normal' });
+  cambiarTexto(inst, titulo, 'titulo');
+  cambiarTexto(inst, lineas, 'lineas');
+  agregar(padre, inst, { ancho: true });
+}
+
+function armarMisDatos(p, estado) {
+  barra(p, 'Mis datos', true, false);
+  const c = contenido(p, 'e24', 'e16', estado === 'cargando');
+  if (estado === 'cargando') {
+    cargando(c);
+  } else {
+    agregar(c, tp('Esto es lo que la app guarda de ti. Puedes descargarlo cuando quieras.'), { ancho: true });
+    filaBotones(c, [boton('Descargar JSON', 'primario'), boton('Descargar CSV', 'primario')]);
+    const lista = grupo(c, 'e8');
+    agregarDatos(lista, 'Tu perfil', 'Nombre: Ana Pérez\nCorreo: ana@universidad.edu\nTeléfono: 71234567\nCuenta creada: 2026-09-01', true);
+    agregarDatos(lista, 'Tus publicaciones', 'Calculadora científica · disponible\nMochila azul · reservado');
+    agregarDatos(lista, 'Ofertas que hiciste', 'Ofreciste "Mochila azul" por "Libro de cálculo" · pendiente');
+    agregarDatos(lista, 'Ofertas que recibiste', 'Te ofrecieron "Chaqueta de lana" por "Calculadora científica" · aceptada');
+    agregarDatos(lista, 'Calificaciones que diste', '4 de 5 · 2026-11-02 · "Muy puntual y amable"');
+    agregarDatos(lista, 'Calificaciones que recibiste', 'Aún no te calificaron.');
+    agregarDatos(lista, 'Tu historial', 'Calculadora científica · reservo · 2026-10-20');
+    accion(c, 'Volver al perfil', 'texto');
+  }
+  if (estado === 'descarga') mensajeInferior(p, 'Tus datos se descargaron', false);
+}
+
+const PANTALLAS = [
+  ['PantallaInicio', armarInicio],
+  ['PantallaIniciarSesion', p => armarIniciarSesion(p, false)],
+  ['PantallaRegistro', armarRegistro],
+  ['PantallaRecuperarContrasena', p => armarRecuperar(p, false)],
+  ['PantallaFeedPublicaciones', p => armarFeed(p, 'lista')],
+  ['PantallaMisPublicaciones', p => armarMisPublicaciones(p, 'lista')],
+  ['PantallaOfertas', p => armarOfertas(p, 'recibidas')],
+  ['PantallaPerfil', armarPerfil],
+  ['PantallaPublicacion', p => armarPublicacion(p, false)],
+  ['PantallaIntercambios', p => armarIntercambios(p, 'lista')],
+  ['PantallaHistorial', p => armarHistorial(p, 'lista')],
+  ['PantallaAvisos', p => armarAvisos(p, 'lista')],
+  ['PantallaMisDatos', p => armarMisDatos(p, 'datos')],
+  ['PantallaCambiarContrasena', p => armarCambiarContrasena(p, false)],
+  ['PantallaIniciarSesion · error', p => armarIniciarSesion(p, true)],
+  ['PantallaRecuperarContrasena · enviado', p => armarRecuperar(p, true)],
+  ['PantallaFeedPublicaciones · vacío', p => armarFeed(p, 'vacio')],
+  ['PantallaFeedPublicaciones · sin resultados', p => armarFeed(p, 'sinResultados')],
+  ['PantallaFeedPublicaciones · error', p => armarFeed(p, 'error')],
+  ['PantallaFeedPublicaciones · cargando', p => armarFeed(p, 'cargando')],
+  ['PantallaMisPublicaciones · vacío', p => armarMisPublicaciones(p, 'vacio')],
+  ['PantallaMisPublicaciones · publicación guardada', p => armarMisPublicaciones(p, 'guardada')],
+  ['PantallaOfertas · enviadas', p => armarOfertas(p, 'enviadas')],
+  ['PantallaOfertas · entrega y calificación', p => armarOfertas(p, 'entrega')],
+  ['PantallaOfertas · vacío', p => armarOfertas(p, 'vacio')],
+  ['PantallaPublicacion · con foto', p => armarPublicacion(p, true)],
+  ['PantallaIntercambios · vacío', p => armarIntercambios(p, 'vacio')],
+  ['PantallaHistorial · vacío', p => armarHistorial(p, 'vacio')],
+  ['PantallaHistorial · filtro sin resultados', p => armarHistorial(p, 'filtroVacio')],
+  ['PantallaAvisos · vacío', p => armarAvisos(p, 'vacio')],
+  ['PantallaMisDatos · cargando', p => armarMisDatos(p, 'cargando')],
+  ['PantallaMisDatos · descarga', p => armarMisDatos(p, 'descarga')],
+  ['PantallaCambiarContrasena · error', p => armarCambiarContrasena(p, true)],
+];
+
 async function construirPantallas() {
-  const inicio = pantalla('PantallaInicio', 0);
-  encabezado(inicio, true, 'TruequeU', 'Intercambia lo que ya no usas');
-  const accionesInicio = contenido(inicio, 'e24', 'e12');
-  accion(accionesInicio, 'Iniciar sesión', 'primario');
-  accion(accionesInicio, 'Crear cuenta', 'contorno');
+  posicion = 0;
+  for (const d of PANTALLAS) d[1](pantalla(d[0]));
+}
 
-  const acceso = pantalla('PantallaIniciarSesion', 1);
-  encabezado(acceso, false, 'Iniciar sesión', 'Ingresa con tu correo institucional');
-  const formularioAcceso = contenido(acceso, 'e24', 'e16');
-  campo(formularioAcceso, 'Correo institucional');
-  campo(formularioAcceso, 'Contraseña', 'contrasena');
-  agregar(formularioAcceso, instancia('BannerError', { Estado: 'default' }), { ancho: true });
-  accion(formularioAcceso, 'Entrar', 'primario');
+const FEED = p => armarFeed(p, 'lista');
+const OFERTAS = p => armarOfertas(p, 'recibidas');
+const OFERTAS_ENVIADAS = p => armarOfertas(p, 'enviadas');
+const OFERTAS_ENTREGA = p => armarOfertas(p, 'entrega');
+const MIS_PUBLICACIONES = p => armarMisPublicaciones(p, 'lista');
+const HISTORIAL = p => armarHistorial(p, 'lista');
 
-  const registro = pantalla('PantallaRegistro', 2);
-  encabezado(registro, false, 'Crear cuenta', 'Regístrate para intercambiar');
-  const formularioRegistro = contenido(registro, 'e24', 'e16');
-  campo(formularioRegistro, 'Nombre completo');
-  campo(formularioRegistro, 'Correo institucional');
-  campo(formularioRegistro, 'Contraseña', 'contrasena');
-  campo(formularioRegistro, 'Confirmar contraseña', 'contrasena');
-  accion(formularioRegistro, 'Registrarme', 'primario');
+const ESCENAS = [
+  ['confirmarAccion · normal', OFERTAS, () => instancia('confirmarAccion', { Variante: 'normal' })],
+  ['confirmarAccion · destructivo', OFERTAS, () => instancia('confirmarAccion', { Variante: 'destructivo' })],
+  ['confirmarAccion · cancelar oferta', OFERTAS_ENVIADAS, () => {
+    const d = instancia('confirmarAccion', { Variante: 'destructivo' });
+    cambiarTexto(d, 'Cancelar oferta', 'titulo');
+    cambiarTextoN(d, '¿Cancelas esta oferta? La otra persona ya no podrá aceptarla.', 'texto', 0);
+    cambiarTextoN(d, 'Volver', 'texto', 1);
+    cambiarTextoN(d, 'Sí, cancelar oferta', 'texto', 2);
+    return d;
+  }],
+  ['mostrarAyudaTrueque', FEED, () => instancia('mostrarAyudaTrueque', { Estado: 'default' })],
+  ['pedirCalificacion · sinPuntaje', OFERTAS_ENTREGA, () => instancia('pedirCalificacion', { Estado: 'sinPuntaje' })],
+  ['pedirCalificacion · conPuntaje', OFERTAS_ENTREGA, () => instancia('pedirCalificacion', { Estado: 'conPuntaje' })],
+  ['pedirCalificacion · error', OFERTAS_ENTREGA, () => instancia('pedirCalificacion', { Estado: 'error' })],
+  ['pedirMotivoCancelacion · vacío', OFERTAS_ENTREGA, () => instancia('pedirMotivoCancelacion', { Estado: 'vacio' })],
+  ['pedirMotivoCancelacion · con motivo', OFERTAS_ENTREGA, () => instancia('pedirMotivoCancelacion', { Estado: 'conMotivo' })],
+  ['pedirDatosEntrega · proponer', OFERTAS_ENTREGA, () => instancia('pedirDatosEntrega', { Variante: 'proponer' })],
+  ['pedirDatosEntrega · reprogramar', OFERTAS_ENTREGA, () => instancia('pedirDatosEntrega', { Variante: 'reprogramar' })],
+  ['pedirDatosEntrega · contraproponer', OFERTAS_ENTREGA, () => instancia('pedirDatosEntrega', { Variante: 'contraproponer' })],
+  ['pedirDatosEntrega · con errores', OFERTAS_ENTREGA, () => instancia('pedirDatosEntrega', { Variante: 'conErrores' })],
+  ['mostrarDialogoOferta · ofrecer', FEED, () => instancia('mostrarDialogoOferta', { Tipo: 'ofrecer', Estado: 'conOpciones' })],
+  ['mostrarDialogoOferta · ofrecer sin opciones', FEED, () => instancia('mostrarDialogoOferta', { Tipo: 'ofrecer', Estado: 'vacio' })],
+  ['mostrarDialogoOferta · contraofertar', OFERTAS, () => instancia('mostrarDialogoOferta', { Tipo: 'contraofertar', Estado: 'conOpciones' })],
+  ['mostrarDialogoOferta · contraofertar sin opciones', OFERTAS, () => instancia('mostrarDialogoOferta', { Tipo: 'contraofertar', Estado: 'vacio' })],
+  ['DialogoEditarPublicacion · normal', MIS_PUBLICACIONES, () => instancia('DialogoEditarPublicacion', { Estado: 'normal' })],
+  ['DialogoEditarPublicacion · guardando', MIS_PUBLICACIONES, () => instancia('DialogoEditarPublicacion', { Estado: 'guardando' })],
+  ['DialogoEditarPublicacion · error', MIS_PUBLICACIONES, () => instancia('DialogoEditarPublicacion', { Estado: 'error' })],
+  ['DialogoEliminarCuenta · normal', armarPerfil, () => instancia('DialogoEliminarCuenta', { Estado: 'normal' })],
+  ['DialogoEliminarCuenta · contraseña incorrecta', armarPerfil, () => instancia('DialogoEliminarCuenta', { Estado: 'error' })],
+  ['DialogoHistorial · negociación', OFERTAS, () => instancia('DialogoHistorial', { Tipo: 'negociacion' })],
+  ['DialogoHistorial · entrega', OFERTAS_ENTREGA, () => instancia('DialogoHistorial', { Tipo: 'entrega' })],
+  ['DialogoHistorial · movimiento', HISTORIAL, () => instancia('DialogoHistorial', { Tipo: 'movimiento' })],
+];
 
-  const feed = pantalla('PantallaFeedPublicaciones', 3);
-  const listaFeed = contenido(feed, 'e16', 'e12');
-  agregar(listaFeed, instancia('FiltrosFeed', { Estado: 'conFiltros' }), { ancho: true });
-  agregar(listaFeed, instancia('TarjetaFeed', { Estado: 'disponible' }), { ancho: true });
-  agregar(listaFeed, instancia('TarjetaFeed', { Estado: 'reservadoPorOtro' }), { ancho: true });
-  navegacion(feed, 'explorar');
-
-  const mias = pantalla('PantallaMisPublicaciones', 4);
-  const listaMias = contenido(mias, 'e16', 'e12');
-  agregar(listaMias, instancia('TarjetaMiPublicacion', { Reservada: 'no' }), { ancho: true });
-  agregar(listaMias, instancia('TarjetaMiPublicacion', { Reservada: 'si' }), { ancho: true });
-  navegacion(mias, 'misPublicaciones');
-
-  const perfil = pantalla('PantallaPerfil', 5);
-  encabezado(perfil, false, 'Perfil', 'ana@universidad.edu');
-  const datosPerfil = contenido(perfil, 'e24', 'e12');
-  datosPerfil.appendChild(instancia('Estrellas', { Puntaje: '4', Modo: 'lectura' }));
-  const etiquetas = marco({ nombre: 'etiquetas', dir: 'H', gap: 'e8' });
-  etiquetas.appendChild(cambiarTexto(instancia('Etiqueta', { Tono: 'primario' }), '12 intercambios'));
-  etiquetas.appendChild(cambiarTexto(instancia('Etiqueta', { Tono: 'terciario' }), 'Cuenta verificada'));
-  datosPerfil.appendChild(etiquetas);
-  accion(datosPerfil, 'Mis datos', 'contorno');
-  accion(datosPerfil, 'Cambiar contraseña', 'contorno');
-  accion(datosPerfil, 'Cerrar sesión', 'rojo');
-  navegacion(perfil, 'perfil');
+async function construirDialogos() {
+  posicion = 0;
+  for (const e of ESCENAS) {
+    const p = pantalla(e[0]);
+    e[1](p);
+    const velo = marco({
+      nombre: 'velo', dir: 'V', ancho: 390, alto: 844, fondo: 'ColorScheme/onSurface', opacidad: 0.32, alinea: 'CENTER', cruz: 'CENTER',
+    });
+    p.appendChild(velo);
+    velo.layoutPositioning = 'ABSOLUTE';
+    velo.x = 0;
+    velo.y = 0;
+    velo.appendChild(e[2]());
+  }
 }
 
 async function pagina(nombre) {
@@ -1538,12 +1892,15 @@ async function main() {
   const fundamentos = await pagina('🎨 Fundamentos');
   const componentes = await pagina('🧩 Componentes');
   const pantallas = await pagina('📱 Pantallas');
+  const dialogos = await pagina('💬 Diálogos');
   await figma.setCurrentPageAsync(componentes);
   await construirComponentes();
   await figma.setCurrentPageAsync(fundamentos);
   await construirFundamentos();
   await figma.setCurrentPageAsync(pantallas);
   await construirPantallas();
+  await figma.setCurrentPageAsync(dialogos);
+  await construirDialogos();
   await figma.setCurrentPageAsync(fundamentos);
 }
 

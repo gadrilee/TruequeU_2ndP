@@ -381,7 +381,7 @@ function revisar(mundo, contexto) {
   }
   ok(`estilos de texto: ${mundo.estilos.length} con fontSize enlazado a Tipos`);
 
-  assert.deepEqual(mundo.paginas.filter(p => p.name !== 'Page 1').map(p => p.name), ['🎨 Fundamentos', '🧩 Componentes', '📱 Pantallas']);
+  assert.deepEqual(mundo.paginas.filter(p => p.name !== 'Page 1').map(p => p.name), ['🎨 Fundamentos', '🧩 Componentes', '📱 Pantallas', '💬 Diálogos']);
 
   const conjuntos = pagina(mundo, '🧩 Componentes').children.filter(n => n.type === 'COMPONENT_SET');
   assert(conjuntos.length >= 10);
@@ -440,27 +440,62 @@ function revisar(mundo, contexto) {
   assert.throws(() => contexto.pintura('ColorScheme/noExiste'), /Token inexistente/);
   ok('pintura() rechaza colores que no son tokens');
 
-  const pantallas = pagina(mundo, '📱 Pantallas').children;
-  assert.deepEqual(pantallas.map(p => p.name), [
-    'PantallaInicio', 'PantallaIniciarSesion', 'PantallaRegistro', 'PantallaFeedPublicaciones', 'PantallaMisPublicaciones', 'PantallaPerfil',
-  ]);
-  let instancias = 0;
-  for (const pantalla of pantallas) {
-    assert.equal(pantalla.width, 390);
-    assert.equal(pantalla.height, 844);
-    assert.equal(pantalla.layoutMode, 'VERTICAL');
-    const propios = [];
-    const recorrer = n => {
-      for (const h of n.children) {
-        propios.push(h);
-        if (h.type !== 'INSTANCE') recorrer(h);
-      }
-    };
-    recorrer(pantalla);
-    assert(propios.every(h => ['FRAME', 'INSTANCE'].includes(h.type)), 'pantalla con nodos ajenos: ' + pantalla.name);
-    instancias += propios.filter(h => h.type === 'INSTANCE').length;
+  const bases = [
+    'PantallaInicio', 'PantallaIniciarSesion', 'PantallaRegistro', 'PantallaRecuperarContrasena',
+    'PantallaFeedPublicaciones', 'PantallaMisPublicaciones', 'PantallaOfertas', 'PantallaPerfil',
+    'PantallaPublicacion', 'PantallaIntercambios', 'PantallaHistorial', 'PantallaAvisos', 'PantallaMisDatos', 'PantallaCambiarContrasena',
+  ];
+  const requeridos = [
+    'PantallaFeedPublicaciones · vacío', 'PantallaOfertas · enviadas', 'PantallaAvisos · vacío',
+  ];
+
+  const revisarPagina = (nombrePagina) => {
+    const lista = pagina(mundo, nombrePagina).children;
+    let instancias = 0;
+    for (const pantalla of lista) {
+      assert.equal(pantalla.type, 'FRAME', 'hijo de pagina que no es marco: ' + pantalla.name);
+      assert.equal(pantalla.width, 390);
+      assert.equal(pantalla.height, 844);
+      assert.equal(pantalla.layoutMode, 'VERTICAL');
+      const propios = [];
+      const recorrer = n => {
+        for (const h of n.children) {
+          propios.push(h);
+          if (h.type !== 'INSTANCE') recorrer(h);
+        }
+      };
+      recorrer(pantalla);
+      assert(propios.every(h => ['FRAME', 'INSTANCE'].includes(h.type)), 'pantalla con nodos ajenos: ' + pantalla.name);
+      instancias += propios.filter(h => h.type === 'INSTANCE').length;
+    }
+    return { lista, instancias };
+  };
+
+  const pantallas = revisarPagina('📱 Pantallas');
+  const nombresPantallas = pantallas.lista.map(p => p.name);
+  assert.deepEqual(nombresPantallas.slice(0, bases.length), bases);
+  for (const extra of nombresPantallas.slice(bases.length)) {
+    assert(bases.some(b => extra.startsWith(b + ' · ')), 'marco de estado sin pantalla base: ' + extra);
   }
-  ok(`pantallas: ${pantallas.length} de 390x844, solo FRAME e INSTANCE (${instancias} instancias)`);
+  for (const nombre of requeridos) assert(nombresPantallas.includes(nombre), 'falta el marco ' + nombre);
+  assert.equal(new Set(nombresPantallas).size, nombresPantallas.length, 'nombres de pantalla repetidos');
+  ok(`pantallas: ${bases.length} base y ${nombresPantallas.length - bases.length} de estado, todas de 390x844, solo FRAME e INSTANCE (${pantallas.instancias} instancias)`);
+
+  const dialogos = revisarPagina('💬 Diálogos');
+  const nombresDialogos = [
+    'confirmarAccion', 'mostrarAyudaTrueque', 'pedirCalificacion', 'pedirMotivoCancelacion', 'pedirDatosEntrega',
+    'mostrarDialogoOferta', 'DialogoEditarPublicacion', 'DialogoEliminarCuenta', 'DialogoHistorial',
+  ];
+  for (const nombre of nombresDialogos) {
+    assert(dialogos.lista.some(p => p.name === nombre || p.name.startsWith(nombre + ' · ')), 'falta el marco del dialogo ' + nombre);
+  }
+  for (const marcoDialogo of dialogos.lista) {
+    const velo = marcoDialogo.children.find(h => h.name === 'velo');
+    assert(velo && velo.layoutPositioning === 'ABSOLUTE', 'dialogo sin velo: ' + marcoDialogo.name);
+    assert(velo.fills[0].boundVariables.color && velo.fills[0].opacity > 0 && velo.fills[0].opacity < 1, 'velo sin color enlazado y opacidad: ' + marcoDialogo.name);
+    assert(velo.children.length === 1 && velo.children[0].type === 'INSTANCE', 'el velo debe contener solo el dialogo: ' + marcoDialogo.name);
+  }
+  ok(`dialogos: ${dialogos.lista.length} marcos de 390x844 con velo (color enlazado con opacidad) y una instancia de dialogo (${dialogos.instancias} instancias)`);
 }
 
 const mundo = crearMundo({});
