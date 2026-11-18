@@ -1,0 +1,30 @@
+services:
+  - type: web
+    name: trueque-u-api
+    runtime: node
+    plan: free
+    rootDir: trueque-u/backend
+    buildCommand: npm install --omit=dev
+    startCommand: npm start
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      # The server reads PUERTO; Render routes traffic to port 10000 by default.
+      - key: PUERTO
+        value: "10000"
+      - key: JWT_SECRETO
+        generateValue: true
+      # Secrets: Render asks for these values when the Blueprint is created.
+      - key: BD_URL
+        sync: false
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+      - key: CORREO_USUARIO
+        sync: false
+      - key: CORREO_CLAVE
+        sync: false
