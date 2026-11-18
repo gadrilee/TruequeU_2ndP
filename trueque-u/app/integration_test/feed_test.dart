@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
@@ -238,6 +240,43 @@ void main() {
       await esperarTexto(tester, 'Total: 3');
 
       expect(find.text('Chompa de la U talla M'), findsOneWidget);
+    });
+  });
+
+  group('Reservas que el servidor rechaza', () {
+    testWidgets('Carlos no puede cancelar la reserva que hizo Job', (tester) async {
+      await abrirApp(tester);
+
+      final respuesta = await pedirApi('PUT', '/publicaciones/2/disponible', carlos);
+
+      expect(respuesta.statusCode, 403);
+      expect(
+        jsonDecode(respuesta.body)['error'],
+        'La publicación está reservada. Solo quien la reservó puede descartar la reserva',
+      );
+      final mias = await pedirApi('GET', '/publicaciones/mias', eudenia);
+      final calculadora = (jsonDecode(mias.body) as List).firstWhere((p) => p['id'] == 2);
+      expect(calculadora['estado_publicacion'], 'reservado');
+    });
+
+    testWidgets('Eudenia no puede reservar los audífonos que ya fueron intercambiados', (tester) async {
+      await abrirApp(tester);
+
+      final respuesta = await pedirApi('PUT', '/publicaciones/5/reservado', eudenia);
+
+      expect(respuesta.statusCode, 409);
+      expect(jsonDecode(respuesta.body)['error'], 'La publicación ya fue intercambiada');
+    });
+
+    testWidgets('Job no puede reservar una publicación que su dueña marcó como no disponible', (tester) async {
+      await abrirApp(tester);
+      final marcada = await pedirApi('PUT', '/publicaciones/3/no-disponible', eudenia);
+      expect(marcada.statusCode, 200);
+
+      final respuesta = await pedirApi('PUT', '/publicaciones/3/reservado', job);
+
+      expect(respuesta.statusCode, 409);
+      expect(jsonDecode(respuesta.body)['error'], 'Solo se puede reservar una publicación disponible');
     });
   });
 }

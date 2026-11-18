@@ -74,6 +74,41 @@ void main() {
     });
   });
 
+  group('Quitar el teléfono', () {
+    testWidgets('Ana quita su teléfono desde Mis datos y la app lo confirma', (tester) async {
+      await abrirApp(tester);
+      await tocarBoton(tester, 'Crear cuenta');
+      await escribir(tester, 'Nombre completo', 'Ana Quispe');
+      await escribir(tester, 'Correo', 'ana@ejemplo.com');
+      await escribir(tester, 'Teléfono (opcional, 8 dígitos)', '71234567');
+      await escribir(tester, 'Contraseña', 'ana12345');
+      await escribir(tester, 'Repite la contraseña', 'ana12345');
+      await tocar(tester, find.widgetWithText(FilledButton, 'Crear cuenta'));
+      await esperarTexto(tester, 'Explorar');
+      await abrirPestana(tester, 'Perfil');
+      await esperarTexto(tester, 'Mi perfil');
+      await tocar(tester, find.text('Mis datos'));
+      await esperarTexto(tester, 'Teléfono: 71234567');
+
+      await tocarBoton(tester, 'Quitar mi teléfono');
+      await esperarTexto(tester, 'Quitamos tu teléfono');
+      await esperarTexto(tester, 'Teléfono: sin teléfono');
+
+      expect(find.text('Quitar mi teléfono'), findsNothing);
+      final perfil = await pedirApi('GET', '/usuarios/yo/datos', ['ana@ejemplo.com', 'ana12345']);
+      expect(jsonDecode(perfil.body)['perfil']['telefono'], isNull);
+    });
+
+    testWidgets('Eudenia no tiene teléfono guardado y no ve el botón para quitarlo', (tester) async {
+      await abrirAppConSesion(tester, eudenia);
+
+      await tocar(tester, find.text('Mis datos'));
+      await esperarTexto(tester, 'Teléfono: sin teléfono');
+
+      expect(find.text('Quitar mi teléfono'), findsNothing);
+    });
+  });
+
   group('Eliminar la cuenta', () {
     testWidgets('Eudenia se equivoca de contraseña, no se borra nada y se registra el bloqueo', (tester) async {
       await abrirAppConSesion(tester, eudenia);

@@ -1,5 +1,8 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:http/http.dart' as http;
 import 'package:integration_test/integration_test.dart';
 
 import 'ayudantes.dart';
@@ -115,6 +118,59 @@ void main() {
       expect(find.text('El teléfono debe tener 8 dígitos'), findsOneWidget);
     });
 
+    testWidgets('Ana escribe un correo inválido y la app se lo avisa', (tester) async {
+      await abrirApp(tester);
+      await tocarBoton(tester, 'Crear cuenta');
+
+      await escribir(tester, 'Nombre completo', 'Ana Quispe');
+      await escribir(tester, 'Correo', 'ana-sin-arroba');
+      await escribir(tester, 'Contraseña', 'ana12345');
+      await escribir(tester, 'Repite la contraseña', 'ana12345');
+      await tocar(tester, find.widgetWithText(FilledButton, 'Crear cuenta'));
+
+      expect(find.text('Correo no válido'), findsOneWidget);
+      expect(find.text('Mi perfil'), findsNothing);
+    });
+
+    testWidgets('Ana escribe un nombre de una sola letra y la app se lo avisa', (tester) async {
+      await abrirApp(tester);
+      await tocarBoton(tester, 'Crear cuenta');
+
+      await escribir(tester, 'Nombre completo', 'A');
+      await escribir(tester, 'Correo', 'ana@ejemplo.com');
+      await escribir(tester, 'Contraseña', 'ana12345');
+      await escribir(tester, 'Repite la contraseña', 'ana12345');
+      await tocar(tester, find.widgetWithText(FilledButton, 'Crear cuenta'));
+
+      expect(find.text('Escribe tu nombre'), findsOneWidget);
+      expect(find.text('Mi perfil'), findsNothing);
+    });
+
+    testWidgets('El servidor rechaza un correo inválido y un nombre corto al crear la cuenta', (tester) async {
+      await abrirApp(tester);
+      Future<http.Response> registrar(String nombre, String correo) {
+        return http.post(
+          Uri.parse('http://localhost:3000/api/usuarios'),
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode({'nombre': nombre, 'correo': correo, 'contrasena': 'ana12345'}),
+        );
+      }
+
+      final correoInvalido = await registrar('Ana Quispe', 'ana-sin-arroba');
+      final nombreCorto = await registrar('A', 'ana@ejemplo.com');
+      final ingreso = await http.post(
+        Uri.parse('http://localhost:3000/api/sesiones'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'correo': 'ana@ejemplo.com', 'contrasena': 'ana12345'}),
+      );
+
+      expect(correoInvalido.statusCode, 400);
+      expect(jsonDecode(correoInvalido.body)['error'], 'Correo no válido');
+      expect(nombreCorto.statusCode, 400);
+      expect(jsonDecode(nombreCorto.body)['error'], 'Escribe tu nombre (mínimo 2 letras)');
+      expect(ingreso.statusCode, 401);
+    });
+
     testWidgets('Ana intenta crear su cuenta con el correo de Eudenia y ve el error', (tester) async {
       await abrirApp(tester);
       await tocarBoton(tester, 'Crear cuenta');
@@ -141,6 +197,33 @@ void main() {
       await esperarTexto(tester, 'Listo. Revisa tu correo: ahí está tu contraseña nueva.');
 
       expect(find.text('Listo. Revisa tu correo: ahí está tu contraseña nueva.'), findsOneWidget);
+    });
+
+    testWidgets('Eudenia pide una contraseña nueva, la recibe y entra con ella', (tester) async {
+      await abrirApp(tester);
+      await tocarBoton(tester, 'Iniciar sesión');
+      await tocarBoton(tester, '¿Olvidaste tu contraseña?');
+      await escribir(tester, 'Correo', 'eudeniaflores@gmail.com');
+      await tocarBoton(tester, 'Enviar contraseña nueva');
+      await esperarTexto(tester, 'Listo. Revisa tu correo: ahí está tu contraseña nueva.');
+      final temporal = await ultimaClaveTemporal();
+      expect(temporal, hasLength(8));
+
+      await tocarBoton(tester, 'Volver a iniciar sesión');
+      await escribir(tester, 'Correo', 'eudeniaflores@gmail.com');
+      await escribir(tester, 'Contraseña', temporal);
+      await tocarBoton(tester, 'Iniciar sesión');
+      await esperarTexto(tester, 'Explorar');
+      await abrirPestana(tester, 'Perfil');
+      await esperarTexto(tester, 'Mi perfil');
+
+      expect(find.text('Eudenia Flores Veizaga'), findsOneWidget);
+      final anterior = await http.post(
+        Uri.parse('http://localhost:3000/api/sesiones'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'correo': 'eudeniaflores@gmail.com', 'contrasena': 'eude1234'}),
+      );
+      expect(anterior.statusCode, 401);
     });
 
     testWidgets('Ana pide recuperar un correo que no existe y ve el error', (tester) async {
