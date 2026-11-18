@@ -260,6 +260,13 @@ describe("Aceptar una oferta", () => {
     expect(res.json.mock.calls[0][0].oferta).toBe(oferta);
   });
 
+  test("cada publicacion guarda a la otra persona del trueque", async () => {
+    await pedir(putOfertaAceptada, 1);
+
+    expect(libro.id_usuario_reserva).toBe(3);
+    expect(mouse.id_usuario_reserva).toBe(1);
+  });
+
   test("un fallo inesperado responde 500", async () => {
     models.ofertas.findByPk.mockRejectedValue(new Error("caida"));
 

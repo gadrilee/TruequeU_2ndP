@@ -106,6 +106,16 @@ describe("Cancelar un intercambio acordado", () => {
     expect(res.status).not.toHaveBeenCalled();
   });
 
+  test("borra a la otra persona guardada en las dos publicaciones", async () => {
+    libro.id_usuario_reserva = 3;
+    mouse.id_usuario_reserva = 1;
+
+    await pedir(putOfertaAnulada, 3, { motivo: "No puedo ir" });
+
+    expect(libro.id_usuario_reserva).toBeNull();
+    expect(mouse.id_usuario_reserva).toBeNull();
+  });
+
   test("sin motivo responde 400 y no cambia nada", async () => {
     const res = await pedir(putOfertaAnulada, 1, { motivo: "" });
 
