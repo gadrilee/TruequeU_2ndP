@@ -36,7 +36,7 @@ function referencia(ruta) {
 }
 
 const SECCIONES_TEXTO = ['TextTheme', 'TextosTruequeU'];
-const SECCIONES_APARTE = ['TextoDerivado', 'Contextos'];
+const SECCIONES_APARTE = ['TextoDerivado', 'Contextos', 'ColorScheme'];
 
 function tablaTokens() {
   const filas = ['| Token Dart | Variable Figma | Valor |', '| --- | --- | --- |'];
@@ -46,14 +46,21 @@ function tablaTokens() {
       let mostrado;
       if (SECCIONES_TEXTO.includes(coleccion)) {
         mostrado = medidas(valor);
-      } else if (coleccion === 'ColorScheme') {
-        mostrado = `${valor} (${valorFinal(coleccion, campo)})`;
       } else {
         mostrado = String(valor);
       }
       const figma = SECCIONES_TEXTO.includes(coleccion) ? `Estilo de texto \`${coleccion}/${campo}\`` : `\`${coleccion}/${campo}\``;
       filas.push(`| \`${coleccion}.${campo}\` | ${figma} | ${mostrado} |`);
     }
+  }
+  return filas.join('\n');
+}
+
+function tablaRoles() {
+  const filas = ['| Rol de `ColorScheme` | Color de `TemaTruequeU` | Valor |', '| --- | --- | --- |'];
+  for (const [rol, ruta] of Object.entries(tokens.ColorScheme)) {
+    const [coleccion, campo] = ruta.split('/');
+    filas.push(`| \`${rol}\` | \`${coleccion}.${campo}\` | ${tokens[coleccion][campo]} |`);
   }
   return filas.join('\n');
 }
@@ -105,6 +112,7 @@ const docs = join(aqui, '..', '..', 'docs', 'sistema-diseno.md');
 if (existsSync(docs)) {
   let texto = readFileSync(docs, 'utf8');
   texto = reemplazar(texto, 'tokens', tablaTokens());
+  texto = reemplazar(texto, 'roles', tablaRoles());
   texto = reemplazar(texto, 'derivados', tablaDerivados());
   texto = reemplazar(texto, 'contextos', tablaContextos());
   texto = reemplazar(texto, 'iconos', tablaIconos());

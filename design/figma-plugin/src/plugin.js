@@ -1,20 +1,27 @@
-const FUENTE = 'Roboto';
+const FUENTE = TOKENS.TemaTruequeU.fuente;
 const PESOS = { 400: 'Regular', 500: 'Medium', 600: 'SemiBold', 700: 'Bold' };
 const COLECCIONES_TEXTO = ['TextTheme', 'TextosTruequeU', 'TextoDerivado'];
 const ALCANCES = {
   TemaTruequeU: ['ALL_FILLS', 'STROKE_COLOR'],
-  ColorScheme: ['ALL_FILLS', 'STROKE_COLOR'],
   Espacios: ['GAP', 'WIDTH_HEIGHT'],
   Radios: ['CORNER_RADIUS'],
   Tipos: ['FONT_SIZE'],
 };
-const TIPOS_VARIABLE = {
-  TemaTruequeU: 'COLOR',
-  ColorScheme: 'COLOR',
-  Espacios: 'FLOAT',
-  Radios: 'FLOAT',
-  Tipos: 'FLOAT',
-};
+const COLECCIONES_OBSOLETAS = ['ColorScheme'];
+
+function tipoVariable(nombre, campo) {
+  if (nombre !== 'TemaTruequeU') return 'FLOAT';
+  return esColor(TOKENS[nombre][campo]) ? 'COLOR' : 'STRING';
+}
+
+function esColor(valor) {
+  return typeof valor === 'string' && valor.startsWith('#');
+}
+
+function alcancesVariable(nombre, campo) {
+  if (nombre === 'TemaTruequeU' && !esColor(TOKENS[nombre][campo])) return ['FONT_FAMILY'];
+  return ALCANCES[nombre];
+}
 
 const vars = {};
 const estilos = {};
@@ -23,8 +30,8 @@ const conjuntos = {};
 function valorHex(ruta) {
   const partes = ruta.split('/');
   const valor = TOKENS[partes[0]][partes[1]];
-  if (valor === undefined) throw new Error('Token inexistente: ' + ruta);
-  return valor.startsWith('#') ? valor : valorHex(valor);
+  if (!esColor(valor)) throw new Error('Token inexistente: ' + ruta);
+  return valor;
 }
 
 function valorColor(ruta) {
@@ -48,15 +55,19 @@ async function prepararVariables() {
   const existentes = await figma.variables.getLocalVariablesAsync();
   const modos = {};
 
+  for (const obsoleta of COLECCIONES_OBSOLETAS) {
+    for (const coleccion of colecciones.filter(c => c.name === obsoleta)) coleccion.remove();
+  }
+
   for (const nombre of Object.keys(ALCANCES)) {
-    let coleccion = colecciones.find(c => c.name === nombre);
+    let coleccion = colecciones.find(c => c.name === nombre && !COLECCIONES_OBSOLETAS.includes(c.name));
     if (!coleccion) coleccion = figma.variables.createVariableCollection(nombre);
     coleccion.name = nombre;
     modos[nombre] = coleccion.modes[0].modeId;
     for (const campo of Object.keys(TOKENS[nombre])) {
       let v = existentes.find(x => x.variableCollectionId === coleccion.id && x.name === campo);
-      if (!v) v = figma.variables.createVariable(campo, coleccion, TIPOS_VARIABLE[nombre]);
-      v.scopes = ALCANCES[nombre];
+      if (!v) v = figma.variables.createVariable(campo, coleccion, tipoVariable(nombre, campo));
+      v.scopes = alcancesVariable(nombre, campo);
       v.description = nombre + '.' + campo;
       vars[nombre + '/' + campo] = v;
     }
@@ -66,11 +77,9 @@ async function prepararVariables() {
     for (const campo of Object.keys(TOKENS[nombre])) {
       const v = vars[nombre + '/' + campo];
       const valor = TOKENS[nombre][campo];
-      if (nombre === 'TemaTruequeU') {
+      if (nombre === 'TemaTruequeU' && esColor(valor)) {
         const c = valorColor(nombre + '/' + campo);
         v.setValueForMode(modos[nombre], { r: c.r, g: c.g, b: c.b, a: 1 });
-      } else if (nombre === 'ColorScheme') {
-        v.setValueForMode(modos[nombre], figma.variables.createVariableAlias(variable(valor)));
       } else {
         v.setValueForMode(modos[nombre], valor);
       }
@@ -114,7 +123,8 @@ async function prepararEstilos() {
       if (enlace) estilo.setBoundVariable('fontSize', enlace);
       estilo.lineHeight = alturaLinea(def);
       estilo.letterSpacing = { unit: 'PIXELS', value: def.letterSpacing || 0 };
-      estilo.description = coleccion + '.' + campo;
+      estilo.setBoundVariable('fontFamily', variable('TemaTruequeU/fuente'));
+      estilo.description = coleccion + '.' + campo + ' · ' + FUENTE + ' ' + PESOS[def.fontWeight];
       estilos[nombre] = estilo;
     }
   }
@@ -132,7 +142,7 @@ async function cargarFuentes() {
 }
 
 function pintura(ruta, opacidad) {
-  if (!/^(ColorScheme|TemaTruequeU)\//.test(ruta)) throw new Error('El color no es un token: ' + ruta);
+  if (!/^TemaTruequeU\//.test(ruta)) throw new Error('El color no es un token: ' + ruta);
   const base = { type: 'SOLID', color: valorColor(ruta) };
   const enlazada = figma.variables.setBoundVariableForPaint(base, 'color', variable(ruta));
   return opacidad === undefined ? enlazada : Object.assign({}, enlazada, { opacity: opacidad });
@@ -300,7 +310,7 @@ function iconoBase(fuente) {
     vector.y = y;
     vector.constraints = { horizontal: 'SCALE', vertical: 'SCALE' };
     vector.name = 'glifo';
-    vector.fills = [pintura('ColorScheme/onSurfaceVariant')];
+    vector.fills = [pintura('TemaTruequeU/textoSuave')];
     svg.remove();
     return raiz;
   };
@@ -331,18 +341,18 @@ async function logo(c) {
   if (!conNombre) return caja;
   const fila = marco({ nombre: 'raiz', componente: true, dir: 'H', gap: 'e12', cruz: 'CENTER' });
   fila.appendChild(caja);
-  fila.appendChild(await texto('Trueque U', 'titulo', 'ColorScheme/primary', 'nombre'));
+  fila.appendChild(await texto('Trueque U', 'titulo', 'TemaTruequeU/azul', 'nombre'));
   return fila;
 }
 
 async function botonCarga(c) {
   const pares = {
-    primario: ['ColorScheme/primary', 'ColorScheme/onPrimary'],
-    rojo: ['ColorScheme/secondary', 'ColorScheme/onSecondary'],
-    tonal: ['ColorScheme/secondaryContainer', 'ColorScheme/onSecondaryContainer'],
-    contorno: [null, 'ColorScheme/primary'],
-    contornoRojo: [null, 'ColorScheme/error'],
-    texto: [null, 'ColorScheme/primary'],
+    primario: ['TemaTruequeU/azul', 'TemaTruequeU/blanco'],
+    rojo: ['TemaTruequeU/rojo', 'TemaTruequeU/blanco'],
+    tonal: ['TemaTruequeU/rojoClaro', 'TemaTruequeU/rojoOscuro'],
+    contorno: [null, 'TemaTruequeU/azul'],
+    contornoRojo: [null, 'TemaTruequeU/rojo'],
+    texto: [null, 'TemaTruequeU/azul'],
   };
   const par = pares[c.Variante];
   const contorno = c.Variante === 'contorno' || c.Variante === 'contornoRojo';
@@ -354,19 +364,19 @@ async function botonCarga(c) {
   let color = par[1];
   let opacidadTexto;
   let borde = null;
-  if (contorno) borde = c.Variante === 'contornoRojo' ? 'ColorScheme/error' : 'ColorScheme/outlineVariant';
+  if (contorno) borde = c.Variante === 'contornoRojo' ? 'TemaTruequeU/rojo' : 'TemaTruequeU/borde';
   let opacidadBorde;
   if (sinFondo && (c.Estado === 'hover' || c.Estado === 'presionado')) {
     fondo = par[1];
     opacidad = c.Estado === 'hover' ? 0.08 : 0.12;
   }
   if (apagado) {
-    fondo = sinFondo ? null : 'ColorScheme/onSurface';
+    fondo = sinFondo ? null : 'TemaTruequeU/texto';
     opacidad = 0.12;
-    color = 'ColorScheme/onSurface';
+    color = 'TemaTruequeU/texto';
     opacidadTexto = 0.38;
     if (contorno) {
-      borde = 'ColorScheme/onSurface';
+      borde = 'TemaTruequeU/texto';
       opacidadBorde = 0.12;
     }
   }
@@ -380,7 +390,7 @@ async function botonCarga(c) {
     giro.name = 'cargando';
     giro.resize(20, 20);
     giro.fills = [];
-    giro.strokes = [pintura('ColorScheme/primary')];
+    giro.strokes = [pintura('TemaTruequeU/azul')];
     giro.strokeWeight = 2;
     giro.arcData = { startingAngle: 0, endingAngle: Math.PI * 1.5, innerRadius: 0 };
     f.appendChild(giro);
@@ -399,8 +409,8 @@ async function campoTexto(c) {
   const multilinea = c.Tipo === 'multilinea';
   const caja = marco({
     nombre: 'campo', dir: 'H', alto: multilinea ? 96 : 56, pad: multilinea ? ['e12', 'e16'] : [null, 'e16'], gap: 'e12', radio: 'r14',
-    fondo: apagado ? 'ColorScheme/surfaceContainerHighest' : 'TemaTruequeU/blanco',
-    borde: error ? 'ColorScheme/error' : enfocado ? 'ColorScheme/primary' : 'ColorScheme/outlineVariant',
+    fondo: apagado ? 'TemaTruequeU/superficieAlta' : 'TemaTruequeU/blanco',
+    borde: error ? 'TemaTruequeU/rojo' : enfocado ? 'TemaTruequeU/azul' : 'TemaTruequeU/borde',
     grosor: error || enfocado ? 2 : 1, cruz: multilinea ? 'MIN' : 'CENTER',
   });
   agregar(raiz, caja, { ancho: true });
@@ -408,39 +418,39 @@ async function campoTexto(c) {
   let contenido = vacio ? 'Correo' : 'ana@universidad.edu';
   if (c.Tipo === 'contrasena') contenido = vacio ? 'Contraseña' : '••••••••';
   if (multilinea) contenido = vacio ? 'Descripción (opcional)' : 'Casi nueva, incluye funda y manual.';
-  const colorIcono = apagado ? 'ColorScheme/onSurface' : 'ColorScheme/onSurfaceVariant';
+  const colorIcono = apagado ? 'TemaTruequeU/texto' : 'TemaTruequeU/textoSuave';
   if (c.Icono === 'si') caja.appendChild(icono('mail_outline', colorIcono, 24, apagado ? 0.38 : undefined));
   const t = await texto(
     contenido,
     vacio ? 'TextoDerivado/campoEtiqueta' : 'TextTheme/bodyLarge',
-    vacio ? 'ColorScheme/onSurfaceVariant' : 'ColorScheme/onSurface',
+    vacio ? 'TemaTruequeU/textoSuave' : 'TemaTruequeU/texto',
     'texto',
     apagado ? 0.38 : undefined,
   );
   agregar(caja, t, { ancho: true });
   if (c.Tipo === 'contrasena') {
-    const colorVer = error ? 'ColorScheme/error' : colorIcono;
+    const colorVer = error ? 'TemaTruequeU/rojo' : colorIcono;
     const ver = icono('visibility_outlined', colorVer, 24, apagado ? 0.38 : undefined);
     ver.name = 'ver';
     caja.appendChild(ver);
   }
-  if (error) agregar(raiz, await texto('Revisa este campo', 'TextTheme/bodySmall', 'ColorScheme/error', 'ayuda'), { ancho: true });
+  if (error) agregar(raiz, await texto('Revisa este campo', 'TextTheme/bodySmall', 'TemaTruequeU/rojo', 'ayuda'), { ancho: true });
   return raiz;
 }
 
 async function bannerError() {
-  const f = marco({ nombre: 'raiz', componente: true, dir: 'H', ancho: 320, pad: 'e12', radio: 'r8', fondo: 'ColorScheme/errorContainer' });
-  agregar(f, await texto('No pudimos conectar con el servidor', 'TextTheme/bodyMedium', 'ColorScheme/onErrorContainer', 'mensaje'), { ancho: true });
+  const f = marco({ nombre: 'raiz', componente: true, dir: 'H', ancho: 320, pad: 'e12', radio: 'r8', fondo: 'TemaTruequeU/rojoClaro' });
+  agregar(f, await texto('No pudimos conectar con el servidor', 'TextTheme/bodyMedium', 'TemaTruequeU/rojoOscuro', 'mensaje'), { ancho: true });
   return f;
 }
 
 const CHIPS = {
-  disponible: ['ColorScheme/primaryContainer', 'ColorScheme/onPrimaryContainer', 'Disponible'],
-  reservado: ['ColorScheme/secondaryContainer', 'ColorScheme/onSecondaryContainer', 'Reservado'],
-  reservadoPorTi: ['ColorScheme/secondaryContainer', 'ColorScheme/onSecondaryContainer', 'Reservado por ti'],
-  intercambiado: ['ColorScheme/tertiaryContainer', 'ColorScheme/onTertiaryContainer', 'Intercambiado'],
-  acordado: ['ColorScheme/primary', 'ColorScheme/onPrimary', 'Intercambio acordado'],
-  noDisponible: ['ColorScheme/surfaceContainerHighest', 'ColorScheme/onSurfaceVariant', 'No disponible'],
+  disponible: ['TemaTruequeU/azulClaro', 'TemaTruequeU/azulOscuro', 'Disponible'],
+  reservado: ['TemaTruequeU/rojoClaro', 'TemaTruequeU/rojoOscuro', 'Reservado'],
+  reservadoPorTi: ['TemaTruequeU/rojoClaro', 'TemaTruequeU/rojoOscuro', 'Reservado por ti'],
+  intercambiado: ['TemaTruequeU/verdeClaro', 'TemaTruequeU/verdeOscuro', 'Intercambiado'],
+  acordado: ['TemaTruequeU/azul', 'TemaTruequeU/blanco', 'Intercambio acordado'],
+  noDisponible: ['TemaTruequeU/superficieAlta', 'TemaTruequeU/textoSuave', 'No disponible'],
 };
 
 async function chipEstado(c) {
@@ -451,9 +461,9 @@ async function chipEstado(c) {
 }
 
 const TONOS = {
-  primario: ['ColorScheme/primaryContainer', 'ColorScheme/onPrimaryContainer'],
-  secundario: ['ColorScheme/secondaryContainer', 'ColorScheme/onSecondaryContainer'],
-  terciario: ['ColorScheme/tertiaryContainer', 'ColorScheme/onTertiaryContainer'],
+  primario: ['TemaTruequeU/azulClaro', 'TemaTruequeU/azulOscuro'],
+  secundario: ['TemaTruequeU/rojoClaro', 'TemaTruequeU/rojoOscuro'],
+  terciario: ['TemaTruequeU/verdeClaro', 'TemaTruequeU/verdeOscuro'],
 };
 
 const ICONOS_ETIQUETA = { primario: 'label_outline', secundario: 'person_pin_outlined', terciario: 'chat_outlined' };
@@ -470,7 +480,7 @@ async function estrellas(c) {
   const interactivo = c.Modo === 'interactivo';
   const f = marco({ nombre: 'raiz', componente: true, dir: 'H', pad: interactivo ? null : 'e4', gap: interactivo ? 'e2' : null, cruz: 'CENTER' });
   for (let i = 1; i <= 5; i++) {
-    const g = icono(i <= Number(c.Puntaje) ? 'star' : 'star_border', 'ColorScheme/secondary', 24);
+    const g = icono(i <= Number(c.Puntaje) ? 'star' : 'star_border', 'TemaTruequeU/rojo', 24);
     if (interactivo) {
       const boton = marco({ nombre: 'estrella-' + i, dir: 'H', ancho: 40, alto: 40, radio: 'r20', alinea: 'CENTER', cruz: 'CENTER' });
       boton.appendChild(g);
@@ -484,27 +494,27 @@ async function estrellas(c) {
 
 async function fotoPublicacion(c) {
   const fondos = {
-    vacia: 'ColorScheme/surfaceContainerHighest',
-    imagen: 'ColorScheme/primaryContainer',
-    error: 'ColorScheme/surfaceContainerHighest',
+    vacia: 'TemaTruequeU/superficieAlta',
+    imagen: 'TemaTruequeU/azulClaro',
+    error: 'TemaTruequeU/superficieAlta',
   };
   const f = marco({
     nombre: 'raiz', componente: true, dir: 'H', ancho: c.Forma === 'cuadrada' ? 140 : 280, alto: 140,
     radio: 'r12', fondo: fondos[c.Estado], alinea: 'CENTER', cruz: 'CENTER', recorta: true,
   });
-  if (c.Estado === 'vacia') f.appendChild(icono('image_outlined', 'ColorScheme/outline', 24));
-  if (c.Estado === 'imagen') f.appendChild(await texto('Foto', 'TextTheme/bodyMedium', 'ColorScheme/onPrimaryContainer', 'foto'));
-  if (c.Estado === 'error') f.appendChild(icono('broken_image_outlined', 'ColorScheme/onSurface', 24));
+  if (c.Estado === 'vacia') f.appendChild(icono('image_outlined', 'TemaTruequeU/contorno', 24));
+  if (c.Estado === 'imagen') f.appendChild(await texto('Foto', 'TextTheme/bodyMedium', 'TemaTruequeU/azulOscuro', 'foto'));
+  if (c.Estado === 'error') f.appendChild(icono('broken_image_outlined', 'TemaTruequeU/texto', 24));
   return f;
 }
 
 async function mensajeVacio(c) {
   const f = marco({ nombre: 'raiz', componente: true, dir: 'V', ancho: 320, pad: 'e32', gap: 'e16', cruz: 'CENTER' });
-  f.appendChild(icono('feed_outlined', 'ColorScheme/outline', 64));
-  const titulo = await texto('Aún no hay publicaciones', 'subtitulo', 'ColorScheme/onSurface', 'titulo');
+  f.appendChild(icono('feed_outlined', 'TemaTruequeU/contorno', 64));
+  const titulo = await texto('Aún no hay publicaciones', 'subtitulo', 'TemaTruequeU/texto', 'titulo');
   titulo.textAlignHorizontal = 'CENTER';
   agregar(f, titulo, { ancho: true });
-  const mensaje = await texto('Publica un objeto para empezar a intercambiar', 'TextTheme/bodyMedium', 'ColorScheme/onSurface', 'mensaje');
+  const mensaje = await texto('Publica un objeto para empezar a intercambiar', 'TextTheme/bodyMedium', 'TemaTruequeU/texto', 'mensaje');
   mensaje.textAlignHorizontal = 'CENTER';
   agregar(f, mensaje, { ancho: true });
   if (c.ConBoton === 'si') {
@@ -524,21 +534,21 @@ async function filtrosFeed(c) {
   const f = marco({ nombre: 'raiz', componente: true, dir: 'V', ancho: 350, pad: ['e12', 'e20'], gap: 'e8' });
   const buscador = marco({
     nombre: 'buscador', dir: 'H', alto: 48, pad: [null, 'e12'], gap: 'e8', radio: 'r28',
-    fondo: 'TemaTruequeU/blanco', borde: 'ColorScheme/outlineVariant', cruz: 'CENTER',
+    fondo: 'TemaTruequeU/blanco', borde: 'TemaTruequeU/borde', cruz: 'CENTER',
   });
-  buscador.appendChild(icono('search', 'ColorScheme/onSurfaceVariant', 24));
-  agregar(buscador, await texto('Buscar objetos', 'TextTheme/bodyLarge', 'ColorScheme/onSurfaceVariant', 'busqueda'), { ancho: true });
-  buscador.appendChild(icono('arrow_forward', 'ColorScheme/onSurfaceVariant', 24));
+  buscador.appendChild(icono('search', 'TemaTruequeU/textoSuave', 24));
+  agregar(buscador, await texto('Buscar objetos', 'TextTheme/bodyLarge', 'TemaTruequeU/textoSuave', 'busqueda'), { ancho: true });
+  buscador.appendChild(icono('arrow_forward', 'TemaTruequeU/textoSuave', 24));
   agregar(f, buscador, { ancho: true });
 
   const menus = marco({ nombre: 'menus', dir: 'H', gap: 'e8' });
   for (const nombre of ['Categoría', 'Condición', 'Disponibilidad']) {
     const chip = marco({
       nombre: nombre, dir: 'H', pad: ['e4', 'e12'], gap: 'e4', radio: 'r28',
-      fondo: 'TemaTruequeU/blanco', borde: 'ColorScheme/outlineVariant', cruz: 'CENTER',
+      fondo: 'TemaTruequeU/blanco', borde: 'TemaTruequeU/borde', cruz: 'CENTER',
     });
-    chip.appendChild(icono('tune', 'ColorScheme/primary', 16));
-    chip.appendChild(await texto(nombre, 'TextTheme/labelLarge', 'ColorScheme/onSurfaceVariant', 'texto'));
+    chip.appendChild(icono('tune', 'TemaTruequeU/azul', 16));
+    chip.appendChild(await texto(nombre, 'TextTheme/labelLarge', 'TemaTruequeU/textoSuave', 'texto'));
     menus.appendChild(chip);
   }
   agregar(f, menus);
@@ -548,25 +558,25 @@ async function filtrosFeed(c) {
     for (const contenido of ['Categoría: Libros', 'Condición: Usado']) {
       const chip = marco({
         nombre: contenido, dir: 'H', pad: ['e4', 'e8'], gap: 'e4', radio: 'r8',
-        fondo: 'ColorScheme/surfaceContainerHighest', cruz: 'CENTER',
+        fondo: 'TemaTruequeU/superficieAlta', cruz: 'CENTER',
       });
-      chip.appendChild(await texto(contenido, 'TextTheme/labelLarge', 'ColorScheme/onSurfaceVariant', 'texto'));
-      chip.appendChild(icono('close', 'ColorScheme/onSurfaceVariant', 18));
+      chip.appendChild(await texto(contenido, 'TextTheme/labelLarge', 'TemaTruequeU/textoSuave', 'texto'));
+      chip.appendChild(icono('close', 'TemaTruequeU/textoSuave', 18));
       activos.appendChild(chip);
     }
-    activos.appendChild(await texto('Quitar todos', 'TextTheme/labelLarge', 'ColorScheme/primary', 'quitar'));
+    activos.appendChild(await texto('Quitar todos', 'TextTheme/labelLarge', 'TemaTruequeU/azul', 'quitar'));
     agregar(f, activos);
   }
   return f;
 }
 
 const TARJETAS = {
-  disponible: { chip: 'disponible', autor: 'Por: Ana Pérez', borde: 'ColorScheme/outlineVariant' },
-  reservadoPorMi: { chip: 'reservadoPorTi', autor: 'Por: Ana Pérez', borde: 'ColorScheme/primary', grosor: 2 },
-  reservadoPorOtro: { chip: 'reservado', autor: 'Por: Ana Pérez', borde: 'ColorScheme/outlineVariant', reserva: 'Reservado por: Luis' },
-  propia: { chip: 'disponible', autor: 'Publicado por ti', borde: 'ColorScheme/outlineVariant', propia: true },
-  ofertaEnviada: { chip: 'disponible', autor: 'Por: Ana Pérez', borde: 'ColorScheme/outlineVariant' },
-  intercambiado: { chip: 'intercambiado', autor: 'Por: Ana Pérez', borde: 'ColorScheme/outlineVariant' },
+  disponible: { chip: 'disponible', autor: 'Por: Ana Pérez', borde: 'TemaTruequeU/borde' },
+  reservadoPorMi: { chip: 'reservadoPorTi', autor: 'Por: Ana Pérez', borde: 'TemaTruequeU/azul', grosor: 2 },
+  reservadoPorOtro: { chip: 'reservado', autor: 'Por: Ana Pérez', borde: 'TemaTruequeU/borde', reserva: 'Reservado por: Luis' },
+  propia: { chip: 'disponible', autor: 'Publicado por ti', borde: 'TemaTruequeU/borde', propia: true },
+  ofertaEnviada: { chip: 'disponible', autor: 'Por: Ana Pérez', borde: 'TemaTruequeU/borde' },
+  intercambiado: { chip: 'intercambiado', autor: 'Por: Ana Pérez', borde: 'TemaTruequeU/borde' },
 };
 
 function boton(contenido, variante, estado, nombreIcono, tam) {
@@ -584,21 +594,21 @@ async function tarjetaFeed(c) {
   agregar(f, instancia('FotoPublicacion', { Estado: 'vacia', Forma: 'ancha' }), { ancho: true });
 
   const cabecera = marco({ nombre: 'cabecera', dir: 'H', gap: 'e8', cruz: 'CENTER' });
-  agregar(cabecera, await texto('Calculadora científica', 'tituloTarjeta', 'ColorScheme/onSurface', 'titulo'), { ancho: true });
+  agregar(cabecera, await texto('Calculadora científica', 'tituloTarjeta', 'TemaTruequeU/texto', 'titulo'), { ancho: true });
   cabecera.appendChild(instancia('ChipEstado', { Estado: d.chip }));
   agregar(f, cabecera, { ancho: true });
 
   const autor = marco({ nombre: 'autor', dir: 'H', gap: 'e4', cruz: 'CENTER' });
-  autor.appendChild(icono('person_outline', 'ColorScheme/outline', 14));
-  autor.appendChild(await texto(d.autor, d.propia ? 'TextoDerivado/autorPropio' : 'ayuda', d.propia ? 'ColorScheme/primary' : 'ColorScheme/outline', 'autor'));
+  autor.appendChild(icono('person_outline', 'TemaTruequeU/contorno', 14));
+  autor.appendChild(await texto(d.autor, d.propia ? 'TextoDerivado/autorPropio' : 'ayuda', d.propia ? 'TemaTruequeU/azul' : 'TemaTruequeU/contorno', 'autor'));
   agregar(f, autor);
 
-  agregar(f, await texto('Casi nueva, incluye funda y manual.', 'detalle', 'ColorScheme/onSurfaceVariant', 'descripcion'), { ancho: true });
+  agregar(f, await texto('Casi nueva, incluye funda y manual.', 'detalle', 'TemaTruequeU/textoSuave', 'descripcion'), { ancho: true });
 
   const datos = marco({ nombre: 'datos', dir: 'H', gap: 'e6', cruz: 'CENTER' });
-  datos.appendChild(await mini('Condición: Usado', 'ColorScheme/primaryContainer', 'ColorScheme/onPrimaryContainer'));
-  datos.appendChild(await mini('Categoría: Electrónica', 'ColorScheme/primaryContainer', 'ColorScheme/onPrimaryContainer'));
-  if (d.reserva) datos.appendChild(await mini(d.reserva, 'ColorScheme/secondaryContainer', 'ColorScheme/onSecondaryContainer', 'TextoDerivado/chipSemibold'));
+  datos.appendChild(await mini('Condición: Usado', 'TemaTruequeU/azulClaro', 'TemaTruequeU/azulOscuro'));
+  datos.appendChild(await mini('Categoría: Electrónica', 'TemaTruequeU/azulClaro', 'TemaTruequeU/azulOscuro'));
+  if (d.reserva) datos.appendChild(await mini(d.reserva, 'TemaTruequeU/rojoClaro', 'TemaTruequeU/rojoOscuro', 'TextoDerivado/chipSemibold'));
   agregar(f, datos);
 
   const acciones = marco({ nombre: 'acciones', dir: 'V', gap: 'e6' });
@@ -606,7 +616,7 @@ async function tarjetaFeed(c) {
   if (c.Estado === 'disponible') {
     agregar(acciones, boton('Ofrecer un objeto', 'primario', 'default', 'swap_horiz'), { ancho: true });
     agregar(acciones, boton('Reservar', 'contorno', 'default', 'bookmark_add_outlined'), { ancho: true });
-    agregar(acciones, await texto('Ofrecer: cambias un objeto tuyo. Reservar: solo lo apartas.', 'pie', 'ColorScheme/outline', 'pie'), { ancho: true });
+    agregar(acciones, await texto('Ofrecer: cambias un objeto tuyo. Reservar: solo lo apartas.', 'pie', 'TemaTruequeU/contorno', 'pie'), { ancho: true });
   }
   if (c.Estado === 'reservadoPorMi') {
     agregar(acciones, boton('Completar intercambio', 'primario', 'default', 'handshake_outlined'), { ancho: true });
@@ -635,20 +645,20 @@ async function tarjetaMiPublicacion(c) {
   const reservada = c.Reservada === 'si';
   const f = marco({
     nombre: 'raiz', componente: true, dir: 'V', ancho: 350, pad: 'e16', gap: 'e12', radio: 'r20',
-    fondo: 'TemaTruequeU/blanco', borde: reservada ? 'ColorScheme/primary' : 'ColorScheme/outlineVariant',
+    fondo: 'TemaTruequeU/blanco', borde: reservada ? 'TemaTruequeU/azul' : 'TemaTruequeU/borde',
   });
   agregar(f, instancia('FotoPublicacion', { Estado: 'vacia', Forma: 'ancha' }), { ancho: true });
 
   const cabecera = marco({ nombre: 'cabecera', dir: 'H', gap: 'e8', cruz: 'CENTER' });
-  agregar(cabecera, await texto('Calculadora científica', 'tituloTarjeta', 'ColorScheme/onSurface', 'titulo'), { ancho: true });
+  agregar(cabecera, await texto('Calculadora científica', 'tituloTarjeta', 'TemaTruequeU/texto', 'titulo'), { ancho: true });
   if (!reservada) {
-    cabecera.appendChild(botonIcono('edit_outlined', 'ColorScheme/primary'));
-    cabecera.appendChild(botonIcono('more_vert', 'ColorScheme/onSurfaceVariant'));
-    cabecera.appendChild(botonIcono('delete_outline', 'ColorScheme/error'));
+    cabecera.appendChild(botonIcono('edit_outlined', 'TemaTruequeU/azul'));
+    cabecera.appendChild(botonIcono('more_vert', 'TemaTruequeU/textoSuave'));
+    cabecera.appendChild(botonIcono('delete_outline', 'TemaTruequeU/rojo'));
   }
   agregar(f, cabecera, { ancho: true });
 
-  agregar(f, await texto('Casi nueva, incluye funda y manual.', 'cuerpo', 'ColorScheme/onSurfaceVariant', 'descripcion'), { ancho: true });
+  agregar(f, await texto('Casi nueva, incluye funda y manual.', 'cuerpo', 'TemaTruequeU/textoSuave', 'descripcion'), { ancho: true });
 
   const datos = marco({ nombre: 'datos', dir: 'H', gap: 'e8', cruz: 'CENTER' });
   datos.appendChild(instancia('Etiqueta', { Tono: 'primario' }));
@@ -656,7 +666,7 @@ async function tarjetaMiPublicacion(c) {
   agregar(f, datos);
 
   if (reservada) {
-    agregar(f, await texto('Está reservada: solo puedes completar el intercambio.', 'ayuda', 'ColorScheme/onSurfaceVariant', 'reserva'), { ancho: true });
+    agregar(f, await texto('Está reservada: solo puedes completar el intercambio.', 'ayuda', 'TemaTruequeU/textoSuave', 'reserva'), { ancho: true });
     agregar(f, boton('Completar intercambio', 'primario', 'default', 'handshake_outlined', 16), { ancho: true });
   }
   return f;
@@ -669,17 +679,17 @@ async function encabezadoAcceso(c) {
   try {
     f.fills = [degradado('TemaTruequeU/azulOscuro', 'TemaTruequeU/azul')];
     const lectura = f.fills[0] && f.fills[0].gradientStops && f.fills[0].gradientStops[0].boundVariables;
-    if (!lectura || !lectura.color) f.fills = [pintura('ColorScheme/onPrimaryContainer')];
+    if (!lectura || !lectura.color) f.fills = [pintura('TemaTruequeU/azulOscuro')];
   } catch (e) {
-    f.fills = [pintura('ColorScheme/onPrimaryContainer')];
+    f.fills = [pintura('TemaTruequeU/azulOscuro')];
   }
   if (conLogo) {
     f.appendChild(instancia('LogoTruequeU', { Variante: 'icono' }));
   } else {
     f.appendChild(icono('arrow_back', 'TemaTruequeU/blanco', 24));
   }
-  const titulo = await texto('Iniciar sesión', 'TextoDerivado/headlineMediumNegrita', 'ColorScheme/onPrimary', 'titulo');
-  const subtitulo = await texto('Bienvenido de vuelta', 'TextTheme/bodyLarge', 'ColorScheme/primaryContainer', 'subtitulo');
+  const titulo = await texto('Iniciar sesión', 'TextoDerivado/headlineMediumNegrita', 'TemaTruequeU/blanco', 'titulo');
+  const subtitulo = await texto('Bienvenido de vuelta', 'TextTheme/bodyLarge', 'TemaTruequeU/azulClaro', 'subtitulo');
   if (conLogo) {
     titulo.textAlignHorizontal = 'CENTER';
     subtitulo.textAlignHorizontal = 'CENTER';
@@ -703,11 +713,11 @@ async function estructuraPrincipal(c) {
     const destino = marco({ nombre: d[0], dir: 'V', gap: 'e4', alinea: 'CENTER', cruz: 'CENTER' });
     const pastilla = marco({
       nombre: 'indicador', dir: 'H', ancho: 64, alto: 32, radio: 'r16',
-      fondo: activo ? 'ColorScheme/primaryContainer' : null, alinea: 'CENTER', cruz: 'CENTER',
+      fondo: activo ? 'TemaTruequeU/azulClaro' : null, alinea: 'CENTER', cruz: 'CENTER',
     });
-    pastilla.appendChild(icono(activo ? d[2] : d[1], activo ? 'ColorScheme/onSecondaryContainer' : 'ColorScheme/onSurfaceVariant', 24));
+    pastilla.appendChild(icono(activo ? d[2] : d[1], activo ? 'TemaTruequeU/rojoOscuro' : 'TemaTruequeU/textoSuave', 24));
     destino.appendChild(pastilla);
-    destino.appendChild(await texto(d[3], 'TextTheme/labelMedium', activo ? 'ColorScheme/onSurface' : 'ColorScheme/onSurfaceVariant', 'texto'));
+    destino.appendChild(await texto(d[3], 'TextTheme/labelMedium', activo ? 'TemaTruequeU/texto' : 'TemaTruequeU/textoSuave', 'texto'));
     agregar(f, destino, { ancho: true });
   }
   return f;
@@ -732,14 +742,14 @@ function filaBotones(padre, hijos) {
 }
 
 const ESTILOS_TEXTO = {
-  titulo: ['titulo', 'ColorScheme/onSurface'],
-  subtitulo: ['TextoDerivado/headlineSmallNegrita', 'ColorScheme/onSurface'],
-  cuerpo: ['TextTheme/bodyMedium', 'ColorScheme/onSurface'],
-  negrita: ['TextoDerivado/bodyMediumNegrita', 'ColorScheme/onSurface'],
-  suave: ['TextTheme/bodyMedium', 'ColorScheme/onSurfaceVariant'],
-  ayuda: ['TextTheme/bodySmall', 'ColorScheme/onSurfaceVariant'],
-  error: ['TextTheme/bodyMedium', 'ColorScheme/error'],
-  enlace: ['TextTheme/labelLarge', 'ColorScheme/primary'],
+  titulo: ['titulo', 'TemaTruequeU/texto'],
+  subtitulo: ['TextoDerivado/headlineSmallNegrita', 'TemaTruequeU/texto'],
+  cuerpo: ['TextTheme/bodyMedium', 'TemaTruequeU/texto'],
+  negrita: ['TextoDerivado/bodyMediumNegrita', 'TemaTruequeU/texto'],
+  suave: ['TextTheme/bodyMedium', 'TemaTruequeU/textoSuave'],
+  ayuda: ['TextTheme/bodySmall', 'TemaTruequeU/textoSuave'],
+  error: ['TextTheme/bodyMedium', 'TemaTruequeU/rojo'],
+  enlace: ['TextTheme/labelLarge', 'TemaTruequeU/azul'],
 };
 const ALINEACIONES = { izquierda: 'LEFT', centro: 'CENTER', derecha: 'RIGHT' };
 
@@ -753,13 +763,13 @@ async function textoPantalla(c) {
 }
 
 async function divisor() {
-  return marco({ nombre: 'raiz', componente: true, dir: 'H', ancho: 350, alto: 1, fondo: 'ColorScheme/outlineVariant' });
+  return marco({ nombre: 'raiz', componente: true, dir: 'H', ancho: 350, alto: 1, fondo: 'TemaTruequeU/borde' });
 }
 
 async function appBar(c) {
   const f = marco({
     nombre: 'raiz', componente: true, dir: 'H', ancho: 390, alto: 56, pad: [null, 'e16'], gap: 'e16',
-    fondo: 'ColorScheme/surface', cruz: 'CENTER',
+    fondo: 'TemaTruequeU/fondo', cruz: 'CENTER',
   });
   if (c.Volver === 'si') f.appendChild(icono('arrow_back', 'TemaTruequeU/azulOscuro', 24));
   agregar(f, await texto('Título de la pantalla', 'TextTheme/titleLarge', 'TemaTruequeU/azulOscuro', 'titulo'), { ancho: true });
@@ -770,16 +780,16 @@ async function appBar(c) {
 async function botonFlotante() {
   const f = marco({
     nombre: 'raiz', componente: true, dir: 'H', alto: 56, pad: [null, 'e20'], gap: 'e8', radio: 'r28',
-    fondo: 'ColorScheme/secondary', alinea: 'CENTER', cruz: 'CENTER',
+    fondo: 'TemaTruequeU/rojo', alinea: 'CENTER', cruz: 'CENTER',
   });
-  f.appendChild(icono('add', 'ColorScheme/onSecondary', 24));
-  f.appendChild(await texto('Publicar', 'TextTheme/labelLarge', 'ColorScheme/onSecondary', 'texto'));
+  f.appendChild(icono('add', 'TemaTruequeU/blanco', 24));
+  f.appendChild(await texto('Publicar', 'TextTheme/labelLarge', 'TemaTruequeU/blanco', 'texto'));
   return f;
 }
 
 async function snackBar() {
-  const f = marco({ nombre: 'raiz', componente: true, dir: 'H', ancho: 390, pad: 'e16', fondo: 'ColorScheme/onSurface', cruz: 'CENTER' });
-  agregar(f, await texto('Contraseña actualizada.', 'TextTheme/bodyMedium', 'ColorScheme/surface', 'texto'), { ancho: true });
+  const f = marco({ nombre: 'raiz', componente: true, dir: 'H', ancho: 390, pad: 'e16', fondo: 'TemaTruequeU/azulOscuro', cruz: 'CENTER' });
+  agregar(f, await texto('Contraseña actualizada.', 'TextTheme/bodyMedium', 'TemaTruequeU/blanco', 'texto'), { ancho: true });
   return f;
 }
 
@@ -787,10 +797,10 @@ async function circleAvatar(c) {
   const grande = c.Tamano === 'grande';
   const f = marco({
     nombre: 'raiz', componente: true, dir: 'H', ancho: grande ? 72 : 22, alto: grande ? 72 : 22, radio: grande ? 'r36' : 'r12',
-    fondo: grande ? 'ColorScheme/primary' : 'ColorScheme/primaryContainer', alinea: 'CENTER', cruz: 'CENTER',
+    fondo: grande ? 'TemaTruequeU/azul' : 'TemaTruequeU/azulClaro', alinea: 'CENTER', cruz: 'CENTER',
   });
-  if (grande) f.appendChild(await texto('AP', 'TextoDerivado/avatarGrande', 'ColorScheme/onPrimary', 'texto'));
-  else f.appendChild(await texto('1', 'TextoDerivado/avatarChico', 'ColorScheme/onPrimaryContainer', 'texto'));
+  if (grande) f.appendChild(await texto('AP', 'TextoDerivado/avatarGrande', 'TemaTruequeU/blanco', 'texto'));
+  else f.appendChild(await texto('1', 'TextoDerivado/avatarChico', 'TemaTruequeU/azulOscuro', 'texto'));
   return f;
 }
 
@@ -801,7 +811,7 @@ async function indicadorCarga(c) {
   giro.name = 'cargando';
   giro.resize(grande ? 36 : 28, grande ? 36 : 28);
   giro.fills = [];
-  giro.strokes = [pintura('ColorScheme/primary')];
+  giro.strokes = [pintura('TemaTruequeU/azul')];
   giro.strokeWeight = grande ? 4 : 2;
   giro.arcData = { startingAngle: 0, endingAngle: Math.PI * 1.5, innerRadius: 0 };
   f.appendChild(giro);
@@ -812,50 +822,50 @@ async function campoSelector(c) {
   const enfocado = c.Estado === 'enfocado';
   const f = marco({
     nombre: 'raiz', componente: true, dir: 'H', ancho: 350, alto: 56, pad: [null, 'e16'], gap: 'e12', radio: 'r14',
-    fondo: 'TemaTruequeU/blanco', borde: enfocado ? 'ColorScheme/primary' : 'ColorScheme/outlineVariant',
+    fondo: 'TemaTruequeU/blanco', borde: enfocado ? 'TemaTruequeU/azul' : 'TemaTruequeU/borde',
     grosor: enfocado ? 2 : 1, cruz: 'CENTER',
   });
   const textos = marco({ nombre: 'textos', dir: 'V', gap: 'e2' });
-  agregar(textos, await texto('Estado del objeto', 'TextoDerivado/campoEtiquetaFlotante', 'ColorScheme/onSurfaceVariant', 'etiqueta'), { ancho: true });
-  agregar(textos, await texto('Nuevo', 'TextTheme/titleMedium', 'ColorScheme/onSurface', 'valor'), { ancho: true });
+  agregar(textos, await texto('Estado del objeto', 'TextoDerivado/campoEtiquetaFlotante', 'TemaTruequeU/textoSuave', 'etiqueta'), { ancho: true });
+  agregar(textos, await texto('Nuevo', 'TextTheme/titleMedium', 'TemaTruequeU/texto', 'valor'), { ancho: true });
   agregar(f, textos, { ancho: true });
-  f.appendChild(icono('arrow_drop_down', 'ColorScheme/onSurfaceVariant', 24, undefined, 'IconoMarco'));
+  f.appendChild(icono('arrow_drop_down', 'TemaTruequeU/textoSuave', 24, undefined, 'IconoMarco'));
   return f;
 }
 
 async function iconoCaja() {
   const f = marco({
     nombre: 'raiz', componente: true, dir: 'H', ancho: 56, alto: 56, radio: 'r16',
-    fondo: 'ColorScheme/primaryContainer', alinea: 'CENTER', cruz: 'CENTER',
+    fondo: 'TemaTruequeU/azulClaro', alinea: 'CENTER', cruz: 'CENTER',
   });
-  f.appendChild(icono('vpn_key', 'ColorScheme/primary', 24));
+  f.appendChild(icono('vpn_key', 'TemaTruequeU/azul', 24));
   return f;
 }
 
 async function bannerExito() {
-  const f = marco({ nombre: 'raiz', componente: true, dir: 'H', ancho: 350, pad: 'e16', gap: 'e12', radio: 'r14', fondo: 'ColorScheme/tertiaryContainer', cruz: 'CENTER' });
-  f.appendChild(icono('check_circle_outline', 'ColorScheme/onTertiaryContainer', 24));
-  agregar(f, await texto('Listo. Revisa tu correo: ahí está tu contraseña nueva.', 'TextTheme/bodyMedium', 'ColorScheme/onTertiaryContainer', 'mensaje'), { ancho: true });
+  const f = marco({ nombre: 'raiz', componente: true, dir: 'H', ancho: 350, pad: 'e16', gap: 'e12', radio: 'r14', fondo: 'TemaTruequeU/verdeClaro', cruz: 'CENTER' });
+  f.appendChild(icono('check_circle_outline', 'TemaTruequeU/verdeOscuro', 24));
+  agregar(f, await texto('Listo. Revisa tu correo: ahí está tu contraseña nueva.', 'TextTheme/bodyMedium', 'TemaTruequeU/verdeOscuro', 'mensaje'), { ancho: true });
   return f;
 }
 
 async function pieEnlace(c) {
   const f = marco({ nombre: 'raiz', componente: true, dir: 'H', ancho: 390, pad: [null, null, 'e16', null], gap: 'e4', alinea: 'CENTER', cruz: 'CENTER' });
   const crear = c.Variante === 'crearCuenta';
-  f.appendChild(await texto(crear ? '¿No tienes cuenta?' : '¿Ya tienes cuenta?', 'TextTheme/bodyMedium', 'ColorScheme/onSurface', 'pregunta'));
-  f.appendChild(await texto(crear ? 'Crear cuenta' : 'Inicia sesión', 'TextoDerivado/botonTextoNegrita', crear ? 'ColorScheme/secondary' : 'ColorScheme/primary', 'enlace'));
+  f.appendChild(await texto(crear ? '¿No tienes cuenta?' : '¿Ya tienes cuenta?', 'TextTheme/bodyMedium', 'TemaTruequeU/texto', 'pregunta'));
+  f.appendChild(await texto(crear ? 'Crear cuenta' : 'Inicia sesión', 'TextoDerivado/botonTextoNegrita', crear ? 'TemaTruequeU/rojo' : 'TemaTruequeU/azul', 'enlace'));
   return f;
 }
 
 async function cabeceraFeed() {
   const f = marco({ nombre: 'raiz', componente: true, dir: 'H', ancho: 390, pad: ['e16', 'e8', null, 'e20'], gap: 'e8', cruz: 'CENTER' });
   const columna = marco({ nombre: 'saludo', dir: 'V', gap: 'e2' });
-  agregar(columna, await texto('Hola, Ana', 'TextTheme/bodyLarge', 'ColorScheme/onSurface', 'saludo'), { ancho: true });
-  agregar(columna, await texto('¿Qué quieres intercambiar hoy?', 'TextoDerivado/titleLargeNegrita', 'ColorScheme/onSurface', 'pregunta'), { ancho: true });
+  agregar(columna, await texto('Hola, Ana', 'TextTheme/bodyLarge', 'TemaTruequeU/texto', 'saludo'), { ancho: true });
+  agregar(columna, await texto('¿Qué quieres intercambiar hoy?', 'TextoDerivado/titleLargeNegrita', 'TemaTruequeU/texto', 'pregunta'), { ancho: true });
   agregar(f, columna, { ancho: true });
   for (const g of ['help_outline', 'refresh']) {
     const b = marco({ nombre: 'boton', dir: 'H', ancho: 40, alto: 40, alinea: 'CENTER', cruz: 'CENTER' });
-    b.appendChild(icono(g, 'ColorScheme/onSurfaceVariant', 24));
+    b.appendChild(icono(g, 'TemaTruequeU/textoSuave', 24));
     f.appendChild(b);
   }
   return f;
@@ -864,14 +874,14 @@ async function cabeceraFeed() {
 async function segmentado(c) {
   const f = marco({
     nombre: 'raiz', componente: true, dir: 'H', ancho: 350, alto: 40, radio: 'r28', fondo: 'TemaTruequeU/blanco',
-    borde: 'ColorScheme/outline', recorta: true,
+    borde: 'TemaTruequeU/contorno', recorta: true,
   });
   const segmentos = [['recibidas', 'inbox_outlined', 'Recibidas'], ['enviadas', 'outbox_outlined', 'Enviadas']];
   for (const s of segmentos) {
     const activo = s[0] === c.Seleccionado;
-    const color = activo ? 'ColorScheme/onSecondaryContainer' : 'ColorScheme/onSurface';
+    const color = activo ? 'TemaTruequeU/rojoOscuro' : 'TemaTruequeU/texto';
     const seg = marco({
-      nombre: 'segmento-' + s[0], dir: 'H', gap: 'e8', fondo: activo ? 'ColorScheme/secondaryContainer' : null,
+      nombre: 'segmento-' + s[0], dir: 'H', gap: 'e8', fondo: activo ? 'TemaTruequeU/rojoClaro' : null,
       alinea: 'CENTER', cruz: 'CENTER',
     });
     seg.appendChild(activo ? icono('check', color, 18, undefined, 'IconoMarco') : icono(s[1], color, 18));
@@ -884,12 +894,12 @@ async function segmentado(c) {
 async function filaLista(c) {
   const error = c.Tono === 'error';
   const f = marco({ nombre: 'raiz', componente: true, dir: 'H', ancho: 350, pad: ['e8', 'e16'], gap: 'e16', cruz: 'CENTER' });
-  if (c.Icono === 'con') f.appendChild(icono('handshake_outlined', error ? 'ColorScheme/error' : 'ColorScheme/primary', 24));
+  if (c.Icono === 'con') f.appendChild(icono('handshake_outlined', error ? 'TemaTruequeU/rojo' : 'TemaTruequeU/azul', 24));
   const columna = marco({ nombre: 'textos', dir: 'V', gap: 'e2' });
-  agregar(columna, await texto('Intercambios completados', 'TextTheme/bodyLarge', error ? 'ColorScheme/error' : 'ColorScheme/onSurface', 'titulo'), { ancho: true });
-  if (c.Subtitulo === 'con') agregar(columna, await texto('Subtítulo', 'TextTheme/bodyMedium', 'ColorScheme/onSurfaceVariant', 'subtitulo'), { ancho: true });
+  agregar(columna, await texto('Intercambios completados', 'TextTheme/bodyLarge', error ? 'TemaTruequeU/rojo' : 'TemaTruequeU/texto', 'titulo'), { ancho: true });
+  if (c.Subtitulo === 'con') agregar(columna, await texto('Subtítulo', 'TextTheme/bodyMedium', 'TemaTruequeU/textoSuave', 'subtitulo'), { ancho: true });
   agregar(f, columna, { ancho: true });
-  if (c.Final === 'chevron') f.appendChild(icono('chevron_right', 'ColorScheme/onSurfaceVariant', 24));
+  if (c.Final === 'chevron') f.appendChild(icono('chevron_right', 'TemaTruequeU/textoSuave', 24));
   return f;
 }
 
@@ -899,13 +909,13 @@ async function resumenCalificaciones(c) {
     alinea: 'CENTER', cruz: 'CENTER',
   });
   if (c.Estado === 'vacio') {
-    const t = await texto('Aún no tienes calificaciones', 'TextTheme/bodyMedium', 'ColorScheme/onSurface', 'texto');
+    const t = await texto('Aún no tienes calificaciones', 'TextTheme/bodyMedium', 'TemaTruequeU/texto', 'texto');
     t.textAlignHorizontal = 'CENTER';
     agregar(f, t, { ancho: true });
   }
   if (c.Estado === 'conDatos') {
-    f.appendChild(icono('star_border', 'ColorScheme/secondary', 24));
-    f.appendChild(await texto('4.5 de 5 · 12 calificaciones', 'TextTheme/bodyMedium', 'ColorScheme/onSurface', 'texto'));
+    f.appendChild(icono('star_border', 'TemaTruequeU/rojo', 24));
+    f.appendChild(await texto('4.5 de 5 · 12 calificaciones', 'TextTheme/bodyMedium', 'TemaTruequeU/texto', 'texto'));
   }
   return f;
 }
@@ -913,7 +923,7 @@ async function resumenCalificaciones(c) {
 function bloqueBase(titulo) {
   const f = marco({
     nombre: 'raiz', componente: true, dir: 'V', ancho: 318, pad: 'e12', gap: 'e6', radio: 'r12',
-    fondo: 'ColorScheme/surfaceContainerHighest',
+    fondo: 'TemaTruequeU/superficieAlta',
   });
   agregar(f, tp(titulo, 'negrita'), { ancho: true });
   return f;
@@ -952,24 +962,24 @@ async function bloqueEntrega(c) {
 }
 
 async function chipMaterial(contenido, nombreIcono) {
-  const f = marco({ nombre: 'chip', dir: 'H', pad: ['e4', 'e8'], gap: 'e4', radio: 'r8', borde: 'ColorScheme/outlineVariant', cruz: 'CENTER' });
-  if (nombreIcono) f.appendChild(icono(nombreIcono, 'ColorScheme/primary', 16));
-  f.appendChild(await texto(contenido, 'TextTheme/labelLarge', 'ColorScheme/onSurfaceVariant', 'texto'));
+  const f = marco({ nombre: 'chip', dir: 'H', pad: ['e4', 'e8'], gap: 'e4', radio: 'r8', borde: 'TemaTruequeU/borde', cruz: 'CENTER' });
+  if (nombreIcono) f.appendChild(icono(nombreIcono, 'TemaTruequeU/azul', 16));
+  f.appendChild(await texto(contenido, 'TextTheme/labelLarge', 'TemaTruequeU/textoSuave', 'texto'));
   return f;
 }
 
 function tarjetaBase(gap) {
   return marco({
     nombre: 'raiz', componente: true, dir: 'V', ancho: 350, pad: 'e16', gap: gap || 'e8', radio: 'r20',
-    fondo: 'TemaTruequeU/blanco', borde: 'ColorScheme/outlineVariant',
+    fondo: 'TemaTruequeU/blanco', borde: 'TemaTruequeU/borde',
   });
 }
 
 async function tarjetaIntercambio(c) {
   const f = tarjetaBase('e6');
-  agregar(f, await texto('Calculadora científica', 'tituloTarjeta', 'ColorScheme/onSurface', 'titulo'), { ancho: true });
+  agregar(f, await texto('Calculadora científica', 'tituloTarjeta', 'TemaTruequeU/texto', 'titulo'), { ancho: true });
   const entregue = c.Rol === 'entregue';
-  agregar(f, await texto(entregue ? 'Lo entregaste a: Luis Gómez' : 'Lo recibiste de: Ana Pérez', 'TextTheme/bodyMedium', 'ColorScheme/onSurfaceVariant', 'quien'), { ancho: true });
+  agregar(f, await texto(entregue ? 'Lo entregaste a: Luis Gómez' : 'Lo recibiste de: Ana Pérez', 'TextTheme/bodyMedium', 'TemaTruequeU/textoSuave', 'quien'), { ancho: true });
   const chips = marco({ nombre: 'chips', dir: 'H', gap: 'e8' });
   chips.appendChild(await chipMaterial('Categoría: Electrónica'));
   chips.appendChild(await chipMaterial('Intercambiado', 'check_circle_outline'));
@@ -978,13 +988,13 @@ async function tarjetaIntercambio(c) {
 }
 
 const ESTADOS_OFERTA = {
-  pendiente: ['ColorScheme/primaryContainer', 'ColorScheme/onPrimaryContainer', 'Pendiente'],
-  contraofertada: ['ColorScheme/secondaryContainer', 'ColorScheme/onSecondaryContainer', 'Contraofertada'],
-  aceptada: ['ColorScheme/tertiaryContainer', 'ColorScheme/onTertiaryContainer', 'Aceptada'],
-  completada: ['ColorScheme/tertiaryContainer', 'ColorScheme/onTertiaryContainer', 'Intercambio completado'],
-  anulada: ['ColorScheme/errorContainer', 'ColorScheme/onErrorContainer', 'Intercambio cancelado'],
-  rechazada: ['ColorScheme/errorContainer', 'ColorScheme/onErrorContainer', 'Rechazada'],
-  cancelada: ['ColorScheme/surfaceContainerHighest', 'ColorScheme/onSurfaceVariant', 'Cancelada'],
+  pendiente: ['TemaTruequeU/azulClaro', 'TemaTruequeU/azulOscuro', 'Pendiente'],
+  contraofertada: ['TemaTruequeU/rojoClaro', 'TemaTruequeU/rojoOscuro', 'Contraofertada'],
+  aceptada: ['TemaTruequeU/verdeClaro', 'TemaTruequeU/verdeOscuro', 'Aceptada'],
+  completada: ['TemaTruequeU/verdeClaro', 'TemaTruequeU/verdeOscuro', 'Intercambio completado'],
+  anulada: ['TemaTruequeU/rojoClaro', 'TemaTruequeU/rojoOscuro', 'Intercambio cancelado'],
+  rechazada: ['TemaTruequeU/rojoClaro', 'TemaTruequeU/rojoOscuro', 'Rechazada'],
+  cancelada: ['TemaTruequeU/superficieAlta', 'TemaTruequeU/textoSuave', 'Cancelada'],
 };
 
 async function chipEstadoOferta(c) {
@@ -999,7 +1009,7 @@ async function tarjetaOferta(c) {
   const f = tarjetaBase('e8');
   const cabecera = marco({ nombre: 'cabecera', dir: 'H', gap: 'e8', cruz: 'CENTER' });
   cabecera.appendChild(instancia('ChipEstadoOferta', { Estado: c.Estado }));
-  const quien = await texto(recibida ? 'De: Luis Gómez' : 'Para: Ana Pérez', 'TextTheme/bodyMedium', 'ColorScheme/onSurfaceVariant', 'quien');
+  const quien = await texto(recibida ? 'De: Luis Gómez' : 'Para: Ana Pérez', 'TextTheme/bodyMedium', 'TemaTruequeU/textoSuave', 'quien');
   quien.textAlignHorizontal = 'RIGHT';
   agregar(cabecera, quien, { ancho: true });
   agregar(f, cabecera, { ancho: true });
@@ -1037,9 +1047,9 @@ async function filtrosHistorial(c) {
     const activo = d[0] === c.Seleccionado;
     const chip = marco({
       nombre: d[0], dir: 'H', pad: ['e6', 'e12'], radio: 'r8', cruz: 'CENTER',
-      fondo: activo ? 'ColorScheme/secondaryContainer' : null, borde: activo ? null : 'ColorScheme/outlineVariant',
+      fondo: activo ? 'TemaTruequeU/rojoClaro' : null, borde: activo ? null : 'TemaTruequeU/borde',
     });
-    chip.appendChild(await texto(d[1], 'TextTheme/labelLarge', activo ? 'ColorScheme/onSecondaryContainer' : 'ColorScheme/onSurfaceVariant', 'texto'));
+    chip.appendChild(await texto(d[1], 'TextTheme/labelLarge', activo ? 'TemaTruequeU/rojoOscuro' : 'TemaTruequeU/textoSuave', 'texto'));
     f.appendChild(chip);
   }
   return f;
@@ -1055,34 +1065,34 @@ async function tarjetaHistorial(c) {
   const d = MOVIMIENTOS[c.Tipo];
   const f = marco({
     nombre: 'raiz', componente: true, dir: 'H', ancho: 350, pad: 'e16', gap: 'e12', radio: 'r20',
-    fondo: 'TemaTruequeU/blanco', borde: 'ColorScheme/outlineVariant', cruz: 'CENTER',
+    fondo: 'TemaTruequeU/blanco', borde: 'TemaTruequeU/borde', cruz: 'CENTER',
   });
-  f.appendChild(icono(d[0], 'ColorScheme/onSurface', 28));
+  f.appendChild(icono(d[0], 'TemaTruequeU/texto', 28));
   const columna = marco({ nombre: 'textos', dir: 'V', gap: 'e4' });
-  agregar(columna, await texto(d[1], 'tituloItem', 'ColorScheme/onSurface', 'frase'), { ancho: true });
-  agregar(columna, await texto(d[2], 'TextTheme/bodyMedium', 'ColorScheme/onSurfaceVariant', 'estado'), { ancho: true });
+  agregar(columna, await texto(d[1], 'tituloItem', 'TemaTruequeU/texto', 'frase'), { ancho: true });
+  agregar(columna, await texto(d[2], 'TextTheme/bodyMedium', 'TemaTruequeU/textoSuave', 'estado'), { ancho: true });
   agregar(f, columna, { ancho: true });
-  f.appendChild(icono('chevron_right', 'ColorScheme/onSurface', 24));
+  f.appendChild(icono('chevron_right', 'TemaTruequeU/texto', 24));
   return f;
 }
 
 async function tarjetaAviso(c) {
   const f = marco({
     nombre: 'raiz', componente: true, dir: 'H', ancho: 350, pad: ['e8', 'e16'], gap: 'e16', radio: 'r20',
-    fondo: 'TemaTruequeU/blanco', borde: 'ColorScheme/outlineVariant', cruz: 'CENTER',
+    fondo: 'TemaTruequeU/blanco', borde: 'TemaTruequeU/borde', cruz: 'CENTER',
   });
-  f.appendChild(icono(c.Estado === 'noLeida' ? 'notifications_active' : 'notifications_none', 'ColorScheme/primary', 24));
+  f.appendChild(icono(c.Estado === 'noLeida' ? 'notifications_active' : 'notifications_none', 'TemaTruequeU/azul', 24));
   const columna = marco({ nombre: 'textos', dir: 'V', gap: 'e2' });
-  agregar(columna, await texto('Luis Gómez aceptó tu oferta por «Calculadora científica»', 'TextTheme/bodyLarge', 'ColorScheme/onSurface', 'titulo'), { ancho: true });
-  agregar(columna, await texto('12/11/2026', 'TextTheme/bodyMedium', 'ColorScheme/onSurfaceVariant', 'subtitulo'), { ancho: true });
+  agregar(columna, await texto('Luis Gómez aceptó tu oferta por «Calculadora científica»', 'TextTheme/bodyLarge', 'TemaTruequeU/texto', 'titulo'), { ancho: true });
+  agregar(columna, await texto('12/11/2026', 'TextTheme/bodyMedium', 'TemaTruequeU/textoSuave', 'subtitulo'), { ancho: true });
   agregar(f, columna, { ancho: true });
   return f;
 }
 
 async function tarjetaDatos(c) {
   const f = tarjetaBase('e8');
-  agregar(f, await texto('Tu perfil', 'TextoDerivado/titleMediumNegrita', 'ColorScheme/onSurface', 'titulo'), { ancho: true });
-  agregar(f, await texto('Nombre: Ana Pérez\nCorreo: ana@universidad.edu', 'TextTheme/bodyMedium', 'ColorScheme/onSurface', 'lineas'), { ancho: true });
+  agregar(f, await texto('Tu perfil', 'TextoDerivado/titleMediumNegrita', 'TemaTruequeU/texto', 'titulo'), { ancho: true });
+  agregar(f, await texto('Nombre: Ana Pérez\nCorreo: ana@universidad.edu', 'TextTheme/bodyMedium', 'TemaTruequeU/texto', 'lineas'), { ancho: true });
   if (c.Variante === 'conAccion') agregar(f, tp('Quitar mi teléfono', 'enlace'), { ancho: true });
   return f;
 }
@@ -1090,9 +1100,9 @@ async function tarjetaDatos(c) {
 async function dialogoBase(titulo, alto) {
   const f = marco({
     nombre: 'raiz', componente: true, dir: 'V', ancho: 310, alto: alto, pad: 'e24', gap: 'e16', radio: 'r28',
-    fondo: 'ColorScheme/surface', recorta: !!alto,
+    fondo: 'TemaTruequeU/superficieAlta', recorta: !!alto,
   });
-  agregar(f, await texto(titulo, 'TextTheme/headlineSmall', 'ColorScheme/onSurface', 'titulo'), { ancho: true });
+  agregar(f, await texto(titulo, 'TextTheme/headlineSmall', 'TemaTruequeU/texto', 'titulo'), { ancho: true });
   return f;
 }
 
@@ -1188,7 +1198,7 @@ async function dialogoEntrega(c) {
 
 function botonRadio(marcada) {
   const f = marco({ nombre: 'radio', dir: 'H', ancho: 20, alto: 20 });
-  const color = marcada ? 'ColorScheme/primary' : 'ColorScheme/onSurfaceVariant';
+  const color = marcada ? 'TemaTruequeU/azul' : 'TemaTruequeU/textoSuave';
   const anillo = figma.createEllipse();
   anillo.name = 'anillo';
   anillo.resize(16, 16);
@@ -1216,8 +1226,8 @@ async function filaRadio(titulo, subtitulo, marcada) {
   const f = marco({ nombre: 'opcion', dir: 'H', gap: 'e12', cruz: 'CENTER' });
   f.appendChild(botonRadio(marcada));
   const columna = marco({ nombre: 'textos', dir: 'V', gap: 'e2' });
-  agregar(columna, await texto(titulo, 'TextTheme/bodyLarge', 'ColorScheme/onSurface', 'titulo'), { ancho: true });
-  agregar(columna, await texto(subtitulo, 'TextTheme/bodyMedium', 'ColorScheme/onSurfaceVariant', 'subtitulo'), { ancho: true });
+  agregar(columna, await texto(titulo, 'TextTheme/bodyLarge', 'TemaTruequeU/texto', 'titulo'), { ancho: true });
+  agregar(columna, await texto(subtitulo, 'TextTheme/bodyMedium', 'TemaTruequeU/textoSuave', 'subtitulo'), { ancho: true });
   agregar(f, columna, { ancho: true });
   return f;
 }
@@ -1299,7 +1309,7 @@ async function dialogoHistorial(c) {
       return;
     }
     const fila = marco({ nombre: 'fila', dir: 'H', gap: 'e8', cruz: 'CENTER' });
-    fila.appendChild(icono(l[2], 'ColorScheme/onSurface', 18));
+    fila.appendChild(icono(l[2], 'TemaTruequeU/texto', 18));
     agregar(fila, tp(l[0], l[1]), { ancho: true });
     agregar(cuerpo, fila, { ancho: true });
   });
@@ -1463,8 +1473,8 @@ async function construirComponentes() {
     disponer(comps, def.columnas || 4);
     const conjunto = figma.combineAsVariants(comps, figma.currentPage);
     conjunto.name = def.nombre;
-    conjunto.fills = [pintura('ColorScheme/surface')];
-    conjunto.strokes = [pintura('ColorScheme/outlineVariant')];
+    conjunto.fills = [pintura('TemaTruequeU/fondo')];
+    conjunto.strokes = [pintura('TemaTruequeU/borde')];
     conjunto.strokeWeight = 1;
     for (const t of def.textos) {
       const clave = conjunto.addComponentProperty(t[1], 'TEXT', t[2]);
@@ -1472,7 +1482,7 @@ async function construirComponentes() {
         n.componentPropertyReferences = { characters: clave };
       });
     }
-    const rotulo = await texto(def.nombre, 'subtitulo', 'ColorScheme/onSurface', 'rotulo');
+    const rotulo = await texto(def.nombre, 'subtitulo', 'TemaTruequeU/texto', 'rotulo');
     rotulo.x = 0;
     rotulo.y = y;
     conjunto.x = 0;
@@ -1484,30 +1494,31 @@ async function construirComponentes() {
 
 async function seccion(raiz, titulo) {
   const s = marco({ nombre: titulo, dir: 'V', gap: 'e16' });
-  s.appendChild(await texto(titulo, 'subtitulo', 'ColorScheme/onSurface', 'titulo'));
+  s.appendChild(await texto(titulo, 'subtitulo', 'TemaTruequeU/texto', 'titulo'));
   raiz.appendChild(s);
   return s;
 }
 
 async function muestraColor(ruta) {
-  const m = marco({ nombre: ruta, dir: 'V', gap: 'e4', ancho: 112 });
+  const m = marco({ nombre: ruta, dir: 'V', gap: 'e4', ancho: 168 });
   const r = figma.createRectangle();
   r.name = 'color';
-  r.resize(112, 56);
+  r.resize(168, 56);
   r.fills = [pintura(ruta)];
-  r.strokes = [pintura('ColorScheme/outlineVariant')];
+  r.strokes = [pintura('TemaTruequeU/borde')];
   r.strokeWeight = 1;
   radio(r, 'r8');
   m.appendChild(r);
-  agregar(m, await texto(ruta.split('/')[1], 'etiqueta', 'ColorScheme/onSurface', 'nombre'), { ancho: true });
-  agregar(m, await texto(valorHex(ruta), 'ayuda', 'ColorScheme/onSurfaceVariant', 'hex'), { ancho: true });
+  agregar(m, await texto(ruta, 'etiqueta', 'TemaTruequeU/texto', 'nombre'), { ancho: true });
+  agregar(m, await texto(valorHex(ruta), 'ayuda', 'TemaTruequeU/textoSuave', 'hex'), { ancho: true });
+  agregar(m, await texto(ruta.replace('/', '.'), 'ayuda', 'TemaTruequeU/textoSuave', 'dart'), { ancho: true });
   return m;
 }
 
 async function construirFundamentos() {
-  const raiz = marco({ nombre: 'Fundamentos', dir: 'V', pad: 'e40', gap: 'e40', fondo: 'ColorScheme/surface' });
+  const raiz = marco({ nombre: 'Fundamentos', dir: 'V', pad: 'e40', gap: 'e40', fondo: 'TemaTruequeU/fondo' });
   figma.currentPage.appendChild(raiz);
-  raiz.appendChild(await texto('TruequeU · Sistema de diseño', 'titulo', 'ColorScheme/onSurface', 'titulo'));
+  raiz.appendChild(await texto('TruequeU · Sistema de diseño', 'titulo', 'TemaTruequeU/texto', 'titulo'));
 
   const logos = await seccion(raiz, 'Logo');
   const filaLogos = marco({ nombre: 'logos', dir: 'H', gap: 'e32', cruz: 'CENTER' });
@@ -1515,36 +1526,36 @@ async function construirFundamentos() {
   filaLogos.appendChild(instancia('LogoTruequeU', { Variante: 'conNombre' }));
   logos.appendChild(filaLogos);
 
-  for (const coleccion of ['TemaTruequeU', 'ColorScheme']) {
-    const s = await seccion(raiz, 'Paleta · ' + coleccion);
-    const claves = Object.keys(TOKENS[coleccion]);
-    for (let i = 0; i < claves.length; i += 6) {
-      const fila = marco({ nombre: 'fila', dir: 'H', gap: 'e12' });
-      for (const clave of claves.slice(i, i + 6)) fila.appendChild(await muestraColor(coleccion + '/' + clave));
-      s.appendChild(fila);
-    }
+  const paleta = await seccion(raiz, 'Paleta TemaTruequeU');
+  const claves = Object.keys(TOKENS.TemaTruequeU).filter(k => esColor(TOKENS.TemaTruequeU[k]));
+  for (let i = 0; i < claves.length; i += 5) {
+    const fila = marco({ nombre: 'fila', dir: 'H', gap: 'e12' });
+    for (const clave of claves.slice(i, i + 5)) fila.appendChild(await muestraColor('TemaTruequeU/' + clave));
+    paleta.appendChild(fila);
   }
 
+  const tipografia = await seccion(raiz, 'Tipografía · ' + FUENTE);
+  tipografia.appendChild(await texto('TemaTruequeU/fuente = ' + FUENTE + ' (Dart: TemaTruequeU.fuente)', 'TextTheme/bodyMedium', 'TemaTruequeU/texto', 'fuente'));
   for (const coleccion of COLECCIONES_TEXTO) {
-    const tipografia = await seccion(raiz, 'Tipografía · ' + coleccion);
+    tipografia.appendChild(await texto(coleccion, 'TextTheme/bodySmall', 'TemaTruequeU/textoSuave', 'subtitulo'));
     for (const campo of Object.keys(TOKENS[coleccion])) {
       const def = TOKENS[coleccion][campo];
       const lineaAlto = def.height === null ? 'auto' : alturaLinea(def).value + ' px';
-      const detalle = campo + ' · ' + tamanoTexto(def) + ' px · ' + PESOS[def.fontWeight] + ' · altura ' + lineaAlto + ' · espaciado ' + (def.letterSpacing || 0);
-      tipografia.appendChild(await texto(detalle, coleccion + '/' + campo, 'ColorScheme/onSurface', 'muestra'));
+      const detalle = campo + ' · ' + FUENTE + ' · ' + PESOS[def.fontWeight] + ' · ' + tamanoTexto(def) + ' px · altura ' + lineaAlto + ' · espaciado ' + (def.letterSpacing || 0);
+      tipografia.appendChild(await texto(detalle, coleccion + '/' + campo, 'TemaTruequeU/texto', 'muestra'));
     }
   }
 
   const iconos = await seccion(raiz, 'Íconos · Material Icons');
   for (const [titulo, fuente, conjunto] of [['Íconos de la app', ICONOS, 'Icono'], ['Íconos internos de Material', ICONOS_MARCO, 'IconoMarco']]) {
-    iconos.appendChild(await texto(titulo, 'TextTheme/bodySmall', 'ColorScheme/onSurfaceVariant', 'subtitulo'));
+    iconos.appendChild(await texto(titulo, 'TextTheme/bodySmall', 'TemaTruequeU/textoSuave', 'subtitulo'));
     const nombres = Object.keys(fuente);
     for (let i = 0; i < nombres.length; i += 8) {
       const fila = marco({ nombre: 'fila', dir: 'H', gap: 'e12' });
       for (const nombre of nombres.slice(i, i + 8)) {
         const celda = marco({ nombre: nombre, dir: 'V', gap: 'e4', ancho: 120, cruz: 'CENTER' });
-        celda.appendChild(icono(nombre, 'ColorScheme/onSurface', 24, undefined, conjunto));
-        agregar(celda, await texto(nombre, 'TextTheme/bodySmall', 'ColorScheme/onSurfaceVariant', 'nombre'), { ancho: true });
+        celda.appendChild(icono(nombre, 'TemaTruequeU/texto', 24, undefined, conjunto));
+        agregar(celda, await texto(nombre, 'TextTheme/bodySmall', 'TemaTruequeU/textoSuave', 'nombre'), { ancho: true });
         fila.appendChild(celda);
       }
       iconos.appendChild(fila);
@@ -1557,11 +1568,11 @@ async function construirFundamentos() {
     const barra = figma.createRectangle();
     barra.name = 'barra';
     barra.resize(TOKENS.Espacios[campo], 16);
-    barra.fills = [pintura('ColorScheme/primary')];
+    barra.fills = [pintura('TemaTruequeU/azul')];
     ligar(barra, 'width', 'Espacios/' + campo);
     ligar(barra, 'height', 'Espacios/e16');
     fila.appendChild(barra);
-    fila.appendChild(await texto(campo + ' · ' + TOKENS.Espacios[campo], 'detalle', 'ColorScheme/onSurface', 'valor'));
+    fila.appendChild(await texto(campo + ' · ' + TOKENS.Espacios[campo], 'detalle', 'TemaTruequeU/texto', 'valor'));
     espacios.appendChild(fila);
   }
 
@@ -1572,12 +1583,12 @@ async function construirFundamentos() {
     const caja = figma.createRectangle();
     caja.name = 'caja';
     caja.resize(72, 72);
-    caja.fills = [pintura('ColorScheme/primaryContainer')];
-    caja.strokes = [pintura('ColorScheme/primary')];
+    caja.fills = [pintura('TemaTruequeU/azulClaro')];
+    caja.strokes = [pintura('TemaTruequeU/azul')];
     caja.strokeWeight = 1;
     radio(caja, campo);
     m.appendChild(caja);
-    m.appendChild(await texto(campo + ' · ' + TOKENS.Radios[campo], 'detalle', 'ColorScheme/onSurface', 'valor'));
+    m.appendChild(await texto(campo + ' · ' + TOKENS.Radios[campo], 'detalle', 'TemaTruequeU/texto', 'valor'));
     filaRadios.appendChild(m);
   }
   radios.appendChild(filaRadios);
@@ -1586,7 +1597,7 @@ async function construirFundamentos() {
 let posicion = 0;
 
 function pantalla(nombre) {
-  const f = marco({ nombre: nombre, dir: 'V', ancho: 390, alto: 844, fondo: 'ColorScheme/surface', recorta: true });
+  const f = marco({ nombre: nombre, dir: 'V', ancho: 390, alto: 844, fondo: 'TemaTruequeU/fondo', recorta: true });
   f.x = (posicion % 7) * 430;
   f.y = Math.floor(posicion / 7) * 900;
   posicion++;
@@ -1815,7 +1826,7 @@ function armarPerfil(p) {
   agregar(cabecera, tp('ana@universidad.edu', 'suave', 'centro'), { ancho: true });
   agregar(cabecera, instancia('ResumenCalificaciones', { Estado: 'conDatos' }), { ancho: true });
   const tarjeta = marco({
-    nombre: 'opciones', dir: 'V', fondo: 'TemaTruequeU/blanco', borde: 'ColorScheme/outlineVariant', radio: 'r20', recorta: true,
+    nombre: 'opciones', dir: 'V', fondo: 'TemaTruequeU/blanco', borde: 'TemaTruequeU/borde', radio: 'r20', recorta: true,
   });
   agregar(c, tarjeta, { ancho: true });
   const opciones = [
@@ -2012,7 +2023,7 @@ async function construirDialogos() {
     const p = pantalla(e[0]);
     e[1](p);
     const velo = marco({
-      nombre: 'velo', dir: 'V', ancho: 390, alto: 844, fondo: 'ColorScheme/onSurface', opacidad: 0.32, alinea: 'CENTER', cruz: 'CENTER',
+      nombre: 'velo', dir: 'V', ancho: 390, alto: 844, fondo: 'TemaTruequeU/texto', opacidad: 0.54, alinea: 'CENTER', cruz: 'CENTER',
     });
     p.appendChild(velo);
     velo.layoutPositioning = 'ABSOLUTE';

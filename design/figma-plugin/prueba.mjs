@@ -44,7 +44,7 @@ const CAMPOS_NUMERICOS = [
 ];
 const ALCANCES_VALIDOS = [
   'ALL_SCOPES', 'TEXT_CONTENT', 'CORNER_RADIUS', 'WIDTH_HEIGHT', 'GAP', 'ALL_FILLS', 'FRAME_FILL',
-  'SHAPE_FILL', 'TEXT_FILL', 'STROKE_COLOR', 'EFFECT_COLOR', 'FONT_SIZE',
+  'SHAPE_FILL', 'TEXT_FILL', 'STROKE_COLOR', 'EFFECT_COLOR', 'FONT_SIZE', 'FONT_FAMILY',
 ];
 const CONTENEDORES = ['DOCUMENT', 'PAGE', 'FRAME', 'COMPONENT', 'COMPONENT_SET', 'INSTANCE'];
 
@@ -304,7 +304,8 @@ function crearMundo(opciones) {
         name: '',
         boundVariables: {},
         setBoundVariable(campo, v) {
-          assert.equal(campo, 'fontSize');
+          assert(['fontSize', 'fontFamily'].includes(campo), 'campo de estilo no enlazable: ' + campo);
+          assert.equal(v.resolvedType, campo === 'fontSize' ? 'FLOAT' : 'STRING', campo);
           this.boundVariables[campo] = { type: 'VARIABLE_ALIAS', id: v.id };
         },
       };
@@ -316,13 +317,21 @@ function crearMundo(opciones) {
     },
     variables: {
       createVariableCollection(nombre) {
-        const c = { id: 'C' + nuevoId(), name: nombre, modes: [{ modeId: 'M' + nuevoId(), name: 'Mode 1' }] };
+        const c = {
+          id: 'C' + nuevoId(),
+          name: nombre,
+          modes: [{ modeId: 'M' + nuevoId(), name: 'Mode 1' }],
+          remove() {
+            mundo.colecciones.splice(mundo.colecciones.indexOf(this), 1);
+            mundo.variables = mundo.variables.filter(v => v.variableCollectionId !== this.id);
+          },
+        };
         mundo.colecciones.push(c);
         return c;
       },
       createVariable(nombre, coleccion, tipo) {
         assert(coleccion && coleccion.id, 'se requiere la coleccion');
-        assert(['COLOR', 'FLOAT'].includes(tipo));
+        assert(['COLOR', 'FLOAT', 'STRING'].includes(tipo));
         const v = {
           id: 'V' + nuevoId(),
           name: nombre,
@@ -342,6 +351,9 @@ function crearMundo(opciones) {
             if (valor && valor.type === 'VARIABLE_ALIAS') this.valores[modo] = valor;
             else if (tipo === 'COLOR') {
               assert(['r', 'g', 'b', 'a'].every(k => typeof valor[k] === 'number'));
+              this.valores[modo] = valor;
+            } else if (tipo === 'STRING') {
+              assert.equal(typeof valor, 'string');
               this.valores[modo] = valor;
             } else {
               assert.equal(typeof valor, 'number');
@@ -374,6 +386,11 @@ function crearMundo(opciones) {
   mundo.pagina1 = figmaFalso.createPage();
   mundo.pagina1.name = 'Page 1';
   mundo.actual = mundo.pagina1;
+  if (opciones.conColeccionAntigua) {
+    const antigua = figmaFalso.variables.createVariableCollection('ColorScheme');
+    const primitiva = figmaFalso.variables.createVariable('primary', antigua, 'COLOR');
+    primitiva.setValueForMode(antigua.modes[0].modeId, { r: 0, g: 0, b: 0, a: 1 });
+  }
   return mundo;
 }
 
@@ -406,8 +423,9 @@ function revisar(mundo, contexto) {
   assert(!mundo.mensaje.startsWith('Error'), mundo.mensaje);
 
   const nombres = mundo.colecciones.map(c => c.name).sort();
-  assert.deepEqual(nombres, ['ColorScheme', 'Espacios', 'Radios', 'TemaTruequeU', 'Tipos']);
-  const tipo = { TemaTruequeU: 'COLOR', ColorScheme: 'COLOR', Espacios: 'FLOAT', Radios: 'FLOAT', Tipos: 'FLOAT' };
+  assert.deepEqual(nombres, ['Espacios', 'Radios', 'TemaTruequeU', 'Tipos']);
+  const tipoDe = (coleccion, valor) => (coleccion === 'TemaTruequeU' ? (valor.startsWith('#') ? 'COLOR' : 'STRING') : 'FLOAT');
+  const tipo = { TemaTruequeU: 'COLOR', Espacios: 'FLOAT', Radios: 'FLOAT', Tipos: 'FLOAT' };
   let contadas = 0;
   const hexARgb = hex => {
     const n = parseInt(hex.slice(1), 16);
@@ -422,13 +440,15 @@ function revisar(mundo, contexto) {
     for (const [campo, valor] of Object.entries(tokens[coleccion])) {
       const v = porRuta[coleccion + '/' + campo];
       assert(v, 'falta la variable ' + coleccion + '/' + campo);
-      assert.equal(v.resolvedType, tipo[coleccion]);
+      assert.equal(v.resolvedType, tipoDe(coleccion, String(valor)));
       assert(v.scopes.length > 0);
       assert.equal(v.description, coleccion + '.' + campo);
-      if (coleccion === 'ColorScheme') {
-        assert.deepEqual(plano(v.valores[modo]), { type: 'VARIABLE_ALIAS', id: porRuta[valor].id });
-      } else if (coleccion === 'TemaTruequeU') {
+      assert.notEqual(plano(v.valores[modo]).type, 'VARIABLE_ALIAS', 'cadena de alias en ' + coleccion + '/' + campo);
+      if (coleccion === 'TemaTruequeU' && valor.startsWith('#')) {
         assert.deepEqual(plano(v.valores[modo]), hexARgb(valor));
+      } else if (coleccion === 'TemaTruequeU') {
+        assert.equal(v.valores[modo], valor);
+        assert.deepEqual(plano(v.scopes), ['FONT_FAMILY']);
       } else {
         assert.equal(v.valores[modo], valor);
       }
@@ -436,7 +456,13 @@ function revisar(mundo, contexto) {
     }
   }
   assert.equal(mundo.variables.length, contadas);
-  ok(`variables: ${contadas} (todas las claves de tokens.json, sin duplicados; ColorScheme son alias)`);
+  ok(`variables: ${contadas} (las claves de tokens.json salvo ColorScheme, que es solo documentacion; sin duplicados ni alias)`);
+
+  assert(!mundo.colecciones.some(c => c.name === 'ColorScheme'), 'la coleccion ColorScheme no debe existir');
+  assert.deepEqual(Object.keys(tokens.ColorScheme).filter(r => !tokens.ColorScheme[r].startsWith('TemaTruequeU/')), []);
+  const coleccionesColor = mundo.colecciones.filter(c => mundo.variables.some(v => v.variableCollectionId === c.id && v.resolvedType === 'COLOR'));
+  assert.deepEqual(coleccionesColor.map(c => c.name), ['TemaTruequeU']);
+  ok('una sola coleccion de color: TemaTruequeU; no existe ColorScheme; la fuente es la variable STRING TemaTruequeU/fuente = ' + tokens.TemaTruequeU.fuente);
 
   const COLECCIONES_TEXTO = ['TextTheme', 'TextosTruequeU', 'TextoDerivado'];
   const nombresEstilo = COLECCIONES_TEXTO.flatMap(c => Object.keys(tokens[c]).map(k => c + '/' + k));
@@ -448,7 +474,9 @@ function revisar(mundo, contexto) {
     const [coleccion, campo] = e.name.split('/');
     const def = tokens[coleccion][campo];
     const tamano = typeof def.fontSize === 'string' ? tokens.Tipos[def.fontSize.split('/')[1]] : def.fontSize;
-    assert.equal(e.fontName.family, 'Roboto', e.name);
+    assert.equal(e.fontName.family, tokens.TemaTruequeU.fuente, e.name);
+    assert.equal(e.boundVariables.fontFamily.id, porRuta['TemaTruequeU/fuente'].id, 'fontFamily sin enlazar en ' + e.name);
+    assert(e.description.includes(tokens.TemaTruequeU.fuente), e.name);
     assert.equal(e.fontName.style, nombrePeso[def.fontWeight], e.name);
     assert.equal(e.fontSize, tamano, e.name);
     const esperadaAltura = def.height === null ? { unit: 'AUTO' } : { unit: 'PIXELS', value: Math.round(tamano * def.height * 100) / 100 };
@@ -487,6 +515,10 @@ function revisar(mundo, contexto) {
   ok(`component sets: ${conjuntos.length} -> ${detalle}`);
 
   const todos = todosLosNodos(mundo);
+  const esDeTema = id => {
+    const v = mundo.variables.find(x => x.id === id);
+    return !!v && v.resolvedType === 'COLOR' && mundo.colecciones.find(c => c.id === v.variableCollectionId).name === 'TemaTruequeU';
+  };
   let solidos = 0;
   let degradados = 0;
   for (const n of todos) {
@@ -494,9 +526,11 @@ function revisar(mundo, contexto) {
       for (const p of lista) {
         if (p.type === 'SOLID') {
           assert(p.boundVariables && p.boundVariables.color, `paint SOLID sin variable en ${n.type} ${n.name}`);
+          assert(esDeTema(p.boundVariables.color.id), `color enlazado fuera de TemaTruequeU en ${n.type} ${n.name}`);
           solidos++;
         } else if (p.type === 'GRADIENT_LINEAR') {
           assert(p.gradientStops.every(s => s.boundVariables && s.boundVariables.color), 'degradado sin variables en ' + n.name);
+          assert(p.gradientStops.every(s => esDeTema(s.boundVariables.color.id)), 'parada enlazada fuera de TemaTruequeU en ' + n.name);
           degradados++;
         } else {
           assert.fail('paint inesperado ' + p.type);
@@ -535,6 +569,7 @@ function revisar(mundo, contexto) {
     assert.equal(vectores.length, 1, 'el icono debe ser un solo vector: ' + comp.name);
     assert(vectores[0].fuenteSvg, 'vector sin SVG de origen: ' + comp.name);
     assert(vectores[0].fills[0].boundVariables.color, 'relleno del icono sin variable: ' + comp.name);
+    assert(esDeTema(vectores[0].fills[0].boundVariables.color.id), 'relleno del icono fuera de TemaTruequeU: ' + comp.name);
     assert.equal(comp.name.replace(/^nombre=/, ''), iconosLib.concat(Object.keys(iconosMarco)).find(n => comp.name === 'nombre=' + n));
   }
   const instanciasIcono = todos.filter(n => n.type === 'INSTANCE' && n.name === 'icono');
@@ -564,8 +599,28 @@ function revisar(mundo, contexto) {
   ok('propiedades de texto en: ' + conTexto.join(', '));
 
   assert.throws(() => contexto.pintura('#FF0000'), /no es un token/);
-  assert.throws(() => contexto.pintura('ColorScheme/noExiste'), /Token inexistente/);
-  ok('pintura() rechaza colores que no son tokens');
+  assert.throws(() => contexto.pintura('ColorScheme/primary'), /no es un token/);
+  assert.throws(() => contexto.pintura('TemaTruequeU/noExiste'), /Token inexistente/);
+  assert.throws(() => contexto.pintura('TemaTruequeU/fuente'), /Token inexistente/);
+  ok('pintura() rechaza colores que no son de TemaTruequeU y la fuente usada como color');
+
+  const fundamentos = pagina(mundo, '🎨 Fundamentos');
+  const textosFundamentos = fundamentos.todos().filter(n => n.type === 'TEXT').map(t => t.characters);
+  const coloresTema = Object.keys(tokens.TemaTruequeU).filter(k => tokens.TemaTruequeU[k].startsWith('#'));
+  assert.equal(textosFundamentos.filter(t => t === 'Paleta TemaTruequeU').length, 1);
+  assert(!textosFundamentos.some(t => /^Paleta ·/.test(t) || t.includes('ColorScheme')), 'Fundamentos menciona ColorScheme o una segunda paleta');
+  for (const campo of coloresTema) {
+    for (const esperado of ['TemaTruequeU/' + campo, tokens.TemaTruequeU[campo], 'TemaTruequeU.' + campo]) {
+      assert(textosFundamentos.includes(esperado), 'falta en la paleta: ' + esperado);
+    }
+  }
+  assert.equal(fundamentos.todos().filter(n => n.name === 'color').length, coloresTema.length);
+  assert(textosFundamentos.includes('Tipografía · ' + tokens.TemaTruequeU.fuente), 'falta el titulo con el nombre de la fuente');
+  assert(textosFundamentos.some(t => t.includes('TemaTruequeU/fuente = ' + tokens.TemaTruequeU.fuente)));
+  const lineasTipo = textosFundamentos.filter(t => t.includes(' · ' + tokens.TemaTruequeU.fuente + ' · '));
+  assert.equal(lineasTipo.length, Object.keys(tokens.TextTheme).length + Object.keys(tokens.TextosTruequeU).length + Object.keys(tokens.TextoDerivado).length);
+  assert(lineasTipo.every(t => /· (Regular|Medium|SemiBold|Bold) · [\d.]+ px · altura /.test(t)), 'una linea de tipografia sin familia, peso, tamano o altura');
+  ok(`Fundamentos: una sola paleta "Paleta TemaTruequeU" con ${coloresTema.length} muestras (nombre, hex e identificador Dart) y "Tipografía · ${tokens.TemaTruequeU.fuente}" con ${lineasTipo.length} estilos (familia, peso, tamano, altura)`);
 
   const bases = [
     'PantallaInicio', 'PantallaIniciarSesion', 'PantallaRegistro', 'PantallaRecuperarContrasena',
@@ -644,6 +699,14 @@ revisar(mundo, contexto2);
 assert.deepEqual(cantidades(), antes);
 registrando = true;
 ok('idempotencia: segunda ejecucion sin duplicar colecciones, variables, estilos ni paginas');
+registrando = false;
+
+const conAntigua = crearMundo({ conColeccionAntigua: true });
+assert(conAntigua.colecciones.some(c => c.name === 'ColorScheme'));
+const contexto5 = await ejecutar(conAntigua);
+revisar(conAntigua, contexto5);
+registrando = true;
+ok('migracion: si ya existia una coleccion ColorScheme, el plugin la elimina con sus variables');
 registrando = false;
 
 const sinSemiBold = crearMundo({ sinSemiBold: true });

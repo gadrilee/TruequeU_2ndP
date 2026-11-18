@@ -148,7 +148,7 @@ void main() {
 
     expect(roles.keys.toSet(), reales.keys.toSet());
     reales.forEach((rol, estilo) {
-      expect(estilo!.fontFamily, 'Roboto', reason: rol);
+      expect(estilo!.fontFamily, TemaTruequeU.fuente, reason: rol);
       expect(deJson(roles[rol] as Map<String, dynamic>, tipos), Medidas.deEstilo(estilo), reason: rol);
     });
   });

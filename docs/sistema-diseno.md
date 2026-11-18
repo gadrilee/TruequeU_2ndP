@@ -28,8 +28,9 @@ Para comprobar el código del plugin sin Figma, `node design/figma-plugin/prueba
 ## Regla de nombres
 
 - Dart `Clase.campo` se llama en Figma `Clase/campo`. La barra reemplaza el punto porque Figma no admite puntos en los nombres de variables.
-- Las colecciones de variables son `TemaTruequeU`, `ColorScheme`, `Espacios`, `Radios` y `Tipos`. El nombre de cada variable es el nombre del campo Dart; su descripción guarda el identificador Dart (por ejemplo `TemaTruequeU.azul`).
-- `ColorScheme` contiene los roles del tema; cada uno es un alias a una variable de `TemaTruequeU`.
+- Las colecciones de variables son `TemaTruequeU`, `Espacios`, `Radios` y `Tipos`. El nombre de cada variable es el nombre del campo Dart; su descripción guarda el identificador Dart (por ejemplo `TemaTruequeU.azul`).
+- `TemaTruequeU` es la única colección de color: los 15 colores de la paleta más la variable de texto `fuente` (`TemaTruequeU.fuente`, 'Roboto'). Todo relleno, borde y color de texto del plugin se enlaza directamente a una variable de esta colección; no hay una segunda paleta ni alias entre variables.
+- Flutter ya no deriva roles del seed: su `ColorScheme` se llena entero con colores de `TemaTruequeU` (tabla de la sección siguiente). Esa tabla es solo documentación; el plugin no crea variables `ColorScheme` y, si el archivo de Figma todavía tiene una colección con ese nombre de una ejecución anterior, la elimina al correr.
 - Los estilos de texto se llaman `TextTheme/<rol>` (los 15 roles de Material 3 resueltos del tema), `TextosTruequeU/<campo>` (el estilo efectivo en Flutter, ver la sección de tipografía) y `TextoDerivado/<nombre>` (estilos que Flutter produce al combinar un rol con un cambio de peso o tamaño). El tamaño se enlaza a la variable de `Tipos` cuando existe una con ese valor; los tamaños que solo existen en Material (57, 45, 36, 32, 28, 24, 22) son constantes del framework y quedan como valor.
 - El ícono `Icons.foo` es la variante `nombre=foo` del componente `Icono`.
 - Cada componente de Figma se llama igual que la clase del widget Flutter, y cada pantalla igual que la clase de la pantalla.
@@ -57,28 +58,7 @@ Tabla generada desde `tokens.json` por `generar.mjs`; no se edita a mano.
 | `TemaTruequeU.textoSuave` | `TemaTruequeU/textoSuave` | #57534E |
 | `TemaTruequeU.contorno` | `TemaTruequeU/contorno` | #78716C |
 | `TemaTruequeU.superficieAlta` | `TemaTruequeU/superficieAlta` | #F1ECE5 |
-| `ColorScheme.primary` | `ColorScheme/primary` | TemaTruequeU/azul (#2A3964) |
-| `ColorScheme.onPrimary` | `ColorScheme/onPrimary` | TemaTruequeU/blanco (#FFFFFF) |
-| `ColorScheme.primaryContainer` | `ColorScheme/primaryContainer` | TemaTruequeU/azulClaro (#DDE3F2) |
-| `ColorScheme.onPrimaryContainer` | `ColorScheme/onPrimaryContainer` | TemaTruequeU/azulOscuro (#1B2645) |
-| `ColorScheme.secondary` | `ColorScheme/secondary` | TemaTruequeU/rojo (#CC100C) |
-| `ColorScheme.onSecondary` | `ColorScheme/onSecondary` | TemaTruequeU/blanco (#FFFFFF) |
-| `ColorScheme.secondaryContainer` | `ColorScheme/secondaryContainer` | TemaTruequeU/rojoClaro (#FBE3E2) |
-| `ColorScheme.onSecondaryContainer` | `ColorScheme/onSecondaryContainer` | TemaTruequeU/rojoOscuro (#8F0B08) |
-| `ColorScheme.tertiary` | `ColorScheme/tertiary` | TemaTruequeU/verdeOscuro (#14532D) |
-| `ColorScheme.onTertiary` | `ColorScheme/onTertiary` | TemaTruequeU/blanco (#FFFFFF) |
-| `ColorScheme.tertiaryContainer` | `ColorScheme/tertiaryContainer` | TemaTruequeU/verdeClaro (#DCF2E3) |
-| `ColorScheme.onTertiaryContainer` | `ColorScheme/onTertiaryContainer` | TemaTruequeU/verdeOscuro (#14532D) |
-| `ColorScheme.error` | `ColorScheme/error` | TemaTruequeU/rojo (#CC100C) |
-| `ColorScheme.onError` | `ColorScheme/onError` | TemaTruequeU/blanco (#FFFFFF) |
-| `ColorScheme.errorContainer` | `ColorScheme/errorContainer` | TemaTruequeU/rojoClaro (#FBE3E2) |
-| `ColorScheme.onErrorContainer` | `ColorScheme/onErrorContainer` | TemaTruequeU/rojoOscuro (#8F0B08) |
-| `ColorScheme.surface` | `ColorScheme/surface` | TemaTruequeU/fondo (#FAF7F2) |
-| `ColorScheme.onSurface` | `ColorScheme/onSurface` | TemaTruequeU/texto (#1C1917) |
-| `ColorScheme.onSurfaceVariant` | `ColorScheme/onSurfaceVariant` | TemaTruequeU/textoSuave (#57534E) |
-| `ColorScheme.outline` | `ColorScheme/outline` | TemaTruequeU/contorno (#78716C) |
-| `ColorScheme.outlineVariant` | `ColorScheme/outlineVariant` | TemaTruequeU/borde (#E7E5E4) |
-| `ColorScheme.surfaceContainerHighest` | `ColorScheme/surfaceContainerHighest` | TemaTruequeU/superficieAlta (#F1ECE5) |
+| `TemaTruequeU.fuente` | `TemaTruequeU/fuente` | Roboto |
 | `Espacios.e2` | `Espacios/e2` | 2 |
 | `Espacios.e4` | `Espacios/e4` | 4 |
 | `Espacios.e6` | `Espacios/e6` | 6 |
@@ -133,9 +113,72 @@ Tabla generada desde `tokens.json` por `generar.mjs`; no se edita a mano.
 | `TextTheme.labelSmall` | Estilo de texto `TextTheme/labelSmall` | 11 px, altura 1.45 (15.95 px), espaciado 0.5, peso 500 |
 <!-- tokens:fin -->
 
+## Cómo se llena el ColorScheme de Flutter
+
+`TemaTruequeU.claro()` arma un `ColorScheme` explícito (sin `fromSeed`): cada uno de sus roles es una de las constantes de `TemaTruequeU`. Así la app solo puede mostrar colores de la paleta, y los widgets y las pantallas usan `TemaTruequeU.*` directamente en vez de `colorScheme.*`. `test/paleta_unica_test.dart` falla si algún archivo de `lib` (salvo `tema.dart`) usa `colorScheme`, `Colors.`, `Color(` o `Color.from`, y si algún rol del tema o color de un tema de componente (iconos, divisores, diálogos, `SnackBar`, menús, indicadores, resaltes) no es de la paleta.
+
+La tabla dice con qué color de `TemaTruequeU` se llena cada rol; en Figma ese color es la variable `TemaTruequeU/<color>`. La verifica `tokens_figma_test.dart` contra el tema real.
+
+<!-- roles:inicio -->
+| Rol de `ColorScheme` | Color de `TemaTruequeU` | Valor |
+| --- | --- | --- |
+| `primary` | `TemaTruequeU.azul` | #2A3964 |
+| `onPrimary` | `TemaTruequeU.blanco` | #FFFFFF |
+| `primaryContainer` | `TemaTruequeU.azulClaro` | #DDE3F2 |
+| `onPrimaryContainer` | `TemaTruequeU.azulOscuro` | #1B2645 |
+| `primaryFixed` | `TemaTruequeU.azulClaro` | #DDE3F2 |
+| `primaryFixedDim` | `TemaTruequeU.azulClaro` | #DDE3F2 |
+| `onPrimaryFixed` | `TemaTruequeU.azulOscuro` | #1B2645 |
+| `onPrimaryFixedVariant` | `TemaTruequeU.azul` | #2A3964 |
+| `secondary` | `TemaTruequeU.rojo` | #CC100C |
+| `onSecondary` | `TemaTruequeU.blanco` | #FFFFFF |
+| `secondaryContainer` | `TemaTruequeU.rojoClaro` | #FBE3E2 |
+| `onSecondaryContainer` | `TemaTruequeU.rojoOscuro` | #8F0B08 |
+| `secondaryFixed` | `TemaTruequeU.rojoClaro` | #FBE3E2 |
+| `secondaryFixedDim` | `TemaTruequeU.rojoClaro` | #FBE3E2 |
+| `onSecondaryFixed` | `TemaTruequeU.rojoOscuro` | #8F0B08 |
+| `onSecondaryFixedVariant` | `TemaTruequeU.rojo` | #CC100C |
+| `tertiary` | `TemaTruequeU.verdeOscuro` | #14532D |
+| `onTertiary` | `TemaTruequeU.blanco` | #FFFFFF |
+| `tertiaryContainer` | `TemaTruequeU.verdeClaro` | #DCF2E3 |
+| `onTertiaryContainer` | `TemaTruequeU.verdeOscuro` | #14532D |
+| `tertiaryFixed` | `TemaTruequeU.verdeClaro` | #DCF2E3 |
+| `tertiaryFixedDim` | `TemaTruequeU.verdeClaro` | #DCF2E3 |
+| `onTertiaryFixed` | `TemaTruequeU.verdeOscuro` | #14532D |
+| `onTertiaryFixedVariant` | `TemaTruequeU.verdeOscuro` | #14532D |
+| `error` | `TemaTruequeU.rojo` | #CC100C |
+| `onError` | `TemaTruequeU.blanco` | #FFFFFF |
+| `errorContainer` | `TemaTruequeU.rojoClaro` | #FBE3E2 |
+| `onErrorContainer` | `TemaTruequeU.rojoOscuro` | #8F0B08 |
+| `surface` | `TemaTruequeU.fondo` | #FAF7F2 |
+| `onSurface` | `TemaTruequeU.texto` | #1C1917 |
+| `surfaceDim` | `TemaTruequeU.borde` | #E7E5E4 |
+| `surfaceBright` | `TemaTruequeU.blanco` | #FFFFFF |
+| `surfaceContainerLowest` | `TemaTruequeU.blanco` | #FFFFFF |
+| `surfaceContainerLow` | `TemaTruequeU.fondo` | #FAF7F2 |
+| `surfaceContainer` | `TemaTruequeU.superficieAlta` | #F1ECE5 |
+| `surfaceContainerHigh` | `TemaTruequeU.superficieAlta` | #F1ECE5 |
+| `surfaceContainerHighest` | `TemaTruequeU.superficieAlta` | #F1ECE5 |
+| `onSurfaceVariant` | `TemaTruequeU.textoSuave` | #57534E |
+| `outline` | `TemaTruequeU.contorno` | #78716C |
+| `outlineVariant` | `TemaTruequeU.borde` | #E7E5E4 |
+| `shadow` | `TemaTruequeU.texto` | #1C1917 |
+| `scrim` | `TemaTruequeU.texto` | #1C1917 |
+| `inverseSurface` | `TemaTruequeU.azulOscuro` | #1B2645 |
+| `onInverseSurface` | `TemaTruequeU.blanco` | #FFFFFF |
+| `inversePrimary` | `TemaTruequeU.azulClaro` | #DDE3F2 |
+| `surfaceTint` | `TemaTruequeU.azul` | #2A3964 |
+<!-- roles:fin -->
+
 ## Tipografía: contexto Flutter a estilo Figma
 
-La app no define familia: Material 3 usa Roboto. Las alturas y el espaciado de letras no están en `tema.dart`; los pone Flutter.
+### Nombre de la fuente
+
+La fuente es **Roboto**. En Dart es la constante `TemaTruequeU.fuente` y en Figma la variable de texto `TemaTruequeU/fuente`, enlazada a la familia (`fontFamily`) de todos los estilos de texto; la página Fundamentos tiene la sección "Tipografía · Roboto" y cada estilo lista familia, peso, tamaño y altura de línea.
+
+`ThemeData` no recibe `fontFamily: TemaTruequeU.fuente` a propósito: la app no empaqueta fuentes (`pubspec.yaml` no tiene `fonts`) y la tipografía de Material 3 elige la familia según la plataforma (Roboto en Android y Fuchsia, Segoe UI en Windows, la fuente del sistema en iOS y macOS, Roboto con Ubuntu y otras de respaldo en Linux). Forzar 'Roboto' cambiaría el texto en esas plataformas, y la web usa la del sistema operativo del visitante. La constante documenta la fuente de diseño; `tipografia_figma_test.dart` comprueba que en la plataforma de prueba (Android) los 15 roles de `TextTheme` usan `TemaTruequeU.fuente`.
+
+Las alturas y el espaciado de letras no están en `tema.dart`; los pone Flutter.
 
 - `ThemeData.textTheme` sin localizar tiene los tamaños en `null`; los valores reales salen de `Theme.of(context).textTheme` dentro de un `MaterialApp`. Por eso el test los lee de ahí.
 - El cuerpo de cualquier `Scaffold`, `Card` o diálogo hereda `DefaultTextStyle` igual a `bodyMedium` (14 px, altura 1.43, espaciado 0.25). Un `Text(style: TextosTruequeU.x)` se mezcla encima, así que el estilo efectivo de `TextosTruequeU.x` es su tamaño y peso con la altura 1.43 y el espaciado 0.25 de `bodyMedium`.
@@ -217,7 +260,7 @@ Todos los íconos son los de Material Icons, no glifos de texto. Fuente: paquete
 
 Se comparó el recuadro de cada SVG con el glifo de la fuente `MaterialIcons-Regular.otf` que trae Flutter 3.47.1: 51 de 52 coinciden dentro de 0.1 unidades; `handshake_outlined` difiere 0.39 unidades de 24 porque la fuente de Flutter tiene un rediseño más nuevo que el paquete.
 
-El componente `Icono` tiene una variante por ícono (`nombre=<identificador Flutter>`), de 24 x 24, con un solo vector aplanado de `figma.createNodeFromSvg` cuyo relleno es `ColorScheme/onSurfaceVariant` por defecto. Cada instancia se escala al tamaño que usa el código Flutter (14, 16, 18, 20, 24, 28, 36 o 64) y cambia el relleno a la variable que usa Flutter. Los íconos que Material dibuja por dentro de un widget (`Icons.arrow_drop_down` del selector, `Icons.check` del `SegmentedButton`) no aparecen en `lib`; viven en `IconoMarco` y en `iconos-marco.json`.
+El componente `Icono` tiene una variante por ícono (`nombre=<identificador Flutter>`), de 24 x 24, con un solo vector aplanado de `figma.createNodeFromSvg` cuyo relleno es `TemaTruequeU/textoSuave` por defecto. Cada instancia se escala al tamaño que usa el código Flutter (14, 16, 18, 20, 24, 28, 36 o 64) y cambia el relleno a la variable que usa Flutter. Los íconos que Material dibuja por dentro de un widget (`Icons.arrow_drop_down` del selector, `Icons.check` del `SegmentedButton`) no aparecen en `lib`; viven en `IconoMarco` y en `iconos-marco.json`.
 
 Íconos que usa la app (tabla generada desde `iconos.json`):
 
@@ -291,23 +334,23 @@ Color y tamaño por contexto, tomados del código de Flutter y de los valores po
 
 | Contexto | Color | Tamaño |
 | --- | --- | --- |
-| `NavigationBar` seleccionado / no seleccionado | `onSecondaryContainer` / `onSurfaceVariant` | 24 |
-| `IconButton` (`help_outline`, `refresh`, `arrow_forward`, `more_vert`) | `onSurfaceVariant` | 24 (20 en `TarjetaMiPublicacion`) |
+| `NavigationBar` seleccionado / no seleccionado | `rojoOscuro` / `textoSuave` | 24 |
+| `IconButton` (`help_outline`, `refresh`, `arrow_forward`, `more_vert`) | `textoSuave` | 24 (20 en `TarjetaMiPublicacion`) |
 | Ícono de `AppBar` (volver, actualizar) | `TemaTruequeU/azulOscuro` (`foregroundColor`) | 24 |
-| `prefixIcon` y `suffixIcon` de `CampoTexto` | `onSurfaceVariant` (`error` en el sufijo con error; `onSurface` con opacidad 0.38 si está deshabilitado) | 24 |
+| `prefixIcon` y `suffixIcon` de `CampoTexto` | `textoSuave` (`rojo` en el sufijo con error; `texto` con opacidad 0.38 si está deshabilitado) | 24 |
 | Ícono dentro de botón (`FilledButton.icon`, `OutlinedButton.icon`) | color del texto del botón | 18 (16 donde el código lo indica) |
-| Avatar de `Chip` (`tune`, `check_circle_outline`) | `primary` | 16 |
-| Borrar de `InputChip` (`close`) | `onSurfaceVariant` | 18 |
-| `Estrellas`, `ResumenCalificaciones` | `secondary` | 24 |
+| Avatar de `Chip` (`tune`, `check_circle_outline`) | `azul` | 16 |
+| Borrar de `InputChip` (`close`) | `textoSuave` | 18 |
+| `Estrellas`, `ResumenCalificaciones` | `rojo` | 24 |
 | Logo (`swap_horiz`) | `TemaTruequeU/rojo` | 36 |
 | `Etiqueta` | color del texto de la etiqueta | 14 |
-| `MensajeVacio` | `outline` | 64 |
+| `MensajeVacio` | `contorno` | 64 |
 
-Diferencias con Flutter que no se pueden enlazar a un token: el ícono sin color explícito (`history`, `chevron_right` fuera de un `ListTile`, `broken_image_outlined`, el ícono de `TarjetaHistorial`) usa `IconTheme` negro al 87 % (`Color(0xDD000000)`) y la flecha del selector usa `Colors.grey.shade700`; ninguno es token, así que en Figma se enlazan a `ColorScheme/onSurface` y `ColorScheme/onSurfaceVariant`, que son los más cercanos.
+Los íconos sin color explícito (`history`, `chevron_right` fuera de un `ListTile`, `broken_image_outlined`, el ícono de `TarjetaHistorial`) toman el `iconTheme` del tema, que es `TemaTruequeU/texto` (antes era el negro al 87 % de Material). La flecha de los selectores de `Publicacion.dart` es `TemaTruequeU/textoSuave`: `DropdownButton` no tiene tema de componente y su gris por defecto (`Colors.grey.shade700`) solo se cambia con `iconEnabledColor`.
 
 ## Componente Figma, archivo Flutter y variantes
 
-Los archivos están en `trueque-u/app/lib/widgets/` salvo los marcados como Material, patrón inline o clase privada de una pantalla (no existen como widget propio). Todos usan auto layout; padding y separación están enlazados a `Espacios`, radios a `Radios`, y rellenos y bordes a variables de `ColorScheme` (o `TemaTruequeU/blanco` y `TemaTruequeU/rojo` donde el código usa esos colores directamente).
+Los archivos están en `trueque-u/app/lib/widgets/` salvo los marcados como Material, patrón inline o clase privada de una pantalla (no existen como widget propio). Todos usan auto layout; padding y separación están enlazados a `Espacios`, radios a `Radios`, y rellenos y bordes a variables de `TemaTruequeU`.
 
 | Componente Figma | Archivo Flutter | Variantes y estados |
 | --- | --- | --- |
@@ -347,7 +390,7 @@ Los archivos están en `trueque-u/app/lib/widgets/` salvo los marcados como Mate
 | `TextoPantalla` | patrón inline: `Text` suelto de las pantallas | Estilo: titulo, subtitulo, cuerpo, negrita, suave, ayuda, error, enlace. Alineacion: izquierda, centro, derecha |
 | `AppBar` | Material, configurado en `pagina_acceso.dart` | Volver: no, si. Accion: ninguna, refrescar |
 | `FloatingActionButton` | Material, rojo del tema (`FloatingActionButton.extended`) | Variante: extendido |
-| `SnackBar` | Material, fondo `onSurface` | Estado: default |
+| `SnackBar` | Material, fondo `azulOscuro` (`snackBarTheme`) | Estado: default |
 | `DropdownButtonFormField` | Material, usado en `Publicacion.dart` | Estado: default, enfocado |
 | `CircleAvatar` | Material, usado en `pantalla_perfil.dart` y `dialogo_ayuda.dart` | Tamano: grande, chico |
 | `Divider` | Material, usado en `pantalla_perfil.dart` | Estado: default |
@@ -367,7 +410,7 @@ Los componentes con texto editable exponen una propiedad de texto (`texto`, `men
 Limitaciones conocidas:
 
 - Las dos tablas de colores por contexto de íconos y las diferencias con tokens están en la sección de íconos; los botones de las tarjetas y las pantallas llevan ícono donde el código Flutter lo lleva (`FilledButton.icon`, `OutlinedButton.icon`, `TextButton.icon`).
-- `EncabezadoAcceso` intenta un degradado de `azulOscuro` a `azul` con las paradas enlazadas a variables. Si la API de Figma no conserva ese enlace, el plugin usa un relleno sólido `ColorScheme/onPrimaryContainer` para no dejar colores fijos.
+- `EncabezadoAcceso` intenta un degradado de `azulOscuro` a `azul` con las paradas enlazadas a variables. Si la API de Figma no conserva ese enlace, el plugin usa un relleno sólido `TemaTruequeU/azulOscuro` para no dejar colores fijos.
 - Estados como hover y presionado no existen en Flutter como widgets; se modelan con opacidad sobre el color del token.
 - La estructura de `CampoTexto` muestra la etiqueta o el valor, no la etiqueta flotante encima del valor que dibuja Flutter; los estilos de cada texto sí son los de Flutter. El campo `DropdownButtonFormField` sí muestra la etiqueta flotante.
 - Los estados `BannerError` y `ErrorConReintento` tienen una sola variante porque no tienen estados propios en el código.
@@ -421,7 +464,7 @@ Marcos de estado, con el nombre `<Clase> · <estado>`, en la misma página:
 
 ### Diálogos
 
-La página `💬 Diálogos` muestra cada diálogo sobre la pantalla desde la que se abre. Cada marco es de 390 x 844 e incluye la pantalla, un velo (`ColorScheme/onSurface` con opacidad 0.32, posición absoluta) y la instancia del diálogo centrada.
+La página `💬 Diálogos` muestra cada diálogo sobre la pantalla desde la que se abre. Cada marco es de 390 x 844 e incluye la pantalla, un velo (`TemaTruequeU/texto` con opacidad 0.54, como el `barrierColor` del tema, posición absoluta) y la instancia del diálogo centrada.
 
 | Marco | Pantalla de fondo |
 | --- | --- |
@@ -454,9 +497,10 @@ Limitaciones de las pantallas:
 
 `trueque-u/app/test/tokens_figma_test.dart` lee `design/figma-plugin/tokens.json` y lo compara con el código Dart:
 
-- Las secciones del JSON son exactamente `TemaTruequeU`, `ColorScheme`, `Espacios`, `Radios`, `Tipos`, `TextosTruequeU`, `TextTheme`, `TextoDerivado` y `Contextos`.
+- Las secciones del JSON son exactamente `TemaTruequeU`, `ColorScheme` (solo documentación), `Espacios`, `Radios`, `Tipos`, `TextosTruequeU`, `TextTheme`, `TextoDerivado` y `Contextos`.
 - Cada color de `TemaTruequeU` existe en el código con el mismo nombre y el mismo hex, y no sobran ni faltan claves.
-- Cada rol de `ColorScheme` apunta a un color del tema y el rol del tema Flutter resuelve a ese mismo color.
+- Cada rol del `ColorScheme` del tema Flutter (los 46) aparece en la documentación de roles, apunta a un color del tema y resuelve a ese mismo color.
+- `TemaTruequeU.fuente` coincide con el JSON.
 - Espacios, radios y tamaños de texto coinciden en nombre y valor.
 - Cada estilo de `TextosTruequeU` coincide en tamaño (vía su alias a `Tipos`) y peso.
 
