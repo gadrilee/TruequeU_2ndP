@@ -30,6 +30,7 @@ void main() {
     expect(ConfiguracionEntorno.urlBase, 'https://servidor.test/api');
     expect(find.byType(app.AplicacionTruequeU), findsOneWidget);
     expect(find.byType(PantallaInicio), findsOneWidget);
+    expect(Localizations.localeOf(tester.element(find.byType(PantallaInicio))).languageCode, 'es');
     app.manejadorSemantica.dispose();
   });
 
