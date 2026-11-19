@@ -1,0 +1,82 @@
+{
+  "inicio-escritorio": {
+    "nodosSemantica": 8,
+    "marcadorAccesibilidad": 0,
+    "lang": "es",
+    "titulo": "Trueque U",
+    "botones": 2,
+    "camposTexto": 0,
+    "encabezados": 0,
+    "urlFinal": "http://localhost:8080/"
+  },
+  "inicio-movil": {
+    "nodosSemantica": 8,
+    "marcadorAccesibilidad": 0,
+    "lang": "es",
+    "titulo": "Trueque U",
+    "botones": 2,
+    "camposTexto": 0,
+    "encabezados": 0,
+    "urlFinal": "http://localhost:8080/"
+  },
+  "iniciar-sesion-escritorio": {
+    "nodosSemantica": 14,
+    "marcadorAccesibilidad": 0,
+    "lang": "es",
+    "titulo": "Trueque U",
+    "botones": 4,
+    "camposTexto": 2,
+    "encabezados": 0,
+    "urlFinal": "http://localhost:8080/#/iniciar-sesion"
+  },
+  "iniciar-sesion-movil": {
+    "nodosSemantica": 14,
+    "marcadorAccesibilidad": 0,
+    "lang": "es",
+    "titulo": "Trueque U",
+    "botones": 4,
+    "camposTexto": 2,
+    "encabezados": 0,
+    "urlFinal": "http://localhost:8080/#/iniciar-sesion"
+  },
+  "registro-escritorio": {
+    "nodosSemantica": 17,
+    "marcadorAccesibilidad": 0,
+    "lang": "es",
+    "titulo": "Trueque U",
+    "botones": 5,
+    "camposTexto": 5,
+    "encabezados": 0,
+    "urlFinal": "http://localhost:8080/#/registro"
+  },
+  "registro-movil": {
+    "nodosSemantica": 17,
+    "marcadorAccesibilidad": 0,
+    "lang": "es",
+    "titulo": "Trueque U",
+    "botones": 5,
+    "camposTexto": 5,
+    "encabezados": 0,
+    "urlFinal": "http://localhost:8080/#/registro"
+  },
+  "recuperar-contrasena-escritorio": {
+    "nodosSemantica": 10,
+    "marcadorAccesibilidad": 0,
+    "lang": "es",
+    "titulo": "Trueque U",
+    "botones": 3,
+    "camposTexto": 1,
+    "encabezados": 0,
+    "urlFinal": "http://localhost:8080/#/recuperar-contrasena"
+  },
+  "recuperar-contrasena-movil": {
+    "nodosSemantica": 10,
+    "marcadorAccesibilidad": 0,
+    "lang": "es",
+    "titulo": "Trueque U",
+    "botones": 3,
+    "camposTexto": 1,
+    "encabezados": 0,
+    "urlFinal": "http://localhost:8080/#/recuperar-contrasena"
+  }
+}
