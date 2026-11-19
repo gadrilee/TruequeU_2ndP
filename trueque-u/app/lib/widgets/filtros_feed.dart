@@ -49,14 +49,14 @@ class FiltrosFeed extends StatelessWidget {
         avatar: const Icon(Icons.tune, size: 16),
         label: Text(titulo),
         backgroundColor: TemaTruequeU.blanco,
-        shape: const StadiumBorder(side: BorderSide(color: TemaTruequeU.borde)),
+        shape: const StadiumBorder(side: BorderSide(color: TemaTruequeU.contorno)),
       ),
     );
   }
 
   static final buscadorBorde = OutlineInputBorder(
     borderRadius: BorderRadius.circular(Radios.r28),
-    borderSide: const BorderSide(color: TemaTruequeU.borde),
+    borderSide: const BorderSide(color: TemaTruequeU.contorno),
   );
 
   @override
