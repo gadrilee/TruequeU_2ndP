@@ -44,6 +44,7 @@ class PaginaAcceso extends StatelessWidget {
           automaticallyImplyLeading: false,
           leading: alVolver != null
               ? IconButton(
+                  tooltip: 'Volver',
                   icon: const Icon(Icons.arrow_back),
                   onPressed: alVolver,
                 )

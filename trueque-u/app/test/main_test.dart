@@ -30,6 +30,8 @@ void main() {
     expect(ConfiguracionEntorno.urlBase, 'https://servidor.test/api');
     expect(find.byType(app.AplicacionTruequeU), findsOneWidget);
     expect(find.byType(PantallaInicio), findsOneWidget);
+    expect(Localizations.localeOf(tester.element(find.byType(PantallaInicio))).languageCode, 'es');
+    app.manejadorSemantica.dispose();
   });
 
   testWidgets('main avisa cuando el .env no trae API_URL', (tester) async {
@@ -41,5 +43,6 @@ void main() {
 
     expect(ConfiguracionEntorno.usaServidorLocal, true);
     expect(find.byType(app.AplicacionTruequeU), findsOneWidget);
+    app.manejadorSemantica.dispose();
   });
 }

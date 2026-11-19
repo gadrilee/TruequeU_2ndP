@@ -7,17 +7,21 @@ class LogoTruequeU extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 64,
-      height: 64,
-      decoration: BoxDecoration(
-        color: TemaTruequeU.blanco,
-        borderRadius: BorderRadius.circular(Radios.r20),
-      ),
-      child: const Icon(
-        Icons.swap_horiz,
-        size: 36,
-        color: TemaTruequeU.rojo,
+    return Semantics(
+      label: 'Logo de Trueque U',
+      image: true,
+      child: Container(
+        width: 64,
+        height: 64,
+        decoration: BoxDecoration(
+          color: TemaTruequeU.blanco,
+          borderRadius: BorderRadius.circular(Radios.r20),
+        ),
+        child: const Icon(
+          Icons.swap_horiz,
+          size: 36,
+          color: TemaTruequeU.rojo,
+        ),
       ),
     );
   }

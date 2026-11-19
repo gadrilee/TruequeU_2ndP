@@ -72,7 +72,7 @@ class TemaTruequeU {
 
     final bordeCampo = OutlineInputBorder(
       borderRadius: BorderRadius.circular(Radios.r14),
-      borderSide: const BorderSide(color: borde),
+      borderSide: const BorderSide(color: contorno),
     );
     final formaBoton = RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(Radios.r28),
@@ -141,7 +141,7 @@ class TemaTruequeU {
         style: OutlinedButton.styleFrom(
           foregroundColor: azul,
           minimumSize: const Size.fromHeight(48),
-          side: const BorderSide(color: borde),
+          side: const BorderSide(color: contorno),
           shape: formaBoton,
         ),
       ),

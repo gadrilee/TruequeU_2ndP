@@ -1,0 +1,1 @@
+{"name":"herramientas-accesibilidad","private":true,"type":"module","dependencies":{"chrome-launcher":"^1.2.3","lighthouse":"^13.6.0","playwright-core":"^1.65.1"}}
