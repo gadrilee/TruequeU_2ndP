@@ -1,0 +1,82 @@
+{
+  "inicio-escritorio": {
+    "nodosSemantica": 0,
+    "contenedorSemantica": 1,
+    "marcadorAccesibilidad": 1,
+    "lang": "en-US",
+    "titulo": "Trueque U",
+    "botones": 0,
+    "camposTexto": 0,
+    "encabezados": 0
+  },
+  "inicio-movil": {
+    "nodosSemantica": 0,
+    "contenedorSemantica": 1,
+    "marcadorAccesibilidad": 1,
+    "lang": "en-US",
+    "titulo": "Trueque U",
+    "botones": 0,
+    "camposTexto": 0,
+    "encabezados": 0
+  },
+  "iniciar-sesion-escritorio": {
+    "nodosSemantica": 0,
+    "contenedorSemantica": 1,
+    "marcadorAccesibilidad": 1,
+    "lang": "en-US",
+    "titulo": "Trueque U",
+    "botones": 0,
+    "camposTexto": 0,
+    "encabezados": 0
+  },
+  "iniciar-sesion-movil": {
+    "nodosSemantica": 0,
+    "contenedorSemantica": 1,
+    "marcadorAccesibilidad": 1,
+    "lang": "en-US",
+    "titulo": "Trueque U",
+    "botones": 0,
+    "camposTexto": 0,
+    "encabezados": 0
+  },
+  "registro-escritorio": {
+    "nodosSemantica": 0,
+    "contenedorSemantica": 1,
+    "marcadorAccesibilidad": 1,
+    "lang": "en-US",
+    "titulo": "Trueque U",
+    "botones": 0,
+    "camposTexto": 0,
+    "encabezados": 0
+  },
+  "registro-movil": {
+    "nodosSemantica": 0,
+    "contenedorSemantica": 1,
+    "marcadorAccesibilidad": 1,
+    "lang": "en-US",
+    "titulo": "Trueque U",
+    "botones": 0,
+    "camposTexto": 0,
+    "encabezados": 0
+  },
+  "recuperar-contrasena-escritorio": {
+    "nodosSemantica": 0,
+    "contenedorSemantica": 1,
+    "marcadorAccesibilidad": 1,
+    "lang": "en-US",
+    "titulo": "Trueque U",
+    "botones": 0,
+    "camposTexto": 0,
+    "encabezados": 0
+  },
+  "recuperar-contrasena-movil": {
+    "nodosSemantica": 0,
+    "contenedorSemantica": 1,
+    "marcadorAccesibilidad": 1,
+    "lang": "en-US",
+    "titulo": "Trueque U",
+    "botones": 0,
+    "camposTexto": 0,
+    "encabezados": 0
+  }
+}

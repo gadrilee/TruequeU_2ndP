@@ -1,0 +1,1 @@
+{"name":"herramientas-accesibilidad","private":true,"type":"module","dependencies":{"lighthouse":"^13.6.0","playwright-core":"^1.65.1"}}
