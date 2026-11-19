@@ -58,7 +58,6 @@ class _PantallaRecuperarContrasenaState extends State<PantallaRecuperarContrasen
 
   @override
   Widget build(BuildContext context) {
-    final colores = Theme.of(context).colorScheme;
 
     return PaginaAcceso(
       titulo: 'Recuperar contraseña',
@@ -76,10 +75,10 @@ class _PantallaRecuperarContrasenaState extends State<PantallaRecuperarContrasen
             width: 56,
             height: 56,
             decoration: BoxDecoration(
-              color: colores.primaryContainer,
+              color: TemaTruequeU.azulClaro,
               borderRadius: BorderRadius.circular(Radios.r16),
             ),
-            child: Icon(Icons.vpn_key, color: colores.primary),
+            child: const Icon(Icons.vpn_key, color: TemaTruequeU.azul),
           ),
         ),
         const SizedBox(height: Espacios.e16),
@@ -116,17 +115,17 @@ class _PantallaRecuperarContrasenaState extends State<PantallaRecuperarContrasen
           Container(
             padding: const EdgeInsets.all(Espacios.e16),
             decoration: BoxDecoration(
-              color: colores.tertiaryContainer,
+              color: TemaTruequeU.verdeClaro,
               borderRadius: BorderRadius.circular(Radios.r14),
             ),
-            child: Row(
+            child: const Row(
               children: [
-                Icon(Icons.check_circle_outline, color: colores.onTertiaryContainer),
-                const SizedBox(width: Espacios.e12),
+                Icon(Icons.check_circle_outline, color: TemaTruequeU.verdeOscuro),
+                SizedBox(width: Espacios.e12),
                 Expanded(
                   child: Text(
                     'Listo. Revisa tu correo: ahí está tu contraseña nueva.',
-                    style: TextStyle(color: colores.onTertiaryContainer),
+                    style: TextStyle(color: TemaTruequeU.verdeOscuro),
                   ),
                 ),
               ],

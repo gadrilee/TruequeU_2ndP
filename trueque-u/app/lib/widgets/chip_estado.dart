@@ -14,7 +14,6 @@ class ChipEstado extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colores = Theme.of(context).colorScheme;
 
     Color fondo;
     Color texto;
@@ -22,33 +21,33 @@ class ChipEstado extends StatelessWidget {
 
     switch (estado) {
       case 'disponible':
-        fondo = colores.primaryContainer;
-        texto = colores.onPrimaryContainer;
+        fondo = TemaTruequeU.azulClaro;
+        texto = TemaTruequeU.azulOscuro;
         etiqueta = 'Disponible';
         break;
       case 'reservado':
-        fondo = colores.secondaryContainer;
-        texto = colores.onSecondaryContainer;
+        fondo = TemaTruequeU.rojoClaro;
+        texto = TemaTruequeU.rojoOscuro;
         etiqueta = loReserveYo ? 'Reservado por ti' : 'Reservado';
         break;
       case 'intercambiado':
-        fondo = colores.tertiaryContainer;
-        texto = colores.onTertiaryContainer;
+        fondo = TemaTruequeU.verdeClaro;
+        texto = TemaTruequeU.verdeOscuro;
         etiqueta = 'Intercambiado';
         break;
       case 'acordado':
-        fondo = colores.primary;
-        texto = colores.onPrimary;
+        fondo = TemaTruequeU.azul;
+        texto = TemaTruequeU.blanco;
         etiqueta = 'Intercambio acordado';
         break;
       case 'no disponible':
-        fondo = colores.surfaceContainerHighest;
-        texto = colores.onSurfaceVariant;
+        fondo = TemaTruequeU.superficieAlta;
+        texto = TemaTruequeU.textoSuave;
         etiqueta = 'No disponible';
         break;
       default:
-        fondo = colores.surfaceContainerHighest;
-        texto = colores.onSurfaceVariant;
+        fondo = TemaTruequeU.superficieAlta;
+        texto = TemaTruequeU.textoSuave;
         etiqueta = estado;
     }
 

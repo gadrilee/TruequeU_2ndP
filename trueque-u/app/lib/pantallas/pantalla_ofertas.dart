@@ -354,8 +354,8 @@ class _PantallaOfertasState extends State<PantallaOfertas> {
           selected: {_viendoEnviadas ? 1 : 0},
           style: SegmentedButton.styleFrom(
             backgroundColor: TemaTruequeU.blanco,
-            selectedBackgroundColor: Theme.of(context).colorScheme.primaryContainer,
-            selectedForegroundColor: Theme.of(context).colorScheme.onPrimaryContainer,
+            selectedBackgroundColor: TemaTruequeU.azulClaro,
+            selectedForegroundColor: TemaTruequeU.azulOscuro,
           ),
           onSelectionChanged: (valor) =>
               setState(() => _viendoEnviadas = valor.first == 1),
@@ -396,7 +396,6 @@ class _TarjetaOferta extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colores = Theme.of(context).colorScheme;
     final pedida = oferta['pedida'] as Map<String, dynamic>? ?? {};
     final ofrecida = oferta['ofrecida'] as Map<String, dynamic>? ?? {};
     final oferente = oferta['oferente'] as Map<String, dynamic>? ?? {};
@@ -428,11 +427,11 @@ class _TarjetaOferta extends StatelessWidget {
               children: [
                 _ChipEstado(estado: estado),
                 const Spacer(),
-                Text(quien, style: TextStyle(color: colores.onSurfaceVariant)),
+                Text(quien, style: const TextStyle(color: TemaTruequeU.textoSuave)),
               ],
             ),
             const SizedBox(height: Espacios.e4),
-            Text('Ronda ${oferta['ronda'] ?? 1}', style: TextStyle(color: colores.onSurfaceVariant)),
+            Text('Ronda ${oferta['ronda'] ?? 1}', style: const TextStyle(color: TemaTruequeU.textoSuave)),
             const SizedBox(height: Espacios.e8),
             Text('Quiere: ${pedida['titulo'] ?? 'un objeto'}'),
             const SizedBox(height: Espacios.e4),
@@ -513,8 +512,8 @@ class _TarjetaOferta extends StatelessWidget {
                 OutlinedButton(
                   onPressed: alCancelarIntercambio,
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: colores.error,
-                    side: BorderSide(color: colores.error),
+                    foregroundColor: TemaTruequeU.rojo,
+                    side: const BorderSide(color: TemaTruequeU.rojo),
                   ),
                   child: const Text('Cancelar intercambio'),
                 ),
@@ -554,15 +553,14 @@ class _ChipEstado extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colores = Theme.of(context).colorScheme;
     final (texto, fondo, tinta) = switch (estado) {
-      'contraofertada' => ('Contraofertada', colores.secondaryContainer, colores.onSecondaryContainer),
-      'aceptada' => ('Aceptada', colores.tertiaryContainer, colores.onTertiaryContainer),
-      'completada' => ('Intercambio completado', colores.tertiaryContainer, colores.onTertiaryContainer),
-      'anulada' => ('Intercambio cancelado', colores.errorContainer, colores.onErrorContainer),
-      'rechazada' => ('Rechazada', colores.errorContainer, colores.onErrorContainer),
-      'cancelada' => ('Cancelada', colores.surfaceContainerHighest, colores.onSurfaceVariant),
-      _ => ('Pendiente', colores.primaryContainer, colores.onPrimaryContainer),
+      'contraofertada' => ('Contraofertada', TemaTruequeU.rojoClaro, TemaTruequeU.rojoOscuro),
+      'aceptada' => ('Aceptada', TemaTruequeU.verdeClaro, TemaTruequeU.verdeOscuro),
+      'completada' => ('Intercambio completado', TemaTruequeU.verdeClaro, TemaTruequeU.verdeOscuro),
+      'anulada' => ('Intercambio cancelado', TemaTruequeU.rojoClaro, TemaTruequeU.rojoOscuro),
+      'rechazada' => ('Rechazada', TemaTruequeU.rojoClaro, TemaTruequeU.rojoOscuro),
+      'cancelada' => ('Cancelada', TemaTruequeU.superficieAlta, TemaTruequeU.textoSuave),
+      _ => ('Pendiente', TemaTruequeU.azulClaro, TemaTruequeU.azulOscuro),
     };
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: Espacios.e10, vertical: Espacios.e4),

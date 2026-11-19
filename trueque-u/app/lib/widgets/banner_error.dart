@@ -10,15 +10,14 @@ class BannerError extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (mensaje == null) return const SizedBox.shrink();
-    final colores = Theme.of(context).colorScheme;
     return Container(
       margin: const EdgeInsets.only(bottom: Espacios.e16),
       padding: const EdgeInsets.all(Espacios.e12),
       decoration: BoxDecoration(
-        color: colores.errorContainer,
+        color: TemaTruequeU.rojoClaro,
         borderRadius: BorderRadius.circular(Radios.r8),
       ),
-      child: Text(mensaje!, style: TextStyle(color: colores.onErrorContainer)),
+      child: Text(mensaje!, style: const TextStyle(color: TemaTruequeU.rojoOscuro)),
     );
   }
 }

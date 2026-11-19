@@ -7,11 +7,11 @@ Future<void> mostrarAyudaTrueque(BuildContext context) {
     context: context,
     builder: (ctx) => AlertDialog(
       title: const Text('¿Cómo funciona?'),
-      content: SingleChildScrollView(
+      content: const SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: const [
+          children: [
             _Paso(
               numero: '1',
               texto: 'Reservar: toca "Reservar" en un objeto disponible. Quedará apartado para ti.',

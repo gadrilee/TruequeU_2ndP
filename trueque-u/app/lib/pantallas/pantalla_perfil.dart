@@ -21,7 +21,7 @@ class PantallaPerfil extends StatelessWidget {
 
   Widget _opcion(BuildContext context, IconData icono, String texto, String ruta) {
     return ListTile(
-      leading: Icon(icono, color: Theme.of(context).colorScheme.primary),
+      leading: Icon(icono, color: TemaTruequeU.azul),
       title: Text(texto),
       trailing: const Icon(Icons.chevron_right),
       onTap: () => context.go(ruta),
@@ -52,7 +52,6 @@ class PantallaPerfil extends StatelessWidget {
     final usuario = context.watch<ControladorAutenticacion>().usuario;
     if (usuario == null) return const SizedBox.shrink();
 
-    final colores = Theme.of(context).colorScheme;
 
     return PaginaAcceso(
       titulo: 'Mi perfil',
@@ -60,10 +59,10 @@ class PantallaPerfil extends StatelessWidget {
         Center(
           child: CircleAvatar(
             radius: 36,
-            backgroundColor: colores.primary,
+            backgroundColor: TemaTruequeU.azul,
             child: Text(
               _iniciales(usuario.nombre),
-              style: TextosTruequeU.titulo.copyWith(color: colores.onPrimary),
+              style: TextosTruequeU.titulo.copyWith(color: TemaTruequeU.blanco),
             ),
           ),
         ),
@@ -81,7 +80,7 @@ class PantallaPerfil extends StatelessWidget {
           Text(
             usuario.correo!,
             textAlign: TextAlign.center,
-            style: TextStyle(color: colores.onSurfaceVariant),
+            style: const TextStyle(color: TemaTruequeU.textoSuave),
           ),
         ],
         const SizedBox(height: Espacios.e8),
@@ -105,8 +104,8 @@ class PantallaPerfil extends StatelessWidget {
               _opcion(context, Icons.key_outlined, 'Cambiar contraseña', '/cambiar-contrasena'),
               const Divider(height: 1),
               ListTile(
-                leading: Icon(Icons.delete_outline, color: colores.error),
-                title: Text('Eliminar cuenta', style: TextStyle(color: colores.error)),
+                leading: const Icon(Icons.delete_outline, color: TemaTruequeU.rojo),
+                title: const Text('Eliminar cuenta', style: TextStyle(color: TemaTruequeU.rojo)),
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () => _eliminarCuenta(context),
               ),
@@ -116,8 +115,8 @@ class PantallaPerfil extends StatelessWidget {
         const SizedBox(height: Espacios.e24),
         OutlinedButton.icon(
           style: OutlinedButton.styleFrom(
-            foregroundColor: colores.error,
-            side: BorderSide(color: colores.error),
+            foregroundColor: TemaTruequeU.rojo,
+            side: const BorderSide(color: TemaTruequeU.rojo),
           ),
           icon: const Icon(Icons.logout),
           label: const Text('Cerrar sesión'),

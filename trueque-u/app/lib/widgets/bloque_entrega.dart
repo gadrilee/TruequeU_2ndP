@@ -222,12 +222,11 @@ class _BloqueEntregaState extends State<BloqueEntrega> {
 
   @override
   Widget build(BuildContext context) {
-    final colores = Theme.of(context).colorScheme;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(Espacios.e12),
       decoration: BoxDecoration(
-        color: colores.surfaceContainerHighest,
+        color: TemaTruequeU.superficieAlta,
         borderRadius: BorderRadius.circular(Radios.r12),
       ),
       child: Column(

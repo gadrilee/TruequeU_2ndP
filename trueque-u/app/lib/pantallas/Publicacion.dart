@@ -127,6 +127,7 @@ class _PantallaPublicacionState extends State<PantallaPublicacion> {
               const SizedBox(height: Espacios.e16),
               DropdownButtonFormField<String>(
                 initialValue: _estado,
+                iconEnabledColor: TemaTruequeU.textoSuave,
                 decoration: const InputDecoration(
                   labelText: 'Estado del objeto',
                   border: OutlineInputBorder(),
@@ -144,6 +145,7 @@ class _PantallaPublicacionState extends State<PantallaPublicacion> {
               const SizedBox(height: Espacios.e16),
               DropdownButtonFormField<String>(
                 initialValue: _categoria,
+                iconEnabledColor: TemaTruequeU.textoSuave,
                 decoration: const InputDecoration(
                   labelText: 'Categoría',
                   border: OutlineInputBorder(),

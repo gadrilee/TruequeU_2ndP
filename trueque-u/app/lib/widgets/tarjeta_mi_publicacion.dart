@@ -54,7 +54,6 @@ class TarjetaMiPublicacion extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colores = Theme.of(context).colorScheme;
     final estaReservada = estadoPublicacion == 'reservado';
     final estaAcordada = estadoPublicacion == 'acordado';
 
@@ -62,7 +61,7 @@ class TarjetaMiPublicacion extends StatelessWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(Radios.r20),
         side: BorderSide(
-          color: estaReservada ? colores.primary : colores.outlineVariant,
+          color: estaReservada ? TemaTruequeU.azul : TemaTruequeU.borde,
         ),
       ),
       child: Padding(
@@ -92,10 +91,10 @@ class TarjetaMiPublicacion extends StatelessWidget {
                 if (!estaReservada && !estaAcordada) ...[
                   // Botón lápiz para editar nombre y descripción
                   IconButton(
-                    icon: Icon(
+                    icon: const Icon(
                       Icons.edit_outlined,
                       size: 20,
-                      color: colores.primary,
+                      color: TemaTruequeU.azul,
                     ),
                     tooltip: 'Editar información',
                     onPressed: enProgreso ? null : alEditar,
@@ -108,33 +107,33 @@ class TarjetaMiPublicacion extends StatelessWidget {
                     enabled: !enProgreso,
                     onSelected: alCambiarEstado,
                     itemBuilder: (ctx) => [
-                      PopupMenuItem(
+                      const PopupMenuItem(
                         value: 'disponible',
                         child: Row(
                           children: [
-                            Icon(Icons.check_circle_outline, size: 18, color: colores.tertiary),
-                            const SizedBox(width: Espacios.e8),
-                            const Text('Marcar como Disponible'),
+                            Icon(Icons.check_circle_outline, size: 18, color: TemaTruequeU.verdeOscuro),
+                            SizedBox(width: Espacios.e8),
+                            Text('Marcar como Disponible'),
                           ],
                         ),
                       ),
-                      PopupMenuItem(
+                      const PopupMenuItem(
                         value: 'oculto',
                         child: Row(
                           children: [
-                            Icon(Icons.visibility_off_outlined, size: 18, color: colores.onSurfaceVariant),
-                            const SizedBox(width: Espacios.e8),
-                            const Text('Ocultar publicación'),
+                            Icon(Icons.visibility_off_outlined, size: 18, color: TemaTruequeU.textoSuave),
+                            SizedBox(width: Espacios.e8),
+                            Text('Ocultar publicación'),
                           ],
                         ),
                       ),
-                      PopupMenuItem(
+                      const PopupMenuItem(
                         value: 'no disponible',
                         child: Row(
                           children: [
-                            Icon(Icons.block_outlined, size: 18, color: colores.error),
-                            const SizedBox(width: Espacios.e8),
-                            const Text('Marcar como No disponible'),
+                            Icon(Icons.block_outlined, size: 18, color: TemaTruequeU.rojo),
+                            SizedBox(width: Espacios.e8),
+                            Text('Marcar como No disponible'),
                           ],
                         ),
                       ),
@@ -144,7 +143,7 @@ class TarjetaMiPublicacion extends StatelessWidget {
                   const SizedBox(width: Espacios.e8),
                   IconButton(
                     icon: const Icon(Icons.delete_outline, size: 20),
-                    color: colores.error,
+                    color: TemaTruequeU.rojo,
                     tooltip: 'Eliminar definitivamente',
                     onPressed: enProgreso ? null : alEliminar,
                   ),
@@ -155,7 +154,7 @@ class TarjetaMiPublicacion extends StatelessWidget {
               const SizedBox(height: Espacios.e6),
               Text(
                 descripcion!,
-                style: TextosTruequeU.cuerpo.copyWith(color: colores.onSurfaceVariant),
+                style: TextosTruequeU.cuerpo.copyWith(color: TemaTruequeU.textoSuave),
               ),
             ],
             const SizedBox(height: Espacios.e12),
@@ -168,24 +167,24 @@ class TarjetaMiPublicacion extends StatelessWidget {
                 Etiqueta(
                   icono: Icons.label_outline,
                   texto: estado == 'nuevo' ? 'Nuevo' : 'Usado',
-                  fondo: colores.primaryContainer,
-                  colorTexto: colores.onPrimaryContainer,
+                  fondo: TemaTruequeU.azulClaro,
+                  colorTexto: TemaTruequeU.azulOscuro,
                 ),
                 Etiqueta(
                   icono: Icons.category_outlined,
                   texto: etiquetasCategoria[categoria] ?? 'Otros',
-                  fondo: colores.primaryContainer,
-                  colorTexto: colores.onPrimaryContainer,
+                  fondo: TemaTruequeU.azulClaro,
+                  colorTexto: TemaTruequeU.azulOscuro,
                 ),
                 Etiqueta(
                   icono: Icons.info_outline,
                   texto: _formatearEstadoPublicacion(estadoPublicacion),
                   fondo: estaReservada
-                      ? colores.secondaryContainer
-                      : colores.primaryContainer,
+                      ? TemaTruequeU.rojoClaro
+                      : TemaTruequeU.azulClaro,
                   colorTexto: estaReservada
-                      ? colores.onSecondaryContainer
-                      : colores.onPrimaryContainer,
+                      ? TemaTruequeU.rojoOscuro
+                      : TemaTruequeU.azulOscuro,
                 ),
                 // Indicador explícito de quién reservó la publicación
                 if (estaReservada)
@@ -194,15 +193,15 @@ class TarjetaMiPublicacion extends StatelessWidget {
                     texto: nombreReserva != null
                         ? 'Reservado por: $nombreReserva'
                         : 'Reservado por un usuario',
-                    fondo: colores.secondaryContainer,
-                    colorTexto: colores.onSecondaryContainer,
+                    fondo: TemaTruequeU.rojoClaro,
+                    colorTexto: TemaTruequeU.rojoOscuro,
                   ),
                 if (estaReservada)
-                  Etiqueta(
+                  const Etiqueta(
                     icono: Icons.phone_outlined,
                     texto: 'El contacto se ve cuando los dos aceptan',
-                    fondo: colores.primaryContainer,
-                    colorTexto: colores.onPrimaryContainer,
+                    fondo: TemaTruequeU.azulClaro,
+                    colorTexto: TemaTruequeU.azulOscuro,
                   ),
                 if (estaAcordada &&
                     telefonoReserva != null &&
@@ -210,13 +209,13 @@ class TarjetaMiPublicacion extends StatelessWidget {
                   InkWell(
                     borderRadius: BorderRadius.circular(Radios.r16),
                     onTap: alAbrirWhatsapp,
-                    child: Tooltip(
+                    child: const Tooltip(
                       message: 'Abrir WhatsApp',
                       child: Etiqueta(
                         icono: Icons.chat_outlined,
                         texto: 'Escribir por WhatsApp',
-                        fondo: colores.tertiaryContainer,
-                        colorTexto: colores.onTertiaryContainer,
+                        fondo: TemaTruequeU.verdeClaro,
+                        colorTexto: TemaTruequeU.verdeOscuro,
                       ),
                     ),
                   ),
@@ -228,7 +227,7 @@ class TarjetaMiPublicacion extends StatelessWidget {
               const SizedBox(height: Espacios.e8),
               Text(
                 'Está reservada: solo puedes completar el intercambio.',
-                style: TextosTruequeU.ayuda.copyWith(color: colores.onSurfaceVariant),
+                style: TextosTruequeU.ayuda.copyWith(color: TemaTruequeU.textoSuave),
               ),
             ],
 
@@ -236,7 +235,7 @@ class TarjetaMiPublicacion extends StatelessWidget {
               const SizedBox(height: Espacios.e8),
               Text(
                 'Tiene un intercambio acordado: confirma la entrega o cancélalo en Ofertas de trueque.',
-                style: TextosTruequeU.ayuda.copyWith(color: colores.onSurfaceVariant),
+                style: TextosTruequeU.ayuda.copyWith(color: TemaTruequeU.textoSuave),
               ),
             ],
 

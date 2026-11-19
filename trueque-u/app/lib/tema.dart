@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 class TemaTruequeU {
+  static const fuente = 'Roboto';
+
   static const azul = Color(0xFF2A3964);
   static const azulOscuro = Color(0xFF1B2645);
   static const azulClaro = Color(0xFFDDE3F2);
@@ -18,29 +20,54 @@ class TemaTruequeU {
   static const superficieAlta = Color(0xFFF1ECE5);
 
   static ThemeData claro() {
-    final esquema = ColorScheme.fromSeed(seedColor: azul).copyWith(
+    const esquema = ColorScheme(
+      brightness: Brightness.light,
       primary: azul,
       onPrimary: blanco,
       primaryContainer: azulClaro,
       onPrimaryContainer: azulOscuro,
+      primaryFixed: azulClaro,
+      primaryFixedDim: azulClaro,
+      onPrimaryFixed: azulOscuro,
+      onPrimaryFixedVariant: azul,
       secondary: rojo,
       onSecondary: blanco,
       secondaryContainer: rojoClaro,
       onSecondaryContainer: rojoOscuro,
+      secondaryFixed: rojoClaro,
+      secondaryFixedDim: rojoClaro,
+      onSecondaryFixed: rojoOscuro,
+      onSecondaryFixedVariant: rojo,
       tertiary: verdeOscuro,
       onTertiary: blanco,
       tertiaryContainer: verdeClaro,
       onTertiaryContainer: verdeOscuro,
+      tertiaryFixed: verdeClaro,
+      tertiaryFixedDim: verdeClaro,
+      onTertiaryFixed: verdeOscuro,
+      onTertiaryFixedVariant: verdeOscuro,
       error: rojo,
       onError: blanco,
       errorContainer: rojoClaro,
       onErrorContainer: rojoOscuro,
       surface: fondo,
       onSurface: texto,
+      surfaceDim: borde,
+      surfaceBright: blanco,
+      surfaceContainerLowest: blanco,
+      surfaceContainerLow: fondo,
+      surfaceContainer: superficieAlta,
+      surfaceContainerHigh: superficieAlta,
+      surfaceContainerHighest: superficieAlta,
       onSurfaceVariant: textoSuave,
       outline: contorno,
-      surfaceContainerHighest: superficieAlta,
       outlineVariant: borde,
+      shadow: texto,
+      scrim: texto,
+      inverseSurface: azulOscuro,
+      onInverseSurface: blanco,
+      inversePrimary: azulClaro,
+      surfaceTint: azul,
     );
 
     final bordeCampo = OutlineInputBorder(
@@ -55,6 +82,40 @@ class TemaTruequeU {
       useMaterial3: true,
       colorScheme: esquema,
       scaffoldBackgroundColor: fondo,
+      canvasColor: fondo,
+      cardColor: fondo,
+      primaryColor: azul,
+      primaryColorLight: azulClaro,
+      primaryColorDark: azulOscuro,
+      secondaryHeaderColor: azulClaro,
+      shadowColor: texto,
+      dividerColor: contorno,
+      disabledColor: texto.withValues(alpha: 0.38),
+      hintColor: texto.withValues(alpha: 0.6),
+      unselectedWidgetColor: texto.withValues(alpha: 0.54),
+      focusColor: texto.withValues(alpha: 0.12),
+      hoverColor: texto.withValues(alpha: 0.04),
+      highlightColor: texto.withValues(alpha: 0.1),
+      splashColor: texto.withValues(alpha: 0.12),
+      iconTheme: const IconThemeData(color: texto),
+      primaryIconTheme: const IconThemeData(color: blanco),
+      dividerTheme: const DividerThemeData(color: borde),
+      dialogTheme: DialogThemeData(
+        backgroundColor: superficieAlta,
+        iconColor: textoSuave,
+        barrierColor: texto.withValues(alpha: 0.54),
+      ),
+      snackBarTheme: const SnackBarThemeData(
+        backgroundColor: azulOscuro,
+        actionTextColor: azulClaro,
+        closeIconColor: blanco,
+      ),
+      popupMenuTheme: const PopupMenuThemeData(
+        color: superficieAlta,
+      ),
+      progressIndicatorTheme: const ProgressIndicatorThemeData(
+        color: azul,
+      ),
       appBarTheme: const AppBarTheme(
         backgroundColor: fondo,
         foregroundColor: azulOscuro,

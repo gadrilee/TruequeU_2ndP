@@ -175,7 +175,6 @@ class _PantallaHistorialState extends State<PantallaHistorial> {
 
   @override
   Widget build(BuildContext context) {
-    final colores = Theme.of(context).colorScheme;
 
     Widget contenido;
     if (_cargando) {
@@ -229,7 +228,7 @@ class _PantallaHistorialState extends State<PantallaHistorial> {
                             const SizedBox(height: Espacios.e4),
                             Text(
                               '${_estado(evento['tipo'] as String).$2} · ${_fecha(evento['creado_en'] as String?)}',
-                              style: TextStyle(color: colores.onSurfaceVariant),
+                              style: const TextStyle(color: TemaTruequeU.textoSuave),
                             ),
                           ],
                         ),

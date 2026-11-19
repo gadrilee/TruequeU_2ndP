@@ -21,7 +21,6 @@ class MensajeVacio extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colores = Theme.of(context).colorScheme;
 
     return Center(
       child: ConstrainedBox(
@@ -31,7 +30,7 @@ class MensajeVacio extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(icono, size: 64, color: colores.outline),
+              Icon(icono, size: 64, color: TemaTruequeU.contorno),
               const SizedBox(height: Espacios.e16),
               Text(
                 titulo,

@@ -43,6 +43,39 @@ void main() {
       expect(esquema.surfaceContainerHighest, TemaTruequeU.superficieAlta);
     });
 
+    test('los roles que antes derivaba el seed son colores de la paleta', () {
+      final esquema = TemaTruequeU.claro().colorScheme;
+
+      expect(esquema.brightness, Brightness.light);
+      expect(esquema.surfaceContainerLowest, TemaTruequeU.blanco);
+      expect(esquema.surfaceContainerLow, TemaTruequeU.fondo);
+      expect(esquema.surfaceContainer, TemaTruequeU.superficieAlta);
+      expect(esquema.surfaceContainerHigh, TemaTruequeU.superficieAlta);
+      expect(esquema.surfaceDim, TemaTruequeU.borde);
+      expect(esquema.surfaceBright, TemaTruequeU.blanco);
+      expect(esquema.inverseSurface, TemaTruequeU.azulOscuro);
+      expect(esquema.onInverseSurface, TemaTruequeU.blanco);
+      expect(esquema.inversePrimary, TemaTruequeU.azulClaro);
+      expect(esquema.surfaceTint, TemaTruequeU.azul);
+      expect(esquema.shadow, TemaTruequeU.texto);
+      expect(esquema.scrim, TemaTruequeU.texto);
+    });
+
+    test('los temas de componentes usan colores de la paleta', () {
+      final tema = TemaTruequeU.claro();
+
+      expect(tema.iconTheme.color, TemaTruequeU.texto);
+      expect(tema.dividerTheme.color, TemaTruequeU.borde);
+      expect(tema.dialogTheme.backgroundColor, TemaTruequeU.superficieAlta);
+      expect(tema.snackBarTheme.backgroundColor, TemaTruequeU.azulOscuro);
+      expect(tema.popupMenuTheme.color, TemaTruequeU.superficieAlta);
+      expect(tema.progressIndicatorTheme.color, TemaTruequeU.azul);
+    });
+
+    test('la fuente de la marca se llama Roboto', () {
+      expect(TemaTruequeU.fuente, 'Roboto');
+    });
+
     test('los tokens de espacio, radio y tipo tienen su valor', () {
       expect(Espacios.e2, 2);
       expect(Espacios.e4, 4);

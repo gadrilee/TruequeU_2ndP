@@ -70,7 +70,6 @@ class _PantallaAvisosState extends State<PantallaAvisos> {
 
   @override
   Widget build(BuildContext context) {
-    final colores = Theme.of(context).colorScheme;
 
     Widget contenido;
     if (_cargando) {
@@ -97,7 +96,7 @@ class _PantallaAvisosState extends State<PantallaAvisos> {
                   aviso['leida'] == true
                       ? Icons.notifications_none
                       : Icons.notifications_active,
-                  color: colores.primary,
+                  color: TemaTruequeU.azul,
                 ),
                 title: Text(aviso['mensaje'] as String? ?? ''),
                 subtitle: Text(_fecha(aviso['creado_en'] as String?)),

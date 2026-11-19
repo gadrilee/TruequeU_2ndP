@@ -57,7 +57,7 @@ class _DialogoCalificacionState extends State<_DialogoCalificacion> {
             children: [
               Estrellas(puntaje: _puntaje, alElegir: _elegir),
               if (_error != null)
-                Text(_error!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
+                Text(_error!, style: const TextStyle(color: TemaTruequeU.rojo)),
               const SizedBox(height: Espacios.e8),
               TextFormField(
                 controller: _comentario,

@@ -65,7 +65,7 @@ class _PantallaIniciarSesionState extends State<PantallaIniciarSesion> {
           const Text('¿No tienes cuenta?'),
           TextButton(
             style: TextButton.styleFrom(
-              foregroundColor: Theme.of(context).colorScheme.secondary,
+              foregroundColor: TemaTruequeU.rojo,
               textStyle: const TextStyle(fontWeight: FontWeight.bold),
             ),
             onPressed: () => context.go('/registro'),

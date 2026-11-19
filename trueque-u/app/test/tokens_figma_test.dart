@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:trueque_u/tema.dart';
 
+import 'roles_esquema.dart';
+
 String hex(Color color) {
   final valor = color.toARGB32() & 0xFFFFFF;
   return '#${valor.toRadixString(16).padLeft(6, '0').toUpperCase()}';
@@ -87,48 +89,39 @@ void main() {
     File('../../design/figma-plugin/tokens.json').readAsStringSync(),
   ) as Map<String, dynamic>;
   final esquema = TemaTruequeU.claro().colorScheme;
-  final rolesEsquema = <String, Color>{
-    'primary': esquema.primary,
-    'onPrimary': esquema.onPrimary,
-    'primaryContainer': esquema.primaryContainer,
-    'onPrimaryContainer': esquema.onPrimaryContainer,
-    'secondary': esquema.secondary,
-    'onSecondary': esquema.onSecondary,
-    'secondaryContainer': esquema.secondaryContainer,
-    'onSecondaryContainer': esquema.onSecondaryContainer,
-    'tertiary': esquema.tertiary,
-    'onTertiary': esquema.onTertiary,
-    'tertiaryContainer': esquema.tertiaryContainer,
-    'onTertiaryContainer': esquema.onTertiaryContainer,
-    'error': esquema.error,
-    'onError': esquema.onError,
-    'errorContainer': esquema.errorContainer,
-    'onErrorContainer': esquema.onErrorContainer,
-    'surface': esquema.surface,
-    'onSurface': esquema.onSurface,
-    'onSurfaceVariant': esquema.onSurfaceVariant,
-    'outline': esquema.outline,
-    'outlineVariant': esquema.outlineVariant,
-    'surfaceContainerHighest': esquema.surfaceContainerHighest,
-  };
+  final rolesEsquema = rolesDe(esquema);
 
   test('el JSON tiene exactamente las secciones esperadas', () {
     expect(
       json.keys.toSet(),
-      {'TemaTruequeU', 'ColorScheme', 'Espacios', 'Radios', 'Tipos', 'TextosTruequeU'},
+      {
+        'TemaTruequeU',
+        'ColorScheme',
+        'Espacios',
+        'Radios',
+        'Tipos',
+        'TextosTruequeU',
+        'TextTheme',
+        'TextoDerivado',
+        'Contextos',
+      },
     );
   });
 
   test('colores de TemaTruequeU coinciden en nombre y hex', () {
     final tokens = seccion(json, 'TemaTruequeU');
 
-    expect(tokens.keys.toSet(), colores.keys.toSet());
+    expect(tokens.keys.toSet(), {...colores.keys, 'fuente'});
     colores.forEach((nombre, color) {
       expect(tokens[nombre], hex(color), reason: nombre);
     });
   });
 
-  test('roles del ColorScheme apuntan al color del tema', () {
+  test('la fuente de TemaTruequeU coincide con el codigo', () {
+    expect(seccion(json, 'TemaTruequeU')['fuente'], TemaTruequeU.fuente);
+  });
+
+  test('la documentacion de roles del ColorScheme coincide con el tema', () {
     final roles = seccion(json, 'ColorScheme');
 
     expect(roles.keys.toSet(), rolesEsquema.keys.toSet());

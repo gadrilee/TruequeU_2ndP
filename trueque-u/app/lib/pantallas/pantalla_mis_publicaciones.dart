@@ -259,7 +259,6 @@ class _PantallaMisPublicacionesState extends State<PantallaMisPublicaciones> {
 
   @override
   Widget build(BuildContext context) {
-    final colores = Theme.of(context).colorScheme;
 
     Widget contenido;
     if (_cargando) {
@@ -286,7 +285,7 @@ class _PantallaMisPublicacionesState extends State<PantallaMisPublicaciones> {
         children: [
           Text(
             'Total: ${_publicaciones.length}',
-            style: TextStyle(color: colores.onSurfaceVariant),
+            style: const TextStyle(color: TemaTruequeU.textoSuave),
           ),
           const SizedBox(height: Espacios.e12),
           for (final pub in _publicaciones) ...[

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../tema.dart';
+
 class Estrellas extends StatelessWidget {
   const Estrellas({super.key, required this.puntaje, this.alElegir});
 
@@ -17,7 +19,7 @@ class Estrellas extends StatelessWidget {
             tooltip: '$i de 5',
             visualDensity: VisualDensity.compact,
             onPressed: alElegir == null ? null : () => alElegir!(i),
-            icon: Icon(i <= puntaje ? Icons.star : Icons.star_border, color: Theme.of(context).colorScheme.secondary),
+            icon: Icon(i <= puntaje ? Icons.star : Icons.star_border, color: TemaTruequeU.rojo),
           ),
       ],
     );
