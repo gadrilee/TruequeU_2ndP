@@ -1,5 +1,7 @@
 # IHC-2
 
+App publicada: https://trueque-u-ihc.web.app/
+
 
 ## Diseño
 
