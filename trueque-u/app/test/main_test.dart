@@ -30,6 +30,7 @@ void main() {
     expect(ConfiguracionEntorno.urlBase, 'https://servidor.test/api');
     expect(find.byType(app.AplicacionTruequeU), findsOneWidget);
     expect(find.byType(PantallaInicio), findsOneWidget);
+    app.manejadorSemantica.dispose();
   });
 
   testWidgets('main avisa cuando el .env no trae API_URL', (tester) async {
@@ -41,5 +42,6 @@ void main() {
 
     expect(ConfiguracionEntorno.usaServidorLocal, true);
     expect(find.byType(app.AplicacionTruequeU), findsOneWidget);
+    app.manejadorSemantica.dispose();
   });
 }

@@ -30,12 +30,15 @@ class MensajeVacio extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(icono, size: 64, color: TemaTruequeU.contorno),
+              ExcludeSemantics(child: Icon(icono, size: 64, color: TemaTruequeU.contorno)),
               const SizedBox(height: Espacios.e16),
-              Text(
-                titulo,
-                style: TextosTruequeU.subtitulo,
-                textAlign: TextAlign.center,
+              Semantics(
+                header: true,
+                child: Text(
+                  titulo,
+                  style: TextosTruequeU.subtitulo,
+                  textAlign: TextAlign.center,
+                ),
               ),
               if (mensaje != null) ...[
                 const SizedBox(height: Espacios.e8),

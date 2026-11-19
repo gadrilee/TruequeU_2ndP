@@ -515,12 +515,15 @@ class _PantallaFeedPublicacionesState extends State<PantallaFeedPublicaciones> {
                           'Hola, $primerNombre',
                           style: Theme.of(context).textTheme.bodyLarge,
                         ),
-                        Text(
-                          '¿Qué quieres intercambiar hoy?',
-                          style: Theme.of(context)
-                              .textTheme
-                              .titleLarge
-                              ?.copyWith(fontWeight: FontWeight.bold),
+                        Semantics(
+                          header: true,
+                          child: Text(
+                            '¿Qué quieres intercambiar hoy?',
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleLarge
+                                ?.copyWith(fontWeight: FontWeight.bold),
+                          ),
                         ),
                       ],
                     ),

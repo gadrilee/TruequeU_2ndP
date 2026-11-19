@@ -39,12 +39,14 @@ class FotoPublicacion extends StatelessWidget {
             child: Icon(Icons.image_outlined, color: TemaTruequeU.contorno),
           )
         : _imagen();
-    return ClipRRect(
+    final recortada = ClipRRect(
       borderRadius: BorderRadius.circular(Radios.r12),
       child: cuadrada
           ? AspectRatio(aspectRatio: 1, child: hijo)
           : SizedBox(height: alto, width: double.infinity, child: hijo),
     );
+    if (vacia) return ExcludeSemantics(child: recortada);
+    return Semantics(label: 'Foto de la publicación', image: true, child: recortada);
   }
 
   Widget _imagen() {

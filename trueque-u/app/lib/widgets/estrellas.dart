@@ -17,7 +17,6 @@ class Estrellas extends StatelessWidget {
           IconButton(
             key: ValueKey('estrella-$i'),
             tooltip: '$i de 5',
-            visualDensity: VisualDensity.compact,
             onPressed: alElegir == null ? null : () => alElegir!(i),
             icon: Icon(i <= puntaje ? Icons.star : Icons.star_border, color: TemaTruequeU.rojo),
           ),

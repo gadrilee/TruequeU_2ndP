@@ -53,11 +53,14 @@ class EncabezadoAcceso extends StatelessWidget {
                 const LogoTruequeU(),
                 const SizedBox(height: Espacios.e16),
               ],
-              Text(
-                titulo,
-                style: textos.headlineMedium?.copyWith(
-                  color: TemaTruequeU.blanco,
-                  fontWeight: FontWeight.bold,
+              Semantics(
+                header: true,
+                child: Text(
+                  titulo,
+                  style: textos.headlineMedium?.copyWith(
+                    color: TemaTruequeU.blanco,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
               const SizedBox(height: Espacios.e4),
